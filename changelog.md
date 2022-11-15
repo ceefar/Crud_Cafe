@@ -25,3 +25,4 @@
 - base scene ui down and does look beaut with increased size tbf
 - toggling tabs basic functionality added
 - nailed highlighting on hover and ordering (partially, not yet on click), particularly for ordering almost didnt think id figure out a "cheap" way to do it but i did! :D
+- decision for huge overhaul from scratch again and completely nailed moving to click again from start much cleaner oop structure concept
