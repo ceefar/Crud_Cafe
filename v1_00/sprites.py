@@ -12,7 +12,7 @@ class Browser_Tab(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         # -- positioning -- 
-        self.width, self.height = game.pc_screen_surf_width, game.pc_screen_surf_height - 50 # same size as the screen except the tabs bar height off the top (might do off the bottom for chat windows too tho btw - should also hard code both)
+        self.width, self.height = game.pc_screen_surf_width, game.pc_screen_surf_height - self.game.tab_bar_height # same size as the screen except the tabs bar height off the top (might do off the bottom for chat windows too tho btw - should also hard code both)
         self.x, self.y = 0, 0 # we're blitting to the pc screen surface so we dont need to worry about the position its already handled
         self.pos = vec(self.x, self.y)
         # -- image and rect --
@@ -44,7 +44,7 @@ class Browser_Tab(pg.sprite.Sprite):
         """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
         title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
         self.image.blit(title, (50,30))  
-        self.game.pc_screen_surf.blit(self.image, (0, 50)) # 50 is the top tabs area, need to hard code this once added it in 
+        self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
 
 # -- Browser Tab Children --
@@ -75,6 +75,7 @@ class Customer(pg.sprite.Sprite):
         # -- chatbox specific vars --         
         self.shelved_chat_width = 200 
         self.shelved_chat_height = 50
+        self.chatbox_position = (200, 200) # initial position, tho this will (shortly) get updated if there is a window already there 
         
     def draw_open_chatbox(self, surf:pg.Surface): 
         # -- main open chatbox bg surf and dimensions --
@@ -87,7 +88,11 @@ class Customer(pg.sprite.Sprite):
         chatbox_title = self.game.FONT_VETERAN_TYPEWRITER_26.render(f"{self.my_name}", True, WHITE)
         self.chat_box_surf.blit(chatbox_title, (10, 10))
         # -- store the chatbox position --
-        self.chatbox_position = (200, 200)
+        if self.chatbox_position != (200, 200):
+            print(f"Updated Chatbox Position => {self.chatbox_position}")
+        else:
+            self.chatbox_position = (200, 200)
+            print(f"Current Chatbox Position => {self.chatbox_position}")
         # -- minimise button --
         minimise_btn_size = 20
         self.opened_chat_minimise_button_surf = pg.Surface((minimise_btn_size, minimise_btn_size))
@@ -99,5 +104,15 @@ class Customer(pg.sprite.Sprite):
         self.true_minimise_button_rect.move_ip(WIDTH - surf.get_width(), HEIGHT - surf.get_height())
         # -- final blit to the given (active) Tab surface --
         surf.blit(self.chat_box_surf, self.chatbox_position) 
+    
+    def __repr__(self):
+        return f"Customer ID.{self.my_id} : {self.my_name}"
 
-    # then in update set the position by click stuff
+    def update(self):
+        if self.game.mouse_click_up:
+            mouse = pg.mouse.get_pos()
+            print(f"Clicked {self}, {mouse = }")
+            self.chatbox_position = mouse[0] - self.game.pc_screen_surf_x, mouse[1] - self.game.pc_screen_surf_y - self.game.tab_bar_height
+
+#
+
