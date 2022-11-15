@@ -100,13 +100,15 @@ class Customer(pg.sprite.Sprite):
         minimise_btn_size = 20
         self.opened_chat_minimise_button_surf = pg.Surface((minimise_btn_size, minimise_btn_size))
         self.opened_chat_minimise_button_surf.fill(RED)
-        self.opened_chat_minimise_button_rect = pg.Rect(self.opened_chat_width - minimise_btn_size - 5, 5, minimise_btn_size, minimise_btn_size)
+        self.opened_chat_minimise_button_rect = pg.Rect(self.opened_chat_width - minimise_btn_size - 10, 10, minimise_btn_size, minimise_btn_size)
         self.chat_box_surf.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
         self.true_minimise_button_rect = self.opened_chat_minimise_button_rect.copy() # < from here may be wrong btw, will confirm when i get here
         self.true_minimise_button_rect.move_ip(self.chatbox_position)
         self.true_minimise_button_rect.move_ip(WIDTH - surf.get_width(), HEIGHT - surf.get_height())
         # -- final blit to the given (active) Tab surface --
         self.chatbox_destination_rect = surf.blit(self.chat_box_surf, self.chatbox_position) 
+        if self.chatbox_move_activated: # if its been selected highlight it, do this before the below destination rect move which adjusts for the surf (tab, i.e. computer screen) vs the display (i.e. camera pos)
+            pg.draw.rect(surf, GREEN, self.chatbox_destination_rect, 5)
         self.chatbox_destination_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_y)
     
     def __repr__(self):
@@ -116,8 +118,7 @@ class Customer(pg.sprite.Sprite):
         mouse = pg.mouse.get_pos()
         if self.game.mouse_click_up:       
             if self.chatbox_move_activated: # if you're already "holding" a chatbox window 
-                self.chatbox_move_activated = False
-                ... # put it down
+                self.chatbox_move_activated = False # put it down where you clicked
             else:   
                 if self.chatbox_destination_rect:
                     print(f"{self.chatbox_destination_rect = }")
