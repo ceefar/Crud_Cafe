@@ -23,3 +23,5 @@
 [v1.00]
 - day 2 planned refactor to iron out limitations with initial implementation
 - base scene ui down and does look beaut with increased size tbf
+- toggling tabs basic functionality added
+- nailed highlighting on hover and ordering (partially, not yet on click), particularly for ordering almost didnt think id figure out a "cheap" way to do it but i did! :D
