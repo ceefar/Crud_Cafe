@@ -82,6 +82,7 @@ class Game:
         for sprite in self.customers:
             if isinstance(sprite, Customer): 
                 sprite.draw_open_chatbox(self.new_orders_tab.image) 
+                pg.draw.rect(self.new_orders_tab.image, MAGENTA, sprite.minimise_btn_destination_rect)
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
