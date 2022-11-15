@@ -82,14 +82,13 @@ class Game:
         for sprite in self.customers:
             if isinstance(sprite, Customer): 
                 sprite.draw_open_chatbox(self.new_orders_tab.image) 
-                pg.draw.rect(self.new_orders_tab.image, MAGENTA, sprite.minimise_btn_dest_rect)
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
                 if sprite.is_active_tab:  
                     sprite.draw_to_pc()
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
-        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y + self.tab_bar_height))
+        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
         # -- finally, flip the display --
         pg.display.flip()

@@ -102,15 +102,12 @@ class Customer(pg.sprite.Sprite):
         self.opened_chat_minimise_button_surf = pg.Surface((minimise_btn_size, minimise_btn_size))
         self.opened_chat_minimise_button_surf.fill(RED)
         self.opened_chat_minimise_button_rect = pg.Rect(self.opened_chat_width - minimise_btn_size - 10, 10, minimise_btn_size, minimise_btn_size)
-        self.opened_chat_minimise_button_rect.move_ip(self.chatbox_position[0], self.chatbox_position[1]) # self.game.pc_screen_surf_x, self.game.pc_screen_surf_y + self.game.tab_bar_height)
-        self.minimise_btn_dest_rect = self.game.screen.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
-        # self.minimise_btn_destination_rect = self.chat_box_surf.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
+        self.chat_box_surf.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)       
         # -- final blit to the given (active) Tab surface --
         self.chatbox_destination_rect = surf.blit(self.chat_box_surf, self.chatbox_position) 
-        # -- draw a highlight around the chatbox when it is selected for moving --
         if self.chatbox_move_activated: # if its been selected highlight it, do this before the below destination rect move which adjusts for the surf (tab, i.e. computer screen) vs the display (i.e. camera pos)
             pg.draw.rect(surf, GREEN, self.chatbox_destination_rect, 5)
-        # 
+            
         self.chatbox_destination_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_y)
     
     def __repr__(self):
@@ -121,9 +118,8 @@ class Customer(pg.sprite.Sprite):
         # - select the chatbox by clicking a small top bar rect (that will encapsulate the minimise btn) instead of anywhere (since there are other buttons to press too)        
         mouse = pg.mouse.get_pos()
         # -- quick test --
-        if self.minimise_btn_destination_rect:
-            if self.minimise_btn_destination_rect.collidepoint(pg.mouse.get_pos()):
-                print(f"Hovered {self} - at mouse pos : {mouse}")
+        # if self.minimise_btn_destination_rect.collidepoint(pg.mouse.get_pos()):
+        #     print(f"Hovered {self} - at mouse pos : {mouse}")
         # -- end quick test --
         if self.game.mouse_click_up:       
             if self.chatbox_move_activated: # if you're already "holding" a chatbox window 
