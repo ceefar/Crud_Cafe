@@ -114,5 +114,7 @@ class Customer(pg.sprite.Sprite):
             print(f"Clicked {self}, {mouse = }")
             self.chatbox_position = mouse[0] - self.game.pc_screen_surf_x, mouse[1] - self.game.pc_screen_surf_y - self.game.tab_bar_height
 
-#
+# now wanna do click to select, with highlighting, and then dropping (maybe having this work only on the top bar too or sumnt (like adding a new top select bar header ting like windows))
+# then a working minimise button that just does whatever for now idk
+# then ordering bosh
 
