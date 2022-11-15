@@ -36,10 +36,7 @@ class Game:
     def new_level(self):
         """ initialize all variables and do all the setup for a new game """
         # -- level setup values --
-        self.total_customers_for_level = 4
-        self.all_shelved_chat_customers = [] 
-        self.all_open_chat_customers = []
-        # self.all_active_customers = [] # -> # dont forget new idea of moving them from active into open or shelved at the start (using the same function that will do it progressively throughout the level on a variable timer)
+        self.total_customers_for_level = 1
         # -- groups --
         self.all_sprites = pg.sprite.Group()    
         self.browser_tabs = pg.sprite.Group()
@@ -48,10 +45,8 @@ class Game:
         self.new_orders_tab = New_Orders_Tab(self)
         self.chats_tab = Chats_Tab(self)
         for _ in range(0, self.total_customers_for_level):
-            a_new_customer = Customer(self)
-            self.all_open_chat_customers.append(a_new_customer) 
-            print(f"Created New Customer {a_new_customer}")
-
+            Customer(self)
+       
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
         self.playing = True
@@ -74,21 +69,6 @@ class Game:
     def update(self):
         # keeps update and draw seperate
         self.browser_tabs.update() 
-        self.hovered_customers = []
-        for index, a_customer in enumerate(self.customers):
-            if isinstance(a_customer, Customer):
-                # clicked_open_customer = a_customer.check_click_opened_chatbox()
-                # if clicked_open_customer:
-                #     print(f"{clicked_open_customer.my_name = }") 
-                if a_customer.chatbox_opened_destination_rect:
-                    if a_customer.chatbox_opened_destination_rect.collidepoint(pg.mouse.get_pos()):
-                        # print(f"Hover {a_customer}")                                
-                        self.hovered_customers.append(a_customer) 
-        if self.hovered_customers:
-            top_hovered_customer = self.hovered_customers[-1]
-            clicked_open_customer = top_hovered_customer.check_click_opened_chatbox()
-            if clicked_open_customer:
-                print(f"{clicked_open_customer.my_name = }") 
     
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
@@ -96,27 +76,19 @@ class Game:
         self.screen.blit(self.scene_img, (0,0)) 
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
         self.wipe_computer_screen_surface()
+        # -- loop customers -- 
+        for sprite in self.customers:
+            if isinstance(sprite, Customer): 
+                sprite.draw_open_chatbox(self.new_orders_tab.image) 
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
-                if sprite.is_active_tab:
-                    # -- loop all the open chat customers (not in all sprites) and draw their chatboxes to the open tabs image -- 
-                    print(f"THE ORDER =>> {self.all_open_chat_customers = }")
-                    for index, a_customer in enumerate(self.all_open_chat_customers):
-                        if isinstance(a_customer, Customer): 
-                            self.new_orders_tab.image = a_customer.draw_open_chatbox(index, self.new_orders_tab.image) 
-                            print(f"{a_customer}")
-                            if self.hovered_customers:
-                                if a_customer is self.hovered_customers[-1]:                   
-                                    self.new_orders_tab.image = a_customer.draw_open_chatbox(index, self.new_orders_tab.image, True)   
+                if sprite.is_active_tab:  
                     sprite.draw_to_pc()
-      
+            
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
-        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf 
-              
-
-
+        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
         # -- finally, flip the display --
         pg.display.flip()
 
