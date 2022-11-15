@@ -32,6 +32,7 @@ class Game:
         self.FONT_BOHEMIAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 26)
         # -- define gui surface dimensions --
         self.pc_screen_surf_width, self.pc_screen_surf_height = 1000, 600
+        self.tab_bar_height = 50
 
     def new_level(self):
         """ initialize all variables and do all the setup for a new game """
@@ -69,6 +70,7 @@ class Game:
     def update(self):
         # keeps update and draw seperate
         self.browser_tabs.update() 
+        self.customers.update()
     
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
@@ -85,7 +87,6 @@ class Game:
             if isinstance(sprite, Browser_Tab): # really for type hinting
                 if sprite.is_active_tab:  
                     sprite.draw_to_pc()
-            
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
