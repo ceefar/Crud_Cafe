@@ -75,7 +75,7 @@ class Customer(pg.sprite.Sprite):
         # -- chatbox specific vars --         
         self.shelved_chat_width = 200 
         self.shelved_chat_height = 50
-        self.chatbox_position = (200, 200) # initial position, tho this will (shortly) get updated if there is a window already there 
+        self.chatbox_position = (150, 150) # initial position, tho this will (shortly) get updated if there is a window already there 
         self.chatbox_destination_rect = False
         self.chatbox_move_activated = False
         self.minimise_btn_destination_rect = False
@@ -91,37 +91,40 @@ class Customer(pg.sprite.Sprite):
         chatbox_title = self.game.FONT_VETERAN_TYPEWRITER_26.render(f"{self.my_name}", True, WHITE)
         self.chat_box_surf.blit(chatbox_title, (10, 10))
         # -- store the chatbox position --
-        if self.chatbox_position != (200, 200):
+        if self.chatbox_position != (150, 150):
             pass
             # print(f"Updated Chatbox Position => {self.chatbox_position}")
         else:
-            self.chatbox_position = (200, 200)
+            self.chatbox_position = (150 + (50 * self.my_id), 150 + (50 * self.my_id)) # (200 + (50 * self.my_id), 200 + (50 * self.my_id)) dont use id tho use count open
             # print(f"Current Chatbox Position => {self.chatbox_position}")
         # -- minimise button --
         minimise_btn_size = 20
         self.opened_chat_minimise_button_surf = pg.Surface((minimise_btn_size, minimise_btn_size))
         self.opened_chat_minimise_button_surf.fill(RED)
         self.opened_chat_minimise_button_rect = pg.Rect(self.opened_chat_width - minimise_btn_size - 10, 10, minimise_btn_size, minimise_btn_size)
-        self.minimise_btn_destination_rect = self.chat_box_surf.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
-        self.minimise_btn_destination_rect.move_ip(self.game.pc_screen_surf_x - 100, self.game.pc_screen_surf_y + 100)
-        
+        self.opened_chat_minimise_button_rect.move_ip(self.chatbox_position[0], self.chatbox_position[1]) # self.game.pc_screen_surf_x, self.game.pc_screen_surf_y + self.game.tab_bar_height)
+        self.minimise_btn_dest_rect = self.game.screen.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
+        # self.minimise_btn_destination_rect = self.chat_box_surf.blit(self.opened_chat_minimise_button_surf, self.opened_chat_minimise_button_rect)
         # -- final blit to the given (active) Tab surface --
         self.chatbox_destination_rect = surf.blit(self.chat_box_surf, self.chatbox_position) 
+        # -- draw a highlight around the chatbox when it is selected for moving --
         if self.chatbox_move_activated: # if its been selected highlight it, do this before the below destination rect move which adjusts for the surf (tab, i.e. computer screen) vs the display (i.e. camera pos)
             pg.draw.rect(surf, GREEN, self.chatbox_destination_rect, 5)
+        # 
         self.chatbox_destination_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_y)
     
     def __repr__(self):
         return f"Customer ID.{self.my_id} : {self.my_name} at chatbox destination => {self.chatbox_destination_rect}\n"
 
     def update(self):
+        # could add
+        # - select the chatbox by clicking a small top bar rect (that will encapsulate the minimise btn) instead of anywhere (since there are other buttons to press too)        
+        mouse = pg.mouse.get_pos()
+        # -- quick test --
         if self.minimise_btn_destination_rect:
-            print(f"{self.minimise_btn_destination_rect = }")
             if self.minimise_btn_destination_rect.collidepoint(pg.mouse.get_pos()):
                 print(f"Hovered {self} - at mouse pos : {mouse}")
-        # could add
-        # - select the chatbox by clicking a small top bar rect (that will encapsulate the minimise btn) instead of anywhere (since there are other buttons to press too)
-        mouse = pg.mouse.get_pos()
+        # -- end quick test --
         if self.game.mouse_click_up:       
             if self.chatbox_move_activated: # if you're already "holding" a chatbox window 
                 self.chatbox_move_activated = False # put it down where you clicked
@@ -139,15 +142,19 @@ class Customer(pg.sprite.Sprite):
 
 # then a working minimise button that just does whatever for now idk
 # ok so to get through this quick but still properly
-# - save the version as stable
 # - compeltely rip out the minimise button
 # - do it properly so its working on click and still on move (it prints the click and it still works on move)
 # - then thats fully gravy
 
+
 # then straight on to ordering bosh
 # - be smart and start with only 2 or 3
 
-# then quickly click to select and move via bar as per update() note
+# - count open ones (at that pos!) for init pos ting
+# - highlighting only selected staggered ting
+#   - plus only click / hover only ting
+
+# then quickly click to select and move via top bar as per update() note
 
 # then cont omddddd
 # - as in to *actual* gamification stuff D:
