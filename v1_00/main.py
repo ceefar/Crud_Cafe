@@ -77,13 +77,18 @@ class Game:
         self.hovered_customers = []
         for index, a_customer in enumerate(self.customers):
             if isinstance(a_customer, Customer):
-                clicked_open_customer = a_customer.check_click_opened_chatbox()
-                if clicked_open_customer:
-                    print(f"{clicked_open_customer.my_name = }") 
+                # clicked_open_customer = a_customer.check_click_opened_chatbox()
+                # if clicked_open_customer:
+                #     print(f"{clicked_open_customer.my_name = }") 
                 if a_customer.chatbox_opened_destination_rect:
                     if a_customer.chatbox_opened_destination_rect.collidepoint(pg.mouse.get_pos()):
                         # print(f"Hover {a_customer}")                                
-                        self.hovered_customers.append(index)  
+                        self.hovered_customers.append(a_customer) 
+        if self.hovered_customers:
+            top_hovered_customer = self.hovered_customers[-1]
+            clicked_open_customer = top_hovered_customer.check_click_opened_chatbox()
+            if clicked_open_customer:
+                print(f"{clicked_open_customer.my_name = }") 
     
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
@@ -96,30 +101,20 @@ class Game:
             if isinstance(sprite, Browser_Tab): # really for type hinting
                 if sprite.is_active_tab:
                     # -- loop all the open chat customers (not in all sprites) and draw their chatboxes to the open tabs image -- 
-                    # print(f"{self.all_open_chat_customers = }")
+                    print(f"THE ORDER =>> {self.all_open_chat_customers = }")
                     for index, a_customer in enumerate(self.all_open_chat_customers):
                         if isinstance(a_customer, Customer): 
                             self.new_orders_tab.image = a_customer.draw_open_chatbox(index, self.new_orders_tab.image) 
+                            print(f"{a_customer}")
                             if self.hovered_customers:
-                                if index == self.hovered_customers[-1]:                      
+                                if a_customer is self.hovered_customers[-1]:                   
                                     self.new_orders_tab.image = a_customer.draw_open_chatbox(index, self.new_orders_tab.image, True)   
                     sprite.draw_to_pc()
       
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf 
-                            
-        # # -- bit of a temp test -- 
-        # reversed_customers = []
-        # for customer in self.customers:
-        #     reversed_customers.append(customer)
-        # reversed_customers = reversed(reversed_customers)
-        # for customer in reversed_customers:
-        #     if customer.chatbox_opened_destination_rect:
-        #         if customer.chatbox_opened_destination_rect.collidepoint(pg.mouse.get_pos()):
-        #             print(f"Hover {customer}")
-        #             pg.draw.rect(self.screen, RED, customer.chatbox_opened_destination_rect, 10)
-        #             break
+              
 
 
         # -- finally, flip the display --

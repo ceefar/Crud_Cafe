@@ -143,14 +143,23 @@ class Customer(pg.sprite.Sprite):
         if self.game.mouse_click_up:
             if self.chatbox_opened_destination_rect:
                 if self.chatbox_opened_destination_rect.collidepoint(pg.mouse.get_pos()):
-                    if self.true_minimise_button_rect.collidepoint(pg.mouse.get_pos()):
-                        # -- this does shelving --
-                        self.chatbox_state = "shelved"                    
-                        self.chatbox_opened_destination_rect = False
-                        self.game.all_open_chat_customers.remove(self)
-                    else:
-                        # -- this handles bringing clicked chatbox to front -- 
-                        self.game.all_open_chat_customers.remove(self)
-                        self.game.all_open_chat_customers.append(self)
+                    # if self.true_minimise_button_rect.collidepoint(pg.mouse.get_pos()):
+                    #     # -- this does shelving --
+                    #     self.chatbox_state = "shelved"                    
+                    #     self.chatbox_opened_destination_rect = False
+                    #     self.game.all_open_chat_customers.remove(self)
+                    # else:
+                    # -- this handles bringing clicked chatbox to front -- 
+                    print(f"{self.game.all_open_chat_customers = }")
+                    self.game.all_open_chat_customers.remove(self)
+                    self.game.all_open_chat_customers.append(self)
+                    print(f"{self.game.all_open_chat_customers = }")
+                    print(f"")
+
+                    # swear just need to reset this, or actually its happening in the loop so find out wassup
+                    # maybe its just always resetting the order
+                    # if so its just a simple dont set if set
+                    # self.chatbox_opened_destination_rect = # open_position = (100 + (index * cascading_offset), 80 + (index * cascading_offset))
+                    
                     # --
                     return self        
