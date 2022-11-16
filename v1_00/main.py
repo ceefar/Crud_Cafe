@@ -1,7 +1,4 @@
-# KidsCanCode - Game Development with Pygame video series
-# Tile-based game - Part 10
-# Player and Mob Health
-# Video link: https://youtu.be/-9bXcSjuN28
+# -- imports --
 import pygame as pg
 import sys
 from os import path
@@ -28,11 +25,16 @@ class Game:
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
         self.FONT_VETERAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 26) 
+        self.FONT_BOHEMIAN_TYPEWRITER_12 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 12)
+        self.FONT_BOHEMIAN_TYPEWRITER_14 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 14)
+        self.FONT_BOHEMIAN_TYPEWRITER_16 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 16)
         self.FONT_BOHEMIAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 20)
         self.FONT_BOHEMIAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 26)
-        # -- define gui surface dimensions --
+        # -- define main gui surface dimensions --
         self.pc_screen_surf_width, self.pc_screen_surf_height = 1000, 600
+        self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100
         self.tab_bar_height = 50
+        self.pc_screen_surf_true_y = self.pc_screen_surf_y + self.tab_bar_height # else y val doesnt take the tab_bar_height into consideration
 
     def new_level(self):
         """ initialize all variables and do all the setup for a new game """
@@ -47,6 +49,8 @@ class Game:
         self.chats_tab = Chats_Tab(self)
         for _ in range(0, self.total_customers_for_level):
             Customer(self)
+        # -- misc game x level setup vars --
+        self.is_player_moving_chatbox = False        
        
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
@@ -59,7 +63,6 @@ class Game:
         
     def wipe_computer_screen_surface(self):
         """ we use this as a base to draw everything on to, it is basically our game surface """
-        self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100
         self.pc_screen_surf = pg.Surface((self.pc_screen_surf_width, self.pc_screen_surf_height))
         self.pc_screen_surf.fill(SKYBLUE)
 
@@ -70,8 +73,29 @@ class Game:
     def update(self):
         # keeps update and draw seperate
         self.browser_tabs.update() 
-        self.customers.update()
+        # self.customers.update()
+
+        self.opened_chatbox_customers = []
+        self.shelved_chatbox_customers = []
+        
+        # initially sort the customers into shelved or open
+        if not self.opened_chatbox_customers:
+            for customer in self.customers:
+                if customer.chatbox_state == "opened":
+                    self.opened_chatbox_customers.append(customer)
+                elif customer.chatbox_state == "shelved":
+                    self.shelved_chatbox_customers.append(customer)
     
+        # reverse loop the open list and break on cick (return from update) so we select only the top one
+        for _, a_customer in enumerate(reversed(self.opened_chatbox_customers)):
+            if isinstance(a_customer, Customer):
+                selected_customer = a_customer.update()
+                if selected_customer:
+                    print(f"wow! -> {selected_customer}")
+                    # self.opened_chatbox_customers.pop(index - len(self.opened_chatbox_customers))
+                    # self.opened_chatbox_customers.append(self)
+                    break
+
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
@@ -79,9 +103,11 @@ class Game:
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
         self.wipe_computer_screen_surface()
         # -- loop customers -- 
-        for sprite in self.customers:
-            if isinstance(sprite, Customer): 
-                sprite.draw_open_chatbox(self.new_orders_tab.image) 
+        customer_index = 1
+        for sprite in self.opened_chatbox_customers:
+            if isinstance(sprite, Customer):                 
+                sprite.draw_open_chatbox(self.new_orders_tab.image, customer_index) 
+                customer_index += 1
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
