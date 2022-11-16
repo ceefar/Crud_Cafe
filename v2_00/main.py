@@ -143,6 +143,3 @@ while True:
     g.run()
     g.show_go_screen()
 
-
-# quickly sliding in here but is only about 300 lines of code total :D
-# just got the click to drop working properly, i.e. cant pickup and drop in the same frame (for when you click to drop on a position where a window already is)
