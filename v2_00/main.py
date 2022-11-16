@@ -40,6 +40,9 @@ class Game:
         """ initialize all variables and do all the setup for a new game """
         # -- level setup values --
         self.total_customers_for_level = 3
+        # test -> store all these chatbox (and customer too ig) instances seperately to loop them in reverse
+        # - note, ig this should be open list then duh, as per v1.x
+        self.chatbox_list = []
         # -- groups --
         self.all_sprites = pg.sprite.Group()    
         self.browser_tabs = pg.sprite.Group()
@@ -50,14 +53,14 @@ class Game:
         self.chats_tab = Chats_Tab(self)
         # -- new layers testing --
         for _ in range(0, self.total_customers_for_level):
-            Chatbox(self)
+            a_chatbox = Chatbox(self)
+            self.chatbox_list.append(a_chatbox)
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
             # Customer(self)
         # -- player vars --
         self.is_player_moving_chatbox = False      
-        # -- misc vars --
-
+        self.player_put_down_chatbox_this_frame = False
        
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
@@ -80,26 +83,25 @@ class Game:
     def update(self):
         # keeps update and draw seperate
         self.browser_tabs.update() 
-        self.chatbox_layers.update()        
-
+        # self.chatbox_layers.update() # self.chatboxes.update() # fyi these two and the for loop all do the same? (unlike draw?)        
+        for a_chatbox in reversed(self.chatbox_list):
+            if isinstance(a_chatbox, Chatbox): # purely for type hinting
+                a_chatbox.update()     
+        # reset this each frame after it has run for all the chatbox updates
+        self.player_put_down_chatbox_this_frame = False  
+                 
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
         self.wipe_computer_screen_surface()
-
         # -- loop tabs --
         for sprite in self.browser_tabs:
-            if isinstance(sprite, Browser_Tab): # really for type hinting
+            if isinstance(sprite, Browser_Tab): # purely for type hinting
                 if sprite.is_active_tab:  
-        
                     self.chatbox_layers.draw(sprite.image)
                     sprite.draw_to_pc()
-
-        # print(f"{self.is_player_moving_chatbox = }")
-
-
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
@@ -140,3 +142,7 @@ while True:
     g.new_level()
     g.run()
     g.show_go_screen()
+
+
+# quickly sliding in here but is only about 300 lines of code total :D
+# just got the click to drop working properly, i.e. cant pickup and drop in the same frame (for when you click to drop on a position where a window already is)

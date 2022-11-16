@@ -41,6 +41,8 @@ quick notes
 - works a treat :D
 - honestly so chuffed as was rapid too, really feel like my understanding has taken a major leap recently which is amaaaaaaazing
 - lets gooooooo, moving and putting down working perfectly AND it does the bring to front now too <3 :D !!!!!!!!!!!!!!!!!!!!!!!!
+- fixed chatbox click so it always takes the toppest item which simply required reverse the list and breaking on click :D
+- just got the click to drop working properly, i.e. cant pickup and drop in the same frame (for when you click to drop on a position where a window already is)
 
 - so next up to...
 - first check over what you've done and lets just do a small refactor for like say if stuff needs to be in functions just so its done now
