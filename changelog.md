@@ -23,3 +23,12 @@
 [v1.00]
 - day 2 planned refactor to iron out limitations with initial implementation
 - base scene ui down and does look beaut with increased size tbf
+- toggling tabs basic functionality added
+- nailed highlighting on hover and ordering (partially, not yet on click), particularly for ordering almost didnt think id figure out a "cheap" way to do it but i did! :D
+- decision for huge overhaul from scratch again and completely nailed moving to click again from start much cleaner oop structure concept
+
+
+# day 3 
+quick notes
+- looked at layering, tried to implement realised reason why, may refactor after a test later to accomodate for this (literally just found out what it is and how it works and would require a refactor and since is only day 3 im happy with that)
+- improved click to move, now cant have multiple windows selected and held on top of each other, one gets put down before picking up another one, tho this still needs to be improved to do the put down and wait until next frame i.e. next click, before allowing to pick up again 
