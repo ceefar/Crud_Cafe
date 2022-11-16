@@ -142,6 +142,8 @@ class Chatbox(pg.sprite.Sprite):
         else:
             self.my_bg_colour = DARKGREY
         self.image.fill(self.my_bg_colour)
+        # -- closed dimensions --
+        self.closed_width, self.closed_height = 300, 50
         # -- position setup and finalising -- 
         self.pos = (50 + cascading_offset, 50 + cascading_offset)
         self.rect = self.image.get_rect()
@@ -151,7 +153,11 @@ class Chatbox(pg.sprite.Sprite):
         self.chatbox_state = "opened" # inactive, opened, shelved (and maybe completed?)        
         self.chatbox_move_activated = False
         self.chatbox_is_hovered = False # test tho
-        
+        # -- new minimise button testing --
+        self.minimise_button_surf = pg.Surface((20, 20)) # minimise_btn_size = 20 # or whatever
+        self.minimise_button_surf.fill(RED)
+        self.minimise_button_rect = pg.Rect(self.open_width - 20 - 10, 10, 20, 20)
+
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
@@ -164,40 +170,59 @@ class Chatbox(pg.sprite.Sprite):
             pg.draw.rect(self.game.pc_screen_surf, YELLOW, hovered_rect, 2, 2)
 
     def update(self):
-        self.image.fill(self.my_bg_colour)
-        # get the true destination (adjusted for computer screen position) for mouse collision
-        self.true_dest_rect = self.rect.copy()
-        self.true_dest_rect.move_ip(self.open_width, self.open_height - 150)
-        # if clicked
-        if not self.game.player_put_down_chatbox_this_frame:
-            if self.game.mouse_click_up:
-                # if you are already "holding" a chatbox, drop it, reset vars
-                if self.chatbox_move_activated:
-                    self.chatbox_move_activated = False
-                    self.game.is_player_moving_chatbox = False
-                    self.game.player_put_down_chatbox_this_frame = True
-                else:
-                    # else, if you are not holding any chatbox, not just not this one, set the variables to activate moving the rect
-                    if not self.game.is_player_moving_chatbox:
-                        if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
-                            self.chatbox_move_activated = True  
-                            self.game.is_player_moving_chatbox = self
-                            # bring to front on click window by using change_layer and the counter
-                            pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.chatbox_id_counter)       
-            # if the item set to the selected (moving) chatbox instance is this instance, then update its rect position to the mouse position
-            if self.game.is_player_moving_chatbox is self:
-                mouse_pos = pg.mouse.get_pos()
-                self.rect.x, self.rect.y = mouse_pos[0] - self.game.pc_screen_surf_x, mouse_pos[1] - self.game.pc_screen_surf_true_y
-        # set hovered flag for drawing outline [test]
-        if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
-            self.chatbox_is_hovered = True
+        # -- prepare chatbox surface to be drawn for opened state --
+        if self.chatbox_state == "opened":
+            self.image.fill(self.my_bg_colour)
+            # get the true destination (adjusted for computer screen position) for mouse collision
+            self.true_dest_rect = self.rect.copy()
+            self.true_dest_rect.move_ip(self.open_width, self.open_height - 150)
+            # if clicked
+            if not self.game.player_put_down_chatbox_this_frame:
+                if self.game.mouse_click_up:
+                    # if you are already "holding" a chatbox, drop it, reset vars
+                    if self.chatbox_move_activated:
+                        self.chatbox_move_activated = False
+                        self.game.is_player_moving_chatbox = False
+                        self.game.player_put_down_chatbox_this_frame = True
+                        self.chatbox_state = "shelved"
+                    else:
+                        # else, if you are not holding any chatbox, not just not this one, set the variables to activate moving the rect
+                        if not self.game.is_player_moving_chatbox:
+                            if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
+                                self.chatbox_move_activated = True  
+                                self.game.is_player_moving_chatbox = self
+                                # bring to front on click window by using change_layer and the counter
+                                pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.chatbox_id_counter)       
+                # if the item set to the selected (moving) chatbox instance is this instance, then update its rect position to the mouse position
+                if self.game.is_player_moving_chatbox is self:
+                    mouse_pos = pg.mouse.get_pos()
+                    self.rect.x, self.rect.y = mouse_pos[0] - self.game.pc_screen_surf_x, mouse_pos[1] - self.game.pc_screen_surf_true_y
+            # set hovered flag for drawing outline [test]
+            if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
+                self.chatbox_is_hovered = True
+            else:
+                self.chatbox_is_hovered = False
+            # -- pre draw anything to this surface before all self.images are looped to be drawn in layer order 
+            self.draw_name_to_chatbox()
+            # -- for minimise btn + rect + mouse scollision test --
+            rv = self.image.blit(self.minimise_button_surf, self.minimise_button_rect) 
+            rv.move_ip(self.rect.x, self.rect.y)
+            rv.move_ip(self.minimise_button_rect.x + 20 + 10, self.minimise_button_rect.y + 140) # 20 is btn size, 150 idk maybe top bar 50 and then other 100 probs dist from top of screen tbf just my assumption havent checked or confirmed
+            if rv.collidepoint(pg.mouse.get_pos()):
+                print("Hovered Minimise Button!\n")
+
+        # -- else is for shelved state --
         else:
-            self.chatbox_is_hovered = False
-        # -- pre draw anything to this surface before all self.images are looped to be drawn in layer order 
-        self.draw_name_to_chatbox()
-            
+            self.image = pg.Surface((self.closed_width, self.closed_height))
+            self.image.fill(self.my_bg_colour)
+            self.draw_name_to_chatbox()
+
     def draw_name_to_chatbox(self):
         # obvs will be shelved x opened considerations but this is just the initial opened implementation
-        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_customer.my_name}", True, WHITE) 
-        self.image.blit(title, (20, 20))  
+        if self.chatbox_state == "opened":
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_customer.my_name}", True, WHITE) 
+            self.image.blit(title, (20, 20))  
+        elif self.chatbox_state == "shelved":
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{self.my_customer.my_name}", True, WHITE) 
+            self.image.blit(title, (10, 10))  
 

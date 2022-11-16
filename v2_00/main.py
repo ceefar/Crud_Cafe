@@ -114,7 +114,6 @@ class Game:
                 if sprite.chatbox_is_hovered:
                     sprite.draw_outline() # yanno to fix this, loooool, just use the layers donut D:
                     break
- 
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
