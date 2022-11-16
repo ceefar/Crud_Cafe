@@ -43,6 +43,8 @@ class Game:
         # test -> store all these chatbox (and customer too ig) instances seperately to loop them in reverse
         # - note, ig this should be open list then duh, as per v1.x
         self.chatbox_list = []
+        self.customer_list = [] # might not need this tbf just adding it now incase i do in future, if it remains unused then delete it 
+        self.customer_chatbox_pairs = {} # using this you can just use any customer sprite / instance as they key to get back the associated chatbox instance / object
         # -- groups --
         self.all_sprites = pg.sprite.Group()    
         self.browser_tabs = pg.sprite.Group()
@@ -53,8 +55,11 @@ class Game:
         self.chats_tab = Chats_Tab(self)
         # -- new layers testing --
         for _ in range(0, self.total_customers_for_level):
-            a_chatbox = Chatbox(self)
+            a_customer = Customer(self)
+            a_chatbox = Chatbox(self, a_customer)
+            self.customer_list.append(a_customer)
             self.chatbox_list.append(a_chatbox)
+            self.customer_chatbox_pairs[a_customer] = a_chatbox
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
             # Customer(self)
@@ -100,8 +105,16 @@ class Game:
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # purely for type hinting
                 if sprite.is_active_tab:  
+                    sprite.draw_title_to_tab() # literally just the title for now
                     self.chatbox_layers.draw(sprite.image)
-                    sprite.draw_to_pc()
+                    sprite.render_tab_page_to_tab_image() # literally just the title for now
+        # -- loop all chatboxes purely for xray vision outline (wont be a lot anyways tbf), may scrap it but leaving just incase, reverse and break is necessary for top pos --
+        for sprite in reversed(self.chatbox_list):
+            if isinstance(sprite, Chatbox): # purely for type hinting
+                if sprite.chatbox_is_hovered:
+                    sprite.draw_outline() # yanno to fix this, loooool, just use the layers donut D:
+                    break
+ 
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               

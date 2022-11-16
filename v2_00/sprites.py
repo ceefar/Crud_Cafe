@@ -41,11 +41,14 @@ class Browser_Tab(pg.sprite.Sprite):
     def wipe_surface(self):
         self.image.fill(WHITE)            
 
-    def draw_to_pc(self):
-        """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
+    def draw_title_to_tab(self):
+        """ runs in main draw loop, draw the title to our tabs background image """
         title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
         self.image.blit(title, (50,30))  
-        self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
+
+    def render_tab_page_to_tab_image(self):
+        """ runs last for the class in main draw loop, draw our tab image to the screen so everything we have already blit to background image before here will be shown """
+        self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) 
 
     def draw_items(self):
         row_count, column_count, padding = 3, 5, 50 
@@ -76,7 +79,7 @@ class Browser_Tab(pg.sprite.Sprite):
                         print(f"Click! >> {true_dest_rect}")
                 # -- dest rect for mouse collision --
                 true_dest_rect.move_ip((WIDTH / 2) - (self.game.pc_screen_surf_width / 2), 150)
-         
+
 
 # -- Browser Tab Children --
 class New_Orders_Tab(Browser_Tab):
@@ -91,17 +94,40 @@ class Chats_Tab(Browser_Tab):
 
 # -------- End Browser Class + Subclasses --------
 
+                        
+# -- Customer Initial First Test Implementation --
+class Customer(pg.sprite.Sprite):
+    def __init__(self, game):
+        self.groups = game.customers
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
+        # -- general stuff - will section better shortly --
+        self.my_id = len(game.customers) # will start at 1
+        self.game_state = "active"
+        self.chatbox_state = "opened" # opened or shelved
+        self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Steve","Carl","Mike","Brian"])
+        self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
+        # -- consider redoing all of this even if it **is** fine --
+        # -- chatbox specific vars --         
+        self.shelved_chat_width = 200 
+        self.shelved_chat_height = 50
+        self.chatbox_position = (50, 50) # initial position, tho this will (shortly) get updated if there is a window already there 
+        self.chatbox_destination_rect = False
+        self.chatbox_move_activated = False
+        self.minimise_btn_destination_rect = False   
+
 
 # -- Customer Initial First Test Implementation --
 class Chatbox(pg.sprite.Sprite):
     layers_counter = 1
     chatbox_id_counter = 1
 
-    def __init__(self, game):
+    def __init__(self, game, associated_customer:Customer):
         # -- init setup --
         self.groups = game.chatboxes
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
+        self.my_customer = associated_customer
         self._layer = Chatbox.layers_counter
         Chatbox.layers_counter += 1
         # -- id --
@@ -112,9 +138,10 @@ class Chatbox(pg.sprite.Sprite):
         cascading_offset = self.my_id * 50
         self.image = pg.Surface((self.open_width, self.open_height))
         if self.my_id % 2 == 0:
-            self.image.fill(LIGHTGREY)
+            self.my_bg_colour = LIGHTGREY
         else:
-            self.image.fill(DARKGREY)
+            self.my_bg_colour = DARKGREY
+        self.image.fill(self.my_bg_colour)
         # -- position setup and finalising -- 
         self.pos = (50 + cascading_offset, 50 + cascading_offset)
         self.rect = self.image.get_rect()
@@ -123,11 +150,21 @@ class Chatbox(pg.sprite.Sprite):
         # -- chatbox states --
         self.chatbox_state = "opened" # inactive, opened, shelved (and maybe completed?)        
         self.chatbox_move_activated = False
+        self.chatbox_is_hovered = False # test tho
         
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
+    def draw_outline(self):
+        # -- quick test for outline rect on hover --
+        if self.chatbox_is_hovered:
+            hovered_rect = self.rect.copy()
+            hovered_rect.move_ip(0, self.game.tab_bar_height)
+            #if self.my_id % 2 == 0:
+            pg.draw.rect(self.game.pc_screen_surf, YELLOW, hovered_rect, 2, 2)
+
     def update(self):
+        self.image.fill(self.my_bg_colour)
         # get the true destination (adjusted for computer screen position) for mouse collision
         self.true_dest_rect = self.rect.copy()
         self.true_dest_rect.move_ip(self.open_width, self.open_height - 150)
@@ -151,26 +188,16 @@ class Chatbox(pg.sprite.Sprite):
             if self.game.is_player_moving_chatbox is self:
                 mouse_pos = pg.mouse.get_pos()
                 self.rect.x, self.rect.y = mouse_pos[0] - self.game.pc_screen_surf_x, mouse_pos[1] - self.game.pc_screen_surf_true_y
+        # set hovered flag for drawing outline [test]
+        if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
+            self.chatbox_is_hovered = True
+        else:
+            self.chatbox_is_hovered = False
+        # -- pre draw anything to this surface before all self.images are looped to be drawn in layer order 
+        self.draw_name_to_chatbox()
             
+    def draw_name_to_chatbox(self):
+        # obvs will be shelved x opened considerations but this is just the initial opened implementation
+        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_customer.my_name}", True, WHITE) 
+        self.image.blit(title, (20, 20))  
 
-            
-                        
-# -- Customer Initial First Test Implementation --
-class Customer(pg.sprite.Sprite):
-    def __init__(self, game):
-        self.groups = game.customers
-        pg.sprite.Sprite.__init__(self, self.groups)
-        self.game = game
-        # -- general stuff - will section better shortly --
-        self.my_id = len(game.customers) # will start at 1
-        self.game_state = "active"
-        self.chatbox_state = "opened" # opened or shelved
-        self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Steve","Carl","Mike","Brian"])
-        self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
-        # -- chatbox specific vars --         
-        self.shelved_chat_width = 200 
-        self.shelved_chat_height = 50
-        self.chatbox_position = (50, 50) # initial position, tho this will (shortly) get updated if there is a window already there 
-        self.chatbox_destination_rect = False
-        self.chatbox_move_activated = False
-        self.minimise_btn_destination_rect = False   
