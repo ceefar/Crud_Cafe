@@ -95,7 +95,7 @@ class Game:
         # reset this each frame after it has run for all the chatbox updates
         self.player_put_down_chatbox_this_frame = False  
                  
-    def draw(self):
+    def draw(self): 
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
