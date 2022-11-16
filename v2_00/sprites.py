@@ -118,23 +118,49 @@ class Chatbox(pg.sprite.Sprite):
         self.rect.move_ip(self.pos)
         self.x, self.y = self.rect.x, self.rect.y
         # -- state --
-        self.chatbox_state = "opened" # inactive, opened, shelved (and maybe completed?)
-        #
-        print(f"{self._layer = } - {self.my_id = }")
+        self.chatbox_state = "opened" # inactive, opened, shelved (and maybe completed?)        
+        # quick test
+        self.chatbox_move_activated = False
         
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
     def update(self):
+        # figure it out for put down pick up
+        # then straight onto order tings
+        # - note just check old flow if you have to change things slightly (e.g. just for one seperate ting) its fine
+
+                
         # print(f"{self} -> {self.rect} {self.x = } {self.y = }")
+        print(f"{self.game.is_player_moving_chatbox = }")
         self.true_dest_rect = self.rect.copy()
         self.true_dest_rect.move_ip(self.open_width, self.open_height - 150)
-        if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
-            if self.game.mouse_click_up:
-                print(f"Clicked => {self}")
-                # change_layer
-                pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, 4)
-                print(f"Updated Layer => {self._layer}")
+
+        if self.game.mouse_click_up:
+            if self.chatbox_move_activated:
+                self.chatbox_move_activated = False
+                self.game.is_player_moving_chatbox = False
+            else:
+                if not self.game.is_player_moving_chatbox:
+                    if self.true_dest_rect.collidepoint(pg.mouse.get_pos()):
+                        print(f"Clicked => {self}")
+                        self.chatbox_move_activated = self  
+                        self.game.is_player_moving_chatbox = self
+                        # bring to front on click window by using change_layer
+                        pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.chatbox_id_counter)
+                        print(f"Updated Layer => {self._layer}")
+                
+        # if the item set to the selected (moving) chatbox instance is this instance, then update its rect position to the mouse position
+        if self.game.is_player_moving_chatbox is self:
+            print("Moving Self")
+            mouse_pos = pg.mouse.get_pos()
+            self.rect.x, self.rect.y = mouse_pos[0] - self.game.pc_screen_surf_x, mouse_pos[1] - self.game.pc_screen_surf_true_y
+        
+            # if self.game.mouse_click_up:
+            #     print(f"Clicked While Holding {self.my_id}")
+            #     self.game.is_player_moving_chatbox = False
+      
+                    
 
             
         # if hover print hover

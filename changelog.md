@@ -33,3 +33,19 @@ quick notes
 - looked at layering, tried to implement realised reason why, may refactor after a test later to accomodate for this (literally just found out what it is and how it works and would require a refactor and since is only day 3 im happy with that)
 - improved click to move, now cant have multiple windows selected and held on top of each other, one gets put down before picking up another one, tho this still needs to be improved to do the put down and wait until next frame i.e. next click, before allowing to pick up again 
 - added full new orders items dynamically spaced and added to screenw with clickable & highlighting select buttons
+
+
+# day 3 part 2
+quick notes
+- started 2nd refactor for chatboxes class with ordering
+- works a treat :D
+- honestly so chuffed as was rapid too, really feel like my understanding has taken a major leap recently which is amaaaaaaazing
+- lets gooooooo, moving and putting down working perfectly AND it does the bring to front now too <3 :D !!!!!!!!!!!!!!!!!!!!!!!!
+
+- so next up to...
+- first check over what you've done and lets just do a small refactor for like say if stuff needs to be in functions just so its done now
+- then re-add in the old missing functionality with the additional thought for chatbox class and general improvements
+    - i.e. hovering and ting
+    - honestly from scratch if necessary
+- then on to the gameified elements oooOooOOoooo
+    - consider redoing the legit first implementation of the items and buttons tho tbf is clean maybe just a baby refactor for now bosh

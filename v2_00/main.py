@@ -44,7 +44,7 @@ class Game:
         self.all_sprites = pg.sprite.Group()    
         self.browser_tabs = pg.sprite.Group()
         self.chatboxes = pg.sprite.Group()
-        # self.customers = pg.sprite.Group()
+        self.customers = pg.sprite.Group()
         # -- sprite object instances -- 
         self.new_orders_tab = New_Orders_Tab(self)
         self.chats_tab = Chats_Tab(self)
@@ -53,10 +53,11 @@ class Game:
             Chatbox(self)
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
-        #     Customer(self)
-        # -- misc game x level setup vars --
-        # self.is_player_moving_chatbox = False       
-        
+            # Customer(self)
+        # -- player vars --
+        self.is_player_moving_chatbox = False      
+        # -- misc vars --
+
        
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
@@ -79,12 +80,7 @@ class Game:
     def update(self):
         # keeps update and draw seperate
         self.browser_tabs.update() 
-        self.chatbox_layers.update()
-        # self.customers.update()
-        #
-        # self.opened_chatbox_customers = []
-        # self.shelved_chatbox_customers = []
-        
+        self.chatbox_layers.update()        
 
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
@@ -101,10 +97,7 @@ class Game:
                     self.chatbox_layers.draw(sprite.image)
                     sprite.draw_to_pc()
 
-        for sprite in self.chatboxes:
-            rv = pg.sprite.LayeredUpdates.get_layer_of_sprite(self.chatbox_layers, sprite)
-            # print(f"{rv = }")
- 
+        # print(f"{self.is_player_moving_chatbox = }")
 
 
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
