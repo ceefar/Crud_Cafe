@@ -185,16 +185,9 @@ class Customer(pg.sprite.Sprite):
         # could add
         # - select the chatbox by clicking a small top bar rect (that will encapsulate the minimise btn) instead of anywhere (since there are other buttons to press too)        
         mouse = pg.mouse.get_pos()
-
-        # if self.chatbox_destination_rect:
-        #     if self.chatbox_destination_rect.collidepoint(pg.mouse.get_pos()):
-        #         print(f"Hovered {self} - at mouse pos : {mouse}")
-        #         self.chatbox_move_activated = True
         
-        # ok this is improved but still not technically correct
-        # - you basically just want
+        # to-do
         # - if you have just put down a chatbox this frame, dont let the player pick up another one until next frame
-
         if self.game.mouse_click_up:       
             if self.chatbox_move_activated: # if you're already "holding" a chatbox window 
                 self.chatbox_move_activated = False # put it down where you clicked
@@ -207,9 +200,6 @@ class Customer(pg.sprite.Sprite):
                             self.chatbox_move_activated = True  
                             self.game.is_player_moving_chatbox = True
                             return self    
-        
-        # if not self.chatbox_move_activated:
-        #     self.game.is_player_moving_chatbox = False
             
         # so this will be the state dummy - and it should be updating each frame
         if self.chatbox_move_activated:
