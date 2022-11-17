@@ -46,6 +46,9 @@ quick notes
 - fixed issue with title being blit on top of moving chatboxes due to layering / order of operations
 - xray border hover ting, might change to use layers tho 
 - text and improved hover border
+- basic minimising but on the spot, tho dynamic resize and title resize and positioning new
+    - ultimately the first time ive really realised that oh shit, i could smash this out and its done but its not *really* done and its not guna be clean
+    - better to just put the extra time in now to get it done as much as possible properly now and swerve the tech debt later
 
 - so next up to...
 - first check over what you've done and lets just do a small refactor for like say if stuff needs to be in functions just so its done now
