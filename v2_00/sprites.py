@@ -143,7 +143,7 @@ class Chatbox(pg.sprite.Sprite):
             self.my_bg_colour = DARKGREY
         self.image.fill(self.my_bg_colour)
         # -- closed dimensions --
-        self.closed_width, self.closed_height = 300, 50
+        self.closed_width, self.closed_height = 200, 50
         # -- position setup and finalising -- 
         self.pos = (50 + cascading_offset, 50 + cascading_offset)
         self.rect = self.image.get_rect()
