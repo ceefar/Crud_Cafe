@@ -62,10 +62,11 @@ class Game:
             self.customer_chatbox_pairs[a_customer] = a_chatbox
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
-            # Customer(self)
         # -- player vars --
         self.is_player_moving_chatbox = False      
         self.player_put_down_chatbox_this_frame = False
+        # -- misc -- 
+        self.faux_screen_edge_width = 25
        
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
@@ -116,7 +117,7 @@ class Game:
                     break
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
-        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
+        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, self.faux_screen_edge_width) # draws the faux monitor edge around the screen surf               
         # -- finally, flip the display --
         pg.display.flip()
 

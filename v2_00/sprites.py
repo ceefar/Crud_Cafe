@@ -75,8 +75,6 @@ class Browser_Tab(pg.sprite.Sprite):
                 true_btn_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y) # adjust to the screen pos - yanno for refactor just make this a game function duh (or even settings!! << dis)                
                 if true_btn_rect.collidepoint(pg.mouse.get_pos()):
                     pg.draw.rect(self.image, GREEN, btn_rect)
-                    if self.game.mouse_click_up:
-                        print(f"Click! >> {true_dest_rect}")
                 # -- dest rect for mouse collision --
                 true_dest_rect.move_ip((WIDTH / 2) - (self.game.pc_screen_surf_width / 2), 150)
 
@@ -182,9 +180,7 @@ class Chatbox(pg.sprite.Sprite):
             rv.move_ip(self.rect.x, self.rect.y)
             rv.move_ip(self.minimise_button_rect.x + 20 + 10, self.minimise_button_rect.y + 140) # 20 is btn size, 150 idk maybe top bar 50 and then other 100 probs dist from top of screen tbf just my assumption havent checked or confirmed
             if rv.collidepoint(pg.mouse.get_pos()):
-                print("Hovered Minimise Button!\n")
                 if self.game.mouse_click_up:
-                    print("Clicked Minimise Button!\n")
                     self.chatbox_state = "shelved"
             else:
                 if not self.game.player_put_down_chatbox_this_frame:
@@ -220,6 +216,9 @@ class Chatbox(pg.sprite.Sprite):
             self.image.fill(self.my_bg_colour)
             self.draw_name_to_chatbox()
             self.chatbox_is_hovered = False
+            self.rect = self.image.get_rect()
+            self.rect.x = 25
+            self.rect.y = self.game.pc_screen_surf_height - 50 - self.image.get_height() - self.game.faux_screen_edge_width 
 
     def draw_name_to_chatbox(self):
         # obvs will be shelved x opened considerations but this is just the initial opened implementation
