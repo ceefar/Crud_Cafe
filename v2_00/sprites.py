@@ -30,30 +30,44 @@ class Browser_Tab(pg.sprite.Sprite):
                 
     def set_tab_name(self):
         if isinstance(self, New_Orders_Tab):
-            return "New Orders"
+            return "Menu Items"
         else:
             return "Chats"
 
     def update(self):
         self.wipe_surface()
         self.draw_items()
+        self.draw_order_sidebar()
 
     def wipe_surface(self):
         self.image.fill(WHITE)            
 
-    def draw_title_to_tab(self):
+    def draw_title_to_tab(self, pos=(50,30)): # swap this out for the new, about to do, refactored version shortly pls
         """ runs in main draw loop, draw the title to our tabs background image """
         title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
-        self.image.blit(title, (50,30))  
+        self.image.blit(title, pos)  
+
+    def draw_text_to_tab_surf(self, text, surf:pg.Surface, pos):
+        """ can use this to draw text to either the image or the sidebar surf """ # obvs expand this to text size and font at some point
+        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, DARKGREY) 
+        surf.blit(title, pos)  
 
     def render_tab_page_to_tab_image(self):
         """ runs last for the class in main draw loop, draw our tab image to the screen so everything we have already blit to background image before here will be shown """
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) 
 
+    def draw_order_sidebar(self):    
+        sidebar_padding = -25
+        self.sidebar_surf = pg.Surface((self.game.pc_screen_surf_width - (self.game.pc_screen_surf_width - self.items_max_x), self.game.pc_screen_surf_height)) # maybe - 50 off the height btw
+        self.sidebar_surf.fill(TAN)
+        self.sidebar_pos = (self.game.pc_screen_surf_width - self.items_max_x + sidebar_padding, 0)
+        self.draw_text_to_tab_surf("Orders", self.sidebar_surf, (50, 30))
+        self.image.blit(self.sidebar_surf, self.sidebar_pos)
+
     def draw_items(self):
-        row_count, column_count, padding = 3, 5, 50 
+        row_count, column_count, padding = 2, 6, 50 
         item_container_height = 50
-        item_container_width = int((self.width - (padding * 2)) / row_count) - padding # this needs to be done better, isnt truly dynamic? 0 idk gotta check by running diff rows and cols duh
+        item_container_width = int((self.width - (padding * 2)) / (row_count + 1)) - padding # note row count + 1 to leave space on the right hand side # this needs to be done better, isnt truly dynamic? 0 idk gotta check by running diff rows and cols duh
         for row in range(0, row_count):
             for col in range(0, column_count):
                 # -- make dis a function --
@@ -73,11 +87,16 @@ class Browser_Tab(pg.sprite.Sprite):
                 btn_rect = pg.Rect(dest_rect.x + item_container_width - btn_size - btn_x_padding, dest_rect.y + btn_y_padding, btn_size, btn_size)
                 true_btn_rect = pg.draw.rect(self.image, RED, btn_rect)
                 true_btn_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y) # adjust to the screen pos - yanno for refactor just make this a game function duh (or even settings!! << dis)                
+                # -- if the mouse collides with the menu items button rect, then highlight it by printing a green rect over the top 
                 if true_btn_rect.collidepoint(pg.mouse.get_pos()):
                     pg.draw.rect(self.image, GREEN, btn_rect)
+                    self.draw_text_to_tab_surf("Chocolate", self.image, (40, 40))
+                    print("Choco")
                 # -- dest rect for mouse collision --
                 true_dest_rect.move_ip((WIDTH / 2) - (self.game.pc_screen_surf_width / 2), 150)
-
+                # save the last x position
+                if col == column_count - 1 and row == row_count - 1:
+                    self.items_max_x = x_pos + ((row * item_container_width))
 
 # -- Browser Tab Children --
 class New_Orders_Tab(Browser_Tab):
@@ -170,7 +189,6 @@ class Chatbox(pg.sprite.Sprite):
     def update(self):
         # -- prepare chatbox surface to be drawn for opened state --
         if self.chatbox_state == "opened":
-
 
             # if size is same as shelved reset it to the opened size
             # - note will need to reset the rect again

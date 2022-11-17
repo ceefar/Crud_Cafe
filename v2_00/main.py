@@ -45,6 +45,7 @@ class Game:
         self.chatbox_list = []
         self.customer_list = [] # might not need this tbf just adding it now incase i do in future, if it remains unused then delete it 
         self.customer_chatbox_pairs = {} # using this you can just use any customer sprite / instance as they key to get back the associated chatbox instance / object
+        self.customers_opened_at_initial_pos = [] # testing sumnt for offset positions
         # -- groups --
         self.all_sprites = pg.sprite.Group()    
         self.browser_tabs = pg.sprite.Group()
@@ -109,7 +110,7 @@ class Game:
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # purely for type hinting
-                if sprite.is_active_tab:  
+                if sprite.is_active_tab:                                          
                     sprite.draw_title_to_tab() # literally just the title for now
                     self.chatbox_layers.draw(sprite.image)
                     sprite.render_tab_page_to_tab_image() # literally just the title for now

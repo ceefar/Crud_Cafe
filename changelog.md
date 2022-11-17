@@ -54,3 +54,10 @@ quick notes
     - honestly from scratch if necessary
 - then on to the gameified elements oooOooOOoooo
     - consider redoing the legit first implementation of the items and buttons tho tbf is clean maybe just a baby refactor for now bosh
+
+
+# day 4
+[v2.03]
+- new ver for playground stuff
+- implemented minimise button with shelving and opening, dynamic shelved positions and reset opened positions
+- im in love <3
