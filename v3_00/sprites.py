@@ -148,9 +148,12 @@ class Chatbox(pg.sprite.Sprite):
                     self.rect.move_ip(-self.mouse_offset_x, -self.mouse_offset_y)
 
             elif self.my_customer.chatbox_state == "shelved":             
-                self.set_shelved_chatbox_initial_position()
                 self.wipe_image() # part works but isnt reseting the true rect and ting as per above so do that regardless, if will be diff image then do it seperately again not as same for open - make functs duhhh
                 self.draw_name_to_chatbox()
+                self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
+                self.set_shelved_chatbox_initial_position()
+
+                # self.true_chatbox_window_rect = self.get_true_rect(self.rect)
 
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
@@ -171,6 +174,7 @@ class Chatbox(pg.sprite.Sprite):
         # -- shelved state --
         elif self.my_customer.chatbox_state == "shelved":
             self.image = self.game.window_shelved_1_img.copy()
+            self.rect = self.image.get_rect()
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":
@@ -198,6 +202,7 @@ class Chatbox(pg.sprite.Sprite):
             self.true_chatbox_window_rect = self.get_true_rect(self.rect)
             # -- if mouse collided with the chatbox rect --
             if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
+                print(f"hover => {self}")
 
                 # -- new code for handling click top bar and move - allowed only if you have collided with only the top highlighted rect only, not ones underneath --
                 # -- create a new faux rect for the top bar at this windows position, then move it to the true pos on the screen --
