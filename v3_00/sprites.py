@@ -130,7 +130,7 @@ class Chatbox(pg.sprite.Sprite):
     # ---- End Init ----
 
     # -- Draw, Update, & Repr --
-
+ 
     def update(self):
         if self.my_customer.customer_state == "active":
             # -- if opened set its position, draw its image and text to that image - and remember the image wont actually be drawn to the screen until draw -- 
