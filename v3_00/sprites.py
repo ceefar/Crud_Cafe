@@ -189,7 +189,6 @@ class Chatbox(pg.sprite.Sprite):
             #     self.chatbox_move_activated = False
     
 
-
                 # -- get true rect of chatbox to check for collision -- 
                 self.true_chatbox_window_rect = self.get_true_rect(self.rect)
                 # -- if mouse collided with the chatbox rect --
