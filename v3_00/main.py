@@ -44,7 +44,7 @@ class Game:
         # -- customer setup vals --
         self.total_customers_for_level = 4
         self.id_customer_dict = {}
-        self.id_chatbox_dict = {}
+        self.chatbox_layer_list = []
         self.all_active_customers = {} # by layer?! - hmmm, but i think not as layer is a chatbox thing remember!
         # -- groups --
         self.all_sprites = pg.sprite.Group()    
@@ -59,7 +59,7 @@ class Game:
             a_customer = Customer(self)
             self.id_customer_dict[a_customer.my_id] = a_customer # store all the customer instances in a list for significantly easier access to them as key value pairs (id:instance)
             a_chatbox = Chatbox(self, a_customer)
-            self.id_chatbox_dict[a_chatbox.my_id] = a_chatbox # store all the customer instances in a list for significantly easier access to them as key value pairs (id:instance)
+            self.chatbox_layer_list.append(a_chatbox) # store all the customer instances in a list for accessing them by layer
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
 
@@ -97,7 +97,7 @@ class Game:
                     self.all_active_customers[this_customer.my_id] = this_customer
         # -- loop all chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be problematic -- 
         hovered_chatbox = False
-        for a_chatbox in reversed(self.id_chatbox_dict.values()):
+        for a_chatbox in reversed(self.chatbox_layer_list): # <<<<<< # [ here! ] needs to be given in the order of the layers, not like dis, replacing it
             if isinstance(a_chatbox, Chatbox): # purely for type hints
                 if a_chatbox.handle_hover_or_click():
                     hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
@@ -176,7 +176,8 @@ class Game:
                 if a_chatbox.my_customer.customer_state == "active":
                     pg.sprite.LayeredUpdates.change_layer(self.chatbox_layers, a_chatbox, reorder_counter) 
                     reorder_counter += 1 
-     
+        # -- reorder this too since we want the order to be correct here also as we need this list style array for reversed looping + breaking for handling click & hover --         
+        self.chatbox_layer_list = list(sorted(self.chatbox_layer_list, key=lambda item: item._layer))
 
 # create the game object
 g = Game()

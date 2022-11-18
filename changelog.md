@@ -68,3 +68,4 @@ quick notes
 [v3.01-huge-refactor]
 - decided on refactor to really nail things in terms of cleanliness of the code x functionality
 - working a treat so far just readded properly clean af layering system that reorders everything after performing a move to front operation
+- clean hovering done and finally fixed a lot of issues that i had with the initial implementation <3
