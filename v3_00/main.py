@@ -21,6 +21,9 @@ class Game:
         fonts_folder = path.join(game_folder, 'fonts')
         # -- load images -- 
         self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))        
+        self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
+        self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
+        self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
@@ -33,7 +36,7 @@ class Game:
         # -- define main gui surface dimensions --
         self.pc_screen_surf_width, self.pc_screen_surf_height = 1000, 600
         self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100
-        self.tab_bar_height = 50
+        self.tab_bar_height = 50 # the top bar on the pc_screen_surf the emulate browser tabs
         self.pc_screen_surf_true_y = self.pc_screen_surf_y + self.tab_bar_height # else y val doesnt take the tab_bar_height into consideration
 
     def new_level(self):
@@ -71,7 +74,7 @@ class Game:
             self.events()
             self.update()
             self.draw()
-        
+
     def wipe_computer_screen_surface(self):
         """ we use this as a base to draw everything on to, it is basically our game surface """
         self.pc_screen_surf = pg.Surface((self.pc_screen_surf_width, self.pc_screen_surf_height))
@@ -92,9 +95,21 @@ class Game:
             if isinstance(this_customer, Customer): # purely for type hints
                 if this_customer.customer_state == "active":
                     self.all_active_customers[this_customer.my_id] = this_customer
-        # -- loop all chatboxes and add increment a counter for offset positions, else would do self.chatboxes.update() --
+        # -- loop all chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be problematic -- 
+        hovered_chatbox = False
+        for a_chatbox in reversed(self.id_chatbox_dict.values()):
+            if isinstance(a_chatbox, Chatbox): # purely for type hints
+                if a_chatbox.handle_hover_or_click():
+                    hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
+                    break
+        # -- loop all chatboxes to update - importantly this increment a counter for offset positions, else would do self.chatboxes.update() --
         for this_chatbox in self.chatboxes:
             if isinstance(this_chatbox, Chatbox): # purely for type hints
+                # -- reset the hovered var on all chatbox instances that weren't the hovered one that we saved when we broke out of the loop above earlier -- 
+                if this_chatbox == hovered_chatbox:
+                    print(f"I WAS HOVERED! -> {this_chatbox}")
+                else:
+                    this_chatbox.is_hovered = False
                 this_chatbox.update()
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()

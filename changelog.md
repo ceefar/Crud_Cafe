@@ -61,3 +61,10 @@ quick notes
 - new ver for playground stuff
 - implemented minimise button with shelving and opening, dynamic shelved positions and reset opened positions
 - im in love <3
+- need to add from notes tbf did a lot more than this lol
+
+
+# day 5
+[v3.01-huge-refactor]
+- decided on refactor to really nail things in terms of cleanliness of the code x functionality
+- working a treat so far just readded properly clean af layering system that reorders everything after performing a move to front operation

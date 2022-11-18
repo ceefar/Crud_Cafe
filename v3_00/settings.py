@@ -48,3 +48,8 @@ GRIDHEIGHT = HEIGHT / TILESIZE
 
 # -- Scene x General Images --
 SCENE_IMG = "crud_cafe_scene.png" 
+
+# -- Faux OS Element Images --
+WINDOW_IMG = "window_blank_img.png" 
+WINDOW_HL_1_IMG = "window_blank_highlight_1_img.png" 
+WINDOW_HL_2_IMG = "window_blank_highlight_2_img.png" 

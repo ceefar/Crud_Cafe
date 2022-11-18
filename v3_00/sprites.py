@@ -107,20 +107,21 @@ class Chatbox(pg.sprite.Sprite):
         # -- initial default positions --
         self.opened_pos = vec(50, 100)
         # -- image surf setup --         
-        self.image = pg.Surface((self.opened_chat_width, self.opened_chat_height)) # starting shelved but we need sumnt to handle this toggle too
-        self.my_bg_colour = LIGHTGREY if self.my_id % 2 == 0 else DARKGREY
-        self.image.fill(self.my_bg_colour)
+        # self.image = pg.Surface((self.opened_chat_width, self.opened_chat_height)) # <= big note - do want but do want to start in shelved pos probably btw
+        # self.my_bg_colour = LIGHTGREY if self.my_id % 2 == 0 else DARKGREY # <-- REDUNDANT <--
+        self.image = self.game.window_img.copy()
         # -- set positions -- 
         initial_pos = (-500, -500) # initial position offscreen
         self.rect = self.image.get_rect()
         self.rect.move_ip(initial_pos)
         self.x, self.y = self.rect.x, self.rect.y
-        # -- test flags --
+        # -- chatbox states and flags --
+        self.is_hovered = False
         self.is_at_offscreen_position = True # always starts at the initial position when drawn (in reference to when drawn on screen not off screen at runtime)
-        # -- chatbox states --
-        # self.chatbox_state = "opened" # inactive, opened, shelved (and maybe completed?)        
         # self.chatbox_move_activated = False
-        # self.chatbox_is_hovered = False # test tho
+        # -- minimise icon setup --
+        self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
+        self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
 
     # ---- End Init ----
         
@@ -128,36 +129,51 @@ class Chatbox(pg.sprite.Sprite):
 
     def update(self):
         if self.my_customer.customer_state == "active":
-
-            if self.game.mouse_click_up: # if there was a click this frame check to see if it collided with the chatbox rect (temp - will do new top title bar in a sec)
-                self.true_chatbox_window_rect = self.get_true_rect(self.rect)
-                if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()): # if mouse collided with this chatboxs rect
-                    print(f"Updating {self} = > {Chatbox.layers_counter = }\n") #  {self.my_customer}
-                    pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
-                    print(f"New Layer = {self}\n")
-                    for a_chatbox in self.game.chatboxes:
-                        print(f"All Layers = {a_chatbox}")
-                    print(f"")
-                    # self.reorder_all_window_layers(self)  
-                    
+            # -- if opened set its position, draw its image and text to that image - and remember the image wont actually be drawn to the screen until draw -- 
             if self.my_customer.chatbox_state == "opened":
                 if self.is_at_offscreen_position:
                     self.set_opened_chatbox_initial_position()
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
-    
+
+    def unset_hover(self):
+        self.is_hovered = False
+
+    def handle_hover_or_click(self):                
+        if self.my_customer.customer_state == "active":
+            # -- get true rect of chatbox to check for collision -- 
+            self.true_chatbox_window_rect = self.get_true_rect(self.rect)
+            # -- if mouse collided with the chatbox rect --
+            if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
+                # -- update the image to the "highlighted" version --
+                self.is_hovered = True
+                # -- if there waas a click on this rect too then update the layer to be at the front --
+                if self.game.mouse_click_up:
+                    pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
+                # -- if there is a collision break looping the customers so we only check hover or click for a single chatbox, e.g. not if multiple windows are hovered at once --
+                return True
+                
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
     # -- Blitting To This Chatbox Image Functs --
     def wipe_image(self):
         """ run this each frame before drawing anything to our image - runs in update but we draw to this image in update then draw this actual image to the screen in draw, by self._layer """
-        self.image.fill(self.my_bg_colour)
+        if self.is_hovered:
+            self.image = self.game.window_hl_2_img.copy()
+        else: 
+            self.image = self.game.window_img.copy()
 
-    def draw_name_to_chatbox(self): # chat this to draw text to chatbox btw!
-        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_customer.my_name} - Layer: {self._layer}", True, WHITE) 
-        self.image.blit(title, (90, 20))  
+    def draw_name_to_chatbox(self): 
+        if self.my_customer.chatbox_state == "opened":
+            self.draw_name_to_opened_chatbox()
+            
+    def draw_name_to_opened_chatbox(self):        
+        title = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{self.my_customer.my_name} (Lyr: {self._layer})", True, BLACK) 
+        title_width = title.get_width()
+        center_x_pos = (self.pos_of_minimise_icon - title_width) / 2
+        self.image.blit(title, (center_x_pos + (self.minimise_icon_width / 4), 5)) # nudging abit for screen width vs minimise btn pos & width to get visually appealing center pos for the title text
 
     # -- Repositioning Functs --
     def set_opened_chatbox_initial_position(self):
