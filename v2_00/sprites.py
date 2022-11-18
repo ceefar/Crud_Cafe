@@ -24,6 +24,10 @@ class Browser_Tab(pg.sprite.Sprite):
         self.my_tab_name = self.set_tab_name()
         # --
         self.is_active_tab = True if isinstance(self, New_Orders_Tab) else False # basically just true is active and false is hidden
+        # --
+        self.item_button_rects = []
+        # -- 
+        self.orders_dictionary = {1:[], 2:[], 3:[]}
     
     def __repr__(self):
         return f"Tab {self.my_tab_name} : is active? - {self.is_active_tab}"
@@ -38,6 +42,8 @@ class Browser_Tab(pg.sprite.Sprite):
         self.wipe_surface()
         self.draw_items()
         self.draw_order_sidebar()
+        self.handle_item_buttons(self.item_button_rects)
+        self.image.blit(self.sidebar_surf, self.sidebar_pos)
 
     def wipe_surface(self):
         self.image.fill(WHITE)            
@@ -50,7 +56,7 @@ class Browser_Tab(pg.sprite.Sprite):
     def draw_text_to_tab_surf(self, text, surf:pg.Surface, pos):
         """ can use this to draw text to either the image or the sidebar surf """ # obvs expand this to text size and font at some point
         title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, DARKGREY) 
-        surf.blit(title, pos)  
+        surf.blit(title, pos)
 
     def render_tab_page_to_tab_image(self):
         """ runs last for the class in main draw loop, draw our tab image to the screen so everything we have already blit to background image before here will be shown """
@@ -62,7 +68,21 @@ class Browser_Tab(pg.sprite.Sprite):
         self.sidebar_surf.fill(TAN)
         self.sidebar_pos = (self.game.pc_screen_surf_width - self.items_max_x + sidebar_padding, 0)
         self.draw_text_to_tab_surf("Orders", self.sidebar_surf, (50, 30))
-        self.image.blit(self.sidebar_surf, self.sidebar_pos)
+        
+    def handle_item_buttons(self, button_rect_list:list[tuple[pg.Rect, pg.Rect, int]]):
+        # -- if the mouse collides with the menu items button rect, then highlight it by printing a green rect over the top --
+        for item_btn_rect, btn_rect, item_title in button_rect_list:
+            if item_btn_rect.collidepoint(pg.mouse.get_pos()):
+                pg.draw.rect(self.image, GREEN, btn_rect)
+                if self.game.mouse_click_up:
+                    print(f"Clicked Item {item_title}")
+                    if item_title not in self.orders_dictionary[1]:
+                        self.orders_dictionary[1].append(item_title)
+
+        for order_item in self.orders_dictionary.values():
+            if order_item:
+                self.draw_text_to_tab_surf(f"{order_item}", self.sidebar_surf, (50, 100))
+            
 
     def draw_items(self):
         row_count, column_count, padding = 2, 6, 50 
@@ -78,7 +98,8 @@ class Browser_Tab(pg.sprite.Sprite):
                 #
                 true_dest_rect = pg.draw.rect(self.image, BLUEMIDNIGHT, dest_rect)
                 # -- title --
-                title = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"Item {col + ((row * 1) * column_count) + 1}.", True, WHITE)
+                my_index = col + ((row * 1) * column_count) + 1
+                title = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"Item .{my_index}", True, WHITE)
                 self.image.blit(title, (true_dest_rect.x + 5, true_dest_rect.y + 5)) 
                 # -- button --
                 btn_size = 20
@@ -87,11 +108,9 @@ class Browser_Tab(pg.sprite.Sprite):
                 btn_rect = pg.Rect(dest_rect.x + item_container_width - btn_size - btn_x_padding, dest_rect.y + btn_y_padding, btn_size, btn_size)
                 true_btn_rect = pg.draw.rect(self.image, RED, btn_rect)
                 true_btn_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y) # adjust to the screen pos - yanno for refactor just make this a game function duh (or even settings!! << dis)                
-                # -- if the mouse collides with the menu items button rect, then highlight it by printing a green rect over the top 
-                if true_btn_rect.collidepoint(pg.mouse.get_pos()):
-                    pg.draw.rect(self.image, GREEN, btn_rect)
-                    self.draw_text_to_tab_surf("Chocolate", self.image, (40, 40))
-                    print("Choco")
+                
+                self.item_button_rects.append((true_btn_rect, btn_rect, my_index))               
+                
                 # -- dest rect for mouse collision --
                 true_dest_rect.move_ip((WIDTH / 2) - (self.game.pc_screen_surf_width / 2), 150)
                 # save the last x position
@@ -199,7 +218,6 @@ class Chatbox(pg.sprite.Sprite):
                 self.pos = (50 + self.cascading_offset, 50 + self.cascading_offset)
                 self.rect.x = self.pos[0]
                 self.rect.y = self.pos[1]
-
 
             # initially set the counter for its state 
             self.game.opened_chat_customers_counter += 1
