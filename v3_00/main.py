@@ -95,20 +95,18 @@ class Game:
                 if this_customer.customer_state == "active":
                     self.all_active_customers[this_customer.my_id] = this_customer
         # -- loop all chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be problematic -- 
-        hovered_chatbox = False
+        self.hovered_chatbox = False
         for a_chatbox in reversed(self.chatbox_layer_list): # <<<<<< # [ here! ] needs to be given in the order of the layers, not like dis, replacing it
             if isinstance(a_chatbox, Chatbox): # purely for type hints
                 if a_chatbox.handle_hover_or_click():
-                    hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
+                    self.hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
                     break
-        # -- loop all chatboxes to update - importantly this increment a counter for offset positions, else would do self.chatboxes.update() --
+        # -- loop all chatboxes to run each instances update - importantly is done this way as increments a counter for offset positions, else would do self.chatboxes.update() --
         for this_chatbox in self.chatboxes:
             if isinstance(this_chatbox, Chatbox): # purely for type hints
                 # -- reset the hovered var on all chatbox instances that weren't the hovered one that we saved when we broke out of the loop above earlier -- 
-                if this_chatbox == hovered_chatbox:
-                    print(f"I WAS HOVERED! -> {this_chatbox}")
-                else:
-                    this_chatbox.is_hovered = False
+                if this_chatbox != self.hovered_chatbox:
+                    this_chatbox.is_hovered = False                    
                 this_chatbox.update()
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
