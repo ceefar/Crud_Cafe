@@ -157,8 +157,10 @@ class Chatbox(pg.sprite.Sprite):
 
     def wipe_image(self):
         """ run this each frame before drawing anything to our image - runs in update but we draw to this image in update then draw this actual image to the screen in draw, by self._layer """
-        if self.is_hovered:
-            self.image = self.game.window_hl_1_img.copy() # window_hl_2_img
+        if self.chatbox_move_activated:
+            self.image = self.game.window_hl_2_img.copy()
+        elif self.is_hovered:
+            self.image = self.game.window_hl_1_img.copy() 
         else: 
             self.image = self.game.window_img.copy()
 

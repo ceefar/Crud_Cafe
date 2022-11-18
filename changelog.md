@@ -73,3 +73,4 @@ quick notes
 - clicking and move now done via top bar only
 - fixed issue where could click on another top bar that was underneath, and therefore not the active highlighted one
 - now when click top title bar the window is selected at the exact mouse pos <3
+- added extra window image state for when clicked and selected for move the highlight colour is different for visual clarity
