@@ -63,7 +63,7 @@ class Game:
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
         # -- misc game x level setup vars --
-        # self.is_player_moving_chatbox = False        
+        self.is_player_moving_chatbox = False        
        
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk

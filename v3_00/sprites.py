@@ -119,18 +119,16 @@ class Chatbox(pg.sprite.Sprite):
         self.is_hovered = False
         self.is_at_offscreen_position = True # always starts at the initial position when drawn (in reference to when drawn on screen not off screen at runtime)
         self.chatbox_move_activated = False 
-
+        # -- mouse offset for moving window -- 
         self.mouse_offset_x = False # when chatbox_move_activated is True, set these to the rect x (& y) pos before moving
         self.mouse_offset_y = False # also ensure they are reset when chatbox_move_activated is False
-
         # -- titlebar setup --
         self.window_titlebar_height = 80 # note => am unsure if will change for open x shelved yet # width is just equal to opened_chat_width or shelved_chat_width
         # -- minimise icon setup --
         self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
-    
     # ---- End Init ----
-        
+
     # -- Draw, Update, & Repr --
 
     def update(self):
@@ -142,7 +140,6 @@ class Chatbox(pg.sprite.Sprite):
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
-
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
@@ -181,6 +178,12 @@ class Chatbox(pg.sprite.Sprite):
         # -- og code - for handling click window to move to front      
         if self.my_customer.customer_state == "active":
 
+
+            # if self.chatbox_move_activated:
+            #         if self.game.mouse_click_up:
+            #             self.game.is_player_moving_chatbox = False  
+            #             self.chatbox_move_activated = False
+            #         else:
 
             # [ here! ]
             # TO DO NOW - DROPPING
