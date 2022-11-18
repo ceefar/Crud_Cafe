@@ -62,7 +62,6 @@ class Game:
             self.chatbox_layer_list.append(a_chatbox) # store all the customer instances in a list for accessing them by layer
         # -- initialise the layers group once the object instances are all added to their respective groups --
         self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
-
         # -- misc game x level setup vars --
         # self.is_player_moving_chatbox = False        
        
@@ -161,10 +160,10 @@ class Game:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
 
-    def show_start_screen(self):
+    def render_start_screen(self):
         pass
 
-    def show_go_screen(self):
+    def game_over_man_game_over(self):
         pass
 
     # -- For Reordering Layers --
@@ -181,8 +180,8 @@ class Game:
 
 # create the game object
 g = Game()
-g.show_start_screen()
+g.render_start_screen()
 while True:
     g.new_level()
     g.run()
-    g.show_go_screen()
+    g.game_over_man_game_over()
