@@ -178,7 +178,7 @@ class Game:
         # -- reorder this too since we want the order to be correct here also as we need this list style array for reversed looping + breaking for handling click & hover --         
         self.chatbox_layer_list = list(sorted(self.chatbox_layer_list, key=lambda item: item._layer))
 
-# create the game object
+# -- instantiate a game object and run the game --
 g = Game()
 g.render_start_screen()
 while True:
