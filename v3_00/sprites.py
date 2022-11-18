@@ -118,12 +118,17 @@ class Chatbox(pg.sprite.Sprite):
         # -- chatbox states and flags --
         self.is_hovered = False
         self.is_at_offscreen_position = True # always starts at the initial position when drawn (in reference to when drawn on screen not off screen at runtime)
-        # self.chatbox_move_activated = False
+        self.chatbox_move_activated = False 
+
+        self.mouse_offset_x = False # when chatbox_move_activated is True, set these to the rect x (& y) pos before moving
+        self.mouse_offset_y = False # also ensure they are reset when chatbox_move_activated is False
+
         # -- titlebar setup --
         self.window_titlebar_height = 80 # note => am unsure if will change for open x shelved yet # width is just equal to opened_chat_width or shelved_chat_width
         # -- minimise icon setup --
         self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
+    
     # ---- End Init ----
         
     # -- Draw, Update, & Repr --
@@ -137,7 +142,14 @@ class Chatbox(pg.sprite.Sprite):
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
-                
+
+                # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
+                if self.chatbox_move_activated:
+                    self.rect.x, self.rect.y = pg.mouse.get_pos()
+                    self.rect = self.get_true_rect(a_rect=self.rect, move_in_negative=True)
+                    # then to picked it up exactly where the mouse picked it up we do one more offset for the clicked pos minus the true position of the window and add that to the x & y
+                    self.rect.move_ip(-self.mouse_offset_x, -self.mouse_offset_y)
+
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
@@ -162,39 +174,49 @@ class Chatbox(pg.sprite.Sprite):
 
     # -- Handle Hover and Click States --
 
-    def handle_hover_or_click(self):          
-
-        # -- test code - for handle click top bar and move -- 
-        
-    
+    def handle_hover_or_click(self):   
+        """ notable -> executes for all instances `before` running all instances update() """           
         # -- og code - for handling click window to move to front      
         if self.my_customer.customer_state == "active":
-            # -- get true rect of chatbox to check for collision -- 
-            self.true_chatbox_window_rect = self.get_true_rect(self.rect)
-            # -- if mouse collided with the chatbox rect --
-            if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
 
 
-                # -- new test code - for handling click top bar and move - allowed only if you have collided with only the top highlighted rect only, not ones underneath--
-                # -- create a new faux rect for the top bar at this windows position, then move it to the true pos on the screen --
-                self.window_titlebar_rect = pg.Rect(self.x, self.y, self.opened_chat_width, self.window_titlebar_height)
-                self.window_titlebar_rect = self.get_true_rect(self.window_titlebar_rect)
-                # -- check for mouse collision on top titlebar rect -- 
-                if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
+            # [ here! ]
+            # TO DO NOW - DROPPING
+            # # -- if you are already holding a chatbox --
+            # if self.chatbox_move_activated:
+            #     # drop it and reset stuff!!!
+            #     # - the later here is SUPER important
+            #     self.chatbox_move_activated = False
+    
+
+
+                # -- get true rect of chatbox to check for collision -- 
+                self.true_chatbox_window_rect = self.get_true_rect(self.rect)
+                # -- if mouse collided with the chatbox rect --
+                if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
+
+                    # -- new code for handling click top bar and move - allowed only if you have collided with only the top highlighted rect only, not ones underneath --
+                    # -- create a new faux rect for the top bar at this windows position, then move it to the true pos on the screen --
+                    self.window_titlebar_rect = pg.Rect(self.x, self.y, self.opened_chat_width, self.window_titlebar_height)
+                    self.window_titlebar_rect = self.get_true_rect(self.window_titlebar_rect)
+                    # -- check for mouse collision on top titlebar rect -- 
+                    if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
+                        if self.game.mouse_click_up:
+                            self.chatbox_move_activated = True
+                            # gives us the offset of the exact pos the mouse has "picked" up the window at
+                            self.mouse_offset_x = pg.mouse.get_pos()[0] - self.true_chatbox_window_rect.x 
+                            self.mouse_offset_y = pg.mouse.get_pos()[1] - self.true_chatbox_window_rect.y
+
+                    # -- update the image to the "highlighted" version --
+                    self.is_hovered = True
+                    # -- if there waas a click on this rect too then update the layer to be at the front --
                     if self.game.mouse_click_up:
-                        print(f"Clicked {self} for {self.my_customer.my_name}!")
-
-
-                # -- update the image to the "highlighted" version --
-                self.is_hovered = True
-                # -- if there waas a click on this rect too then update the layer to be at the front --
-                if self.game.mouse_click_up:
-                    pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
-                # -- if there is a collision break looping the customers so we only check hover or click for a single chatbox, e.g. not if multiple windows are hovered at once --
-                return True
-
+                        pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
+                    # -- if there is a collision break looping the customers so we only check hover or click for a single chatbox, e.g. not if multiple windows are hovered at once --
+                    return True
 
     def unset_hover(self):
+        """ unsets the hovered state... thank you for coming to my TEDtalk """
         self.is_hovered = False
 
     # -- Repositioning Functs --
@@ -203,11 +225,14 @@ class Chatbox(pg.sprite.Sprite):
         self.x, self.y = self.opened_pos.x + opened_chatboxes_offset, self.opened_pos.y + opened_chatboxes_offset
         self.rect.x, self.rect.y = self.x, self.y
 
-    def get_true_rect(self, a_rect:pg.Rect):
+    def get_true_rect(self, a_rect:pg.Rect, move_in_negative=False):
         """ update a given rect position by offsetting it from the pc_screen x and y pos """
         # should probably make this a .game function when adding new classes as they will likely use it too
         moved_rect = a_rect.copy()
-        moved_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y)
+        if move_in_negative:
+            moved_rect.move_ip(-self.game.pc_screen_surf_x, -self.game.pc_screen_surf_true_y)
+        else:
+            moved_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y)
         return moved_rect
         
     

@@ -69,3 +69,7 @@ quick notes
 - decided on refactor to really nail things in terms of cleanliness of the code x functionality
 - working a treat so far just readded properly clean af layering system that reorders everything after performing a move to front operation
 - clean hovering done and finally fixed a lot of issues that i had with the initial implementation <3
+- clicking and move working
+- clicking and move now done via top bar only
+- fixed issue where could click on another top bar that was underneath, and therefore not the active highlighted one
+- now when click top title bar the window is selected at the exact mouse pos <3
