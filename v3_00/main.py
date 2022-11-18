@@ -96,7 +96,7 @@ class Game:
                     self.all_active_customers[this_customer.my_id] = this_customer
         # -- loop all chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be problematic -- 
         self.hovered_chatbox = False
-        for a_chatbox in reversed(self.chatbox_layer_list): # <<<<<< # [ here! ] needs to be given in the order of the layers, not like dis, replacing it
+        for a_chatbox in reversed(self.chatbox_layer_list):
             if isinstance(a_chatbox, Chatbox): # purely for type hints
                 if a_chatbox.handle_hover_or_click():
                     self.hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
