@@ -24,6 +24,7 @@ class Game:
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
+        self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
@@ -107,7 +108,7 @@ class Game:
                 # -- reset the hovered var on all chatbox instances that weren't the hovered one that we saved when we broke out of the loop above earlier -- 
                 if this_chatbox != self.hovered_chatbox:
                     this_chatbox.is_hovered = False                    
-                this_chatbox.update()
+                this_chatbox.update() 
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
 
