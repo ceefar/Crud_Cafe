@@ -96,7 +96,6 @@ class Game:
         for this_chatbox in self.chatboxes:
             if isinstance(this_chatbox, Chatbox): # purely for type hints
                 this_chatbox.update()
-
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
 
