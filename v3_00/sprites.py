@@ -84,7 +84,7 @@ class Customer(pg.sprite.Sprite):
     def __repr__(self):
         return f"Customer ID.{self.my_id} : {self.my_name}"
 
-
+ 
 # -- Chatbox Class --
 class Chatbox(pg.sprite.Sprite):
     layers_counter = 1
