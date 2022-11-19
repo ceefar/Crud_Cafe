@@ -123,10 +123,11 @@ class Chatbox(pg.sprite.Sprite):
         self.mouse_offset_x = False # when chatbox_move_activated is True, set these to the rect x (& y) pos before moving
         self.mouse_offset_y = False # also ensure they are reset when chatbox_move_activated is False
         # -- titlebar setup --
-        self.window_titlebar_height = 80 # note => am unsure if will change for open x shelved yet # width is just equal to opened_chat_width or shelved_chat_width
-        # -- minimise icon setup --
+        self.window_titlebar_height = 30 # note => am unsure if will change for open x shelved yet # width is just equal to opened_chat_width or shelved_chat_width
+        # -- minimise icon setup - note => is when opened unless stated --
         self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
+        self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding    
     # ---- End Init ----
 
     # -- Draw, Update, & Repr --
@@ -202,19 +203,32 @@ class Chatbox(pg.sprite.Sprite):
             self.true_chatbox_window_rect = self.get_true_rect(self.rect)
             # -- if mouse collided with the chatbox rect --
             if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
-                print(f"hover => {self}")
+                # print(f"hover whole chatbox => {self}")
+
+                # -- new code to handle opening from shelved --
 
                 # -- new code for handling click top bar and move - allowed only if you have collided with only the top highlighted rect only, not ones underneath --
                 # -- create a new faux rect for the top bar at this windows position, then move it to the true pos on the screen --
-                self.window_titlebar_rect = pg.Rect(self.x, self.y, self.opened_chat_width, self.window_titlebar_height)
+                if self.my_customer.chatbox_state == "opened":
+                    self.window_titlebar_rect = pg.Rect(self.x, self.y, self.pos_of_minimise_icon, self.window_titlebar_height)
+                elif self.my_customer.chatbox_state == "shelved":
+                    self.window_titlebar_rect = pg.Rect(self.x, self.y, self.shelved_pos_of_minimise_icon - 10, self.window_titlebar_height)
                 self.window_titlebar_rect = self.get_true_rect(self.window_titlebar_rect)
-                # -- check for mouse collision on top titlebar rect -- 
-                if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
+                print(f"{self.window_titlebar_rect = } {self.my_id}")
+                # -- check for mouse collision on top titlebar rect --                 
+                if self.my_customer.chatbox_state == "opened":
+                    if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
+                        print(f"hover opened title bar => {self}")
+                        if self.game.mouse_click_up:
+                            self.chatbox_move_activated = True
+                            # gives us the offset of the exact pos the mouse has "picked" up the window at
+                            self.mouse_offset_x = pg.mouse.get_pos()[0] - self.true_chatbox_window_rect.x 
+                            self.mouse_offset_y = pg.mouse.get_pos()[1] - self.true_chatbox_window_rect.y
+                elif self.my_customer.chatbox_state == "shelved":
                     if self.game.mouse_click_up:
-                        self.chatbox_move_activated = True
-                        # gives us the offset of the exact pos the mouse has "picked" up the window at
-                        self.mouse_offset_x = pg.mouse.get_pos()[0] - self.true_chatbox_window_rect.x 
-                        self.mouse_offset_y = pg.mouse.get_pos()[1] - self.true_chatbox_window_rect.y
+                        self.my_customer.chatbox_state = "opened"
+                            
+
 
                 # -- update the image to the "highlighted" version --
                 self.is_hovered = True
