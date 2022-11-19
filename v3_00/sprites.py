@@ -90,7 +90,6 @@ class New_Orders_Tab(Browser_Tab):
         # -- more testing - hover dimensions update --
         self.hover_height_increment = 50 # for all to scoot by this amount in the y when there is a hover
 
-
     def draw_orders_sidebar(self):
         self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
         self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # also wipe this surface too
@@ -166,7 +165,10 @@ class New_Orders_Tab(Browser_Tab):
 
             
 
-
+# make it do it toggles and add the thing to the new item with the correct info
+# - show quantity in the dropdown 100
+# then no cap quickly do an inventory page with mockup prices and quantity
+# - will expand this stock x inventory to add the ability to buy new stock and increase stock with profits (having some items be on offer like irl - could be expanded into the quality of foods you purchase affecting the score you get from customer reviews (which is basically your final in-game score), love it tbf, also possible the expiry too, also love it lol - but i mean not for this version)
         
 
 
