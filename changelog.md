@@ -81,3 +81,8 @@ quick notes
 - unshelving rect and image fixes for instance states
     - pretty complicated tbf as when each window changes its image, as the dimensions change requires re-drawing all the rects, and repositioning if necessary, thankfully code so far has been very robust and things have surprisingly just worked as expected by in large :D
 - shelved highlighting
+- big note but have noticed that when unshelving the positions are ordered based on how they were instantiated and not when they were added to the active list
+    - i *may* come back to fix this one however for this imo it is prefectly fine, the desire is to just ensure you have the desired window on top
+        i.e. from a ux perspective it is still good and is barely noticeable, it just is to me as im coding it lol
+    - but tbf also may just take a look at this when doing dropping windows as there likely is a reasonably short solution in there too
+- click unshelving, so clean im in love <3 <3 <3

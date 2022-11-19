@@ -154,8 +154,6 @@ class Chatbox(pg.sprite.Sprite):
                 self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
                 self.set_shelved_chatbox_initial_position()
 
-                # self.true_chatbox_window_rect = self.get_true_rect(self.rect)
-
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
@@ -210,38 +208,37 @@ class Chatbox(pg.sprite.Sprite):
             if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
                 # -- update the image to the "highlighted" version --
                 self.is_hovered = True
-
-                # -- new code to handle opening from shelved --
-
                 # -- new code for handling click top bar and move - allowed only if you have collided with only the top highlighted rect only, not ones underneath --
                 # -- create a new faux rect for the top bar at this windows position, then move it to the true pos on the screen --
                 if self.my_customer.chatbox_state == "opened":
                     self.window_titlebar_rect = pg.Rect(self.x, self.y, self.pos_of_minimise_icon, self.window_titlebar_height)
+                    # -- new rect for minimise collision when opened - note the btn is part of the image -- 
+                    self.window_minimise_btn_rect = pg.Rect(self.x + self.pos_of_minimise_icon, self.y, 45, 25) # on img is actually 45 x 23
+                    self.window_minimise_btn_rect = self.get_true_rect(self.window_minimise_btn_rect)
                 elif self.my_customer.chatbox_state == "shelved":
                     self.window_titlebar_rect = pg.Rect(self.x, self.y, self.shelved_pos_of_minimise_icon - 10, self.window_titlebar_height)
                 self.window_titlebar_rect = self.get_true_rect(self.window_titlebar_rect)
-                # print(f"{self.window_titlebar_rect = } {self.my_id}")
-                # -- check for mouse collision on top titlebar rect --                 
+                # -- check for mouse collision on top hover btn rect if state is opened --                 
                 if self.my_customer.chatbox_state == "opened":
+                    if self.window_minimise_btn_rect.collidepoint(pg.mouse.get_pos()):
+                        if self.game.mouse_click_up:
+                            print(f"Clicked Minimise -> {self}")
+                            self.my_customer.chatbox_state = "shelved"
+                # -- check for mouse collision on top titlebar rect (up to 10 padding before minimise btn) if state is opened --                 
                     if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
-                        # print(f"hover opened title bar => {self}")
                         if self.game.mouse_click_up:
                             self.chatbox_move_activated = True
                             # gives us the offset of the exact pos the mouse has "picked" up the window at
                             self.mouse_offset_x = pg.mouse.get_pos()[0] - self.true_chatbox_window_rect.x 
                             self.mouse_offset_y = pg.mouse.get_pos()[1] - self.true_chatbox_window_rect.y
+                # -- new code to handle opening from shelved --
+                # -- else if shelved just check the entire image for collision since all we can see if the top bar and clicking it only has open functionality, to open it (well and update its image and rect and position, etc, etc) --
                 elif self.my_customer.chatbox_state == "shelved":
                     if self.game.mouse_click_up:
                         self.my_customer.chatbox_state = "opened"
                         self.x, self.y = self.window_titlebar_rect.x, self.window_titlebar_rect.y
                         self.rect = self.game.window_img.copy().get_rect()
                         self.rect.x, self.rect.y = self.x, self.y
-
-                        
-                        
-                        #self.rect = 
-
-                
                 # -- if there waas a click on this rect too then update the layer to be at the front --
                 if self.game.mouse_click_up:
                     pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
