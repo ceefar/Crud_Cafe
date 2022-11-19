@@ -157,6 +157,19 @@ class Game:
                         self.id_customer_dict[created_customers + 1].customer_state = "active"
                 except KeyError:
                     pass
+                # -- for dev mode / debugging during new order functionality implementation + testing --
+                # -- toggle the orders in the orders sidebar --
+                if event.key == pg.K_o:
+                    self.new_orders_tab.active_order_number += 1
+                # -- add a new test item to the active order list --    
+                if event.key == pg.K_i:
+                    if self.new_orders_tab.active_order_number == 1:                    
+                        to_add_to_list = self.new_orders_tab.sidebar_order_1
+                    elif self.new_orders_tab.active_order_number == 2:                    
+                        to_add_to_list = self.new_orders_tab.sidebar_order_2
+                    elif self.new_orders_tab.active_order_number == 3:                    
+                        to_add_to_list = self.new_orders_tab.sidebar_order_3
+                    to_add_to_list[len(to_add_to_list) + 1] = "New Test Item!"
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
@@ -178,6 +191,17 @@ class Game:
                     reorder_counter += 1 
         # -- reorder this too since we want the order to be correct here also as we need this list style array for reversed looping + breaking for handling click & hover --         
         self.chatbox_layer_list = list(sorted(self.chatbox_layer_list, key=lambda item: item._layer))
+
+    # -- Use By Most Sprites To Orient Their Hitbox Rect To Their True Position On The Screen vs The PC Screen Tab Surface They Will Have Been Blit To -- 
+    def get_true_rect(self, a_rect:pg.Rect, move_in_negative=False):
+        """ update a given rect position by offsetting it from the pc_screen x and y pos """
+        # should probably make this a .game function when adding new classes as they will likely use it too
+        moved_rect = a_rect.copy()
+        if move_in_negative:
+            moved_rect.move_ip(-self.pc_screen_surf_x, -self.pc_screen_surf_true_y)
+        else:
+            moved_rect.move_ip(self.pc_screen_surf_x, self.pc_screen_surf_true_y)
+        return moved_rect
 
 # -- instantiate a game object and run the game --
 g = Game()

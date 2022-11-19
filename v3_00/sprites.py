@@ -17,15 +17,14 @@ class Browser_Tab(pg.sprite.Sprite):
         self.pos = vec(self.x, self.y)
         # -- image and rect --
         self.image = pg.Surface((self.width, self.height))
-        
         self.set_bg_colour()
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.pos # align to top right - for align to center use -> self.rect.centerx = self.rect.x + (self.width / 2) 
-        # -- tab class variables --
+        # -- general tab variables --
         self.my_tab_name = self.get_tab_name()
-        # --
+        # -- tab state --
         self.is_active_tab = True if isinstance(self, New_Orders_Tab) else False # basically just true is active and false is hidden
-    
+
     def __repr__(self):
         return f"Tab {self.my_tab_name}"
                 
@@ -39,7 +38,7 @@ class Browser_Tab(pg.sprite.Sprite):
         if isinstance(self, New_Orders_Tab):
             self.image.fill(WHITE)
         else:
-            self.image.fill(TAN)
+            self.image.fill(GOOGLEMAPSBLUE)
 
     def update(self):
         self.wipe_surface()
@@ -53,15 +52,139 @@ class Browser_Tab(pg.sprite.Sprite):
         self.image.blit(title, (50,30))  
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
+    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY):
+        """ the actual blit for this instance's .image surface is executed in draw_tab_to_pc """
+        # obvs will add functionality for font and font size at some point, just is unnecessary rn
+        text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, colour) 
+        surf.blit(text_surf, pos) 
 
 # -- Browser Tab Children --
 class New_Orders_Tab(Browser_Tab):
-    def __init__(self, game): # < add anything specific to the child class here, and then underneath super().__init__()
+    def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
         super().__init__(game)
+        # -- [NEW] v3.06 additions for new orders - current order sidebar --
+        # -- declare vars to store lists of orders --
+        self.sidebar_order_1 = {1:"Free Prawn Crackers", 2:"Grilled Charmander (Spicy)", 3:"Large Nuka Cola"}
+        self.sidebar_order_2 = {1:"Free Prawn Crackers", 2:"Mario's Mushroom Soup", 3:"Squirtle Sashimi", 4:"Large Exeggcute Fried Rice"}
+        self.sidebar_order_3 = {1:"Free Prawn Crackers"}
+        # -- create the surface for the orders sidebar -- 
+        self.width_offset = 90 # if this is set to zero then the sidebar will take exactly half the screen size, if set to 100 it will be -100px from the width and +100px in x axis 
+        self.orders_sidebar_surf = pg.Surface(((self.rect.width / 2) - self.width_offset, self.rect.height))
+        self.orders_sidebar_surf_colour = TAN
+        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour)
+        # -- for tracking the active order --
+        self.active_order_number = 1
+        # -- first test implementation of menu items --
+        # -- should put this into settings btw --
+        self.menu_items_dict = {1:{"name":"Grilled Charmander", "price":7.99, "my_id":1, "course":"main", "has_toggles":True, "toggles":[("medium",0), ("spicy",0)]},
+                                2:{"name":"Squirtle Sashimi", "price":9.49, "my_id":2, "course":"main"},
+                                3:{"name":"Exeggcute Fried Rice", "price":9.49, "my_id":3, "course":"noodles_rice", "has_toggles":True, "toggles":[("large",2.50), ("regular",0)]},
+                                4:{"name":"Nuka Cola", "price":3.15, "my_id":4, "course":"drinks", "has_toggles":True, "toggles":[("large", 1.75),("regular", 0),("quantum", 3), ("classic", 0)]},
+                                5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter"}}
+        # -- more testing - menu item hover states & rects --
+        self.menu_items_hover_states = {}
+        for index in self.menu_items_dict.keys():
+            self.menu_items_hover_states[index] = False
+        self.menu_item_hover_rects = {}
+        self.is_one_menu_item_hovered = False # if any of them is hovered, update the dimensions of one but use this to offset the y position of the others (remember -> only needs to be those below the hovered item, not above it!)
+        # -- more testing - hover dimensions update --
+        self.hover_height_increment = 50 # for all to scoot by this amount in the y when there is a hover
+
+
+    def draw_orders_sidebar(self):
+        self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
+        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # also wipe this surface too
+
+    def update(self):
+        """ overrides the Browser_Tab parent update() function to include functionality for the orders sidebar """
+        self.wipe_surface()
+        self.draw_menu_items_selector()
+        self.draw_orders_sidebar()
+        # -- todo - make this a draw title instead --
+        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf) 
+        # -- set the order list we will draw to the surface based on the currently active order number - could make this switch case ternary but probs way too long for a single line --
+        if self.active_order_number == 1: 
+            active_order_list = list(self.sidebar_order_1.values())
+        elif self.active_order_number == 2:
+            active_order_list = list(self.sidebar_order_2.values())
+        elif self.active_order_number == 3:
+            active_order_list = list(self.sidebar_order_3.values())
+        else:
+            # -- loop back to the start, temporary while using keyboard to change order number - note: might keep the keyboard press now tho tbf lol --
+            self.active_order_number = 1 
+            active_order_list = list(self.sidebar_order_1.values())
+        # -- loop all the items in the order numbers list and draw them to the order sidebar surface --
+        for index, an_item in enumerate(active_order_list):
+            self.draw_text_to_surf(f"- {an_item}", (20, 80 + (index * 40)), self.orders_sidebar_surf)
+        # -- check for mouse actions like click and hover --
+        self.check_hover_menu_item()
+            
+    def draw_menu_items_selector(self):
+        for index, an_item_dict in enumerate(self.menu_items_dict.values()):
+            menu_item_surf = pg.Surface((300, 50))
+            
+            # -- if is hovered --
+            if self.menu_items_hover_states[index + 1]:
+                menu_item_surf = pg.Surface((400, 50))
+                menu_item_surf.fill(MAGENTA)
+                font_colour = WHITE
+            # - else is not hovered, so alternate the colours, can be removed / updated, maybe to by course tbf --
+            else:
+                if index % 2 == 0:
+                    menu_item_surf.fill(BLUEMIDNIGHT)
+                    font_colour = WHITE
+                else:
+                    menu_item_surf.fill(SKYBLUE)
+                    font_colour = BLUEMIDNIGHT
+                    
+            if self.is_one_menu_item_hovered:
+                print(f"{index} {self.is_one_menu_item_hovered}")
+                if index == self.is_one_menu_item_hovered - 1:
+                    offset_y = self.hover_height_increment
+                else:
+                    offset_y = 0
+            else:
+                offset_y = 0
+
+            test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
+            self.draw_text_to_surf(f"{an_item_dict['name']}", (10, 15), menu_item_surf, font_colour)
+            item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
+            self.menu_item_hover_rects[an_item_dict["my_id"]] = item_hover_rect
+        
+    def check_hover_menu_item(self):
+        is_one_hovered = False
+        for an_item_id, a_rect in self.menu_item_hover_rects.items():
+            true_rect = self.game.get_true_rect(a_rect)
+            if true_rect.collidepoint(pg.mouse.get_pos()):
+                print(f"Hovered = {an_item_id}")                        
+                self.menu_items_hover_states[an_item_id] = True
+                is_one_hovered = an_item_id
+            else:
+                self.menu_items_hover_states[an_item_id] = False
+        if is_one_hovered:
+            self.is_one_menu_item_hovered = an_item_id
+        else:
+            self.is_one_menu_item_hovered = False
+
+            
+
+
+        
+
+
+# doing now, make a function to loop the order side bar associated with the dict for the int
+# - add new item to active one order list using keyboard button press
+# - then make the physical clickable buttons for them
+# - then put items in their own little cards too (for delete button, and maybe for quantities here on this side duhhh!)
+# - should include types and give certain things toggles, i.e. if can be spicy (or whatever) then maybe u can order a range of spices, or maybe like "no xyz ingredient", kinda like maccas, hella simple
+
+# things to remember todo for new orders functionality
+# - quantities duh
+# - delete btn duh
 
 
 class Chats_Tab(Browser_Tab):
-    def __init__(self, game): # < add anything specific to the child class here, and then underneath super().__init__()
+    def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
         super().__init__(game)
        
 
@@ -69,6 +192,7 @@ class Chats_Tab(Browser_Tab):
 
 
 # -- Customer Initial First Test Implementation --
+# note: consider making this an Object not a Sprite
 class Customer(pg.sprite.Sprite):
     def __init__(self, game):
         self.groups = game.customers
@@ -164,21 +288,27 @@ class Chatbox(pg.sprite.Sprite):
         - this runs in update but we draw to this image in update then draw this actual image to the screen in draw, by self._layer """
         # -- opened state --
         if self.my_customer.chatbox_state == "opened":
-            if self.chatbox_move_activated:
-                self.image = self.game.window_hl_2_img.copy()
-                self.rect = self.image.get_rect()
-            elif self.is_hovered:
-                self.image = self.game.window_hl_1_img.copy() 
-            else: 
-                self.image = self.game.window_img.copy()
+            self.set_opened_state_image_surf()
         # -- shelved state --
         elif self.my_customer.chatbox_state == "shelved":
-            if self.is_hovered:
-                self.image = self.game.window_shelved_hl_1_img.copy()
-                self.rect = self.image.get_rect()  
-            else:
-                self.image = self.game.window_shelved_1_img.copy()
-                self.rect = self.image.get_rect()
+            self.set_shelved_state_image_surf()
+
+    def set_shelved_state_image_surf(self):
+        if self.is_hovered:
+            self.image = self.game.window_shelved_hl_1_img.copy()
+            self.rect = self.image.get_rect()  
+        else:
+            self.image = self.game.window_shelved_1_img.copy()
+            self.rect = self.image.get_rect()
+
+    def set_opened_state_image_surf(self):
+        if self.chatbox_move_activated:
+            self.image = self.game.window_hl_2_img.copy()
+            self.rect = self.image.get_rect()
+        elif self.is_hovered:
+            self.image = self.game.window_hl_1_img.copy() 
+        else: 
+            self.image = self.game.window_img.copy()
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":

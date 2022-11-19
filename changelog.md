@@ -87,5 +87,6 @@ quick notes
         i.e. from a ux perspective it is still good and is barely noticeable, it just is to me as im coding it lol
     - but tbf also may just take a look at this when doing dropping windows as there likely is a reasonably short solution in there too
 - click unshelving, so clean im in love <3 <3 <3
-- same with minimising, so clean and easy to implement due to good design patterns <3 <3 <3
+- same with minimising and setting initial cascading offset positions, so clean and easy to implement due to good design patterns <3 <3 <3
 - trying to do new orders stuff on a 3.06 now
+- extended new orders child class to override the Browser_Tab parent update() function to include functionality for the orders sidebar :D <3
