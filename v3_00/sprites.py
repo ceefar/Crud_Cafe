@@ -122,10 +122,9 @@ class New_Orders_Tab(Browser_Tab):
     def draw_menu_items_selector(self):
         for index, an_item_dict in enumerate(self.menu_items_dict.values()):
             menu_item_surf = pg.Surface((300, 50))
-            
             # -- if is hovered --
             if self.menu_items_hover_states[index + 1]:
-                menu_item_surf = pg.Surface((400, 50))
+                menu_item_surf = pg.Surface((400, 100))
                 menu_item_surf.fill(MAGENTA)
                 font_colour = WHITE
             # - else is not hovered, so alternate the colours, can be removed / updated, maybe to by course tbf --
@@ -136,35 +135,34 @@ class New_Orders_Tab(Browser_Tab):
                 else:
                     menu_item_surf.fill(SKYBLUE)
                     font_colour = BLUEMIDNIGHT
-                    
+            # sort offsetting the positions dependant on if any item is hovered, and if it is below or above you, as if it is above you it doesnt need to move
             if self.is_one_menu_item_hovered:
-                print(f"{index} {self.is_one_menu_item_hovered}")
-                if index == self.is_one_menu_item_hovered - 1:
-                    offset_y = self.hover_height_increment
+                if index >= self.is_one_menu_item_hovered:
+                        offset_y = self.hover_height_increment
                 else:
                     offset_y = 0
             else:
                 offset_y = 0
-
+            # -- draw the surf dynamic bg surface, draw the item text to that surface, and lastly grab the hover rect and append it to an instance variable so we can check it for mouse collision later --
             test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
             self.draw_text_to_surf(f"{an_item_dict['name']}", (10, 15), menu_item_surf, font_colour)
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
             self.menu_item_hover_rects[an_item_dict["my_id"]] = item_hover_rect
         
     def check_hover_menu_item(self):
-        is_one_hovered = False
+        is_hovered_item = False
         for an_item_id, a_rect in self.menu_item_hover_rects.items():
             true_rect = self.game.get_true_rect(a_rect)
-            if true_rect.collidepoint(pg.mouse.get_pos()):
-                print(f"Hovered = {an_item_id}")                        
+            if true_rect.collidepoint(pg.mouse.get_pos()):                       
                 self.menu_items_hover_states[an_item_id] = True
-                is_one_hovered = an_item_id
+                self.is_one_menu_item_hovered = an_item_id
+                is_hovered_item = True
             else:
                 self.menu_items_hover_states[an_item_id] = False
-        if is_one_hovered:
-            self.is_one_menu_item_hovered = an_item_id
-        else:
+        # reset the .self var if there is no item hovered by the mouse
+        if not is_hovered_item:
             self.is_one_menu_item_hovered = False
+       
 
             
 
