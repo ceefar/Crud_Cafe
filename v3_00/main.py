@@ -113,7 +113,7 @@ class Game:
                 this_chatbox.update() 
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
-
+ 
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
