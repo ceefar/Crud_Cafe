@@ -168,14 +168,19 @@ class Chatbox(pg.sprite.Sprite):
         if self.my_customer.chatbox_state == "opened":
             if self.chatbox_move_activated:
                 self.image = self.game.window_hl_2_img.copy()
+                self.rect = self.image.get_rect()
             elif self.is_hovered:
                 self.image = self.game.window_hl_1_img.copy() 
             else: 
                 self.image = self.game.window_img.copy()
         # -- shelved state --
         elif self.my_customer.chatbox_state == "shelved":
-            self.image = self.game.window_shelved_1_img.copy()
-            self.rect = self.image.get_rect()
+            if self.is_hovered:
+                self.image = self.game.window_shelved_hl_1_img.copy()
+                self.rect = self.image.get_rect()  
+            else:
+                self.image = self.game.window_shelved_1_img.copy()
+                self.rect = self.image.get_rect()
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":
@@ -203,7 +208,8 @@ class Chatbox(pg.sprite.Sprite):
             self.true_chatbox_window_rect = self.get_true_rect(self.rect)
             # -- if mouse collided with the chatbox rect --
             if self.true_chatbox_window_rect.collidepoint(pg.mouse.get_pos()):
-                # print(f"hover whole chatbox => {self}")
+                # -- update the image to the "highlighted" version --
+                self.is_hovered = True
 
                 # -- new code to handle opening from shelved --
 
@@ -214,11 +220,11 @@ class Chatbox(pg.sprite.Sprite):
                 elif self.my_customer.chatbox_state == "shelved":
                     self.window_titlebar_rect = pg.Rect(self.x, self.y, self.shelved_pos_of_minimise_icon - 10, self.window_titlebar_height)
                 self.window_titlebar_rect = self.get_true_rect(self.window_titlebar_rect)
-                print(f"{self.window_titlebar_rect = } {self.my_id}")
+                # print(f"{self.window_titlebar_rect = } {self.my_id}")
                 # -- check for mouse collision on top titlebar rect --                 
                 if self.my_customer.chatbox_state == "opened":
                     if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
-                        print(f"hover opened title bar => {self}")
+                        # print(f"hover opened title bar => {self}")
                         if self.game.mouse_click_up:
                             self.chatbox_move_activated = True
                             # gives us the offset of the exact pos the mouse has "picked" up the window at
@@ -227,11 +233,15 @@ class Chatbox(pg.sprite.Sprite):
                 elif self.my_customer.chatbox_state == "shelved":
                     if self.game.mouse_click_up:
                         self.my_customer.chatbox_state = "opened"
-                            
+                        self.x, self.y = self.window_titlebar_rect.x, self.window_titlebar_rect.y
+                        self.rect = self.game.window_img.copy().get_rect()
+                        self.rect.x, self.rect.y = self.x, self.y
 
+                        
+                        
+                        #self.rect = 
 
-                # -- update the image to the "highlighted" version --
-                self.is_hovered = True
+                
                 # -- if there waas a click on this rect too then update the layer to be at the front --
                 if self.game.mouse_click_up:
                     pg.sprite.LayeredUpdates.change_layer(self.game.chatbox_layers, self, Chatbox.layers_counter) 
