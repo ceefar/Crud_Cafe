@@ -77,6 +77,7 @@ quick notes
 
 
 # day 6
+[v3.04-v3.05+]
 - unshelving
 - unshelving rect and image fixes for instance states
     - pretty complicated tbf as when each window changes its image, as the dimensions change requires re-drawing all the rects, and repositioning if necessary, thankfully code so far has been very robust and things have surprisingly just worked as expected by in large :D
@@ -87,3 +88,4 @@ quick notes
     - but tbf also may just take a look at this when doing dropping windows as there likely is a reasonably short solution in there too
 - click unshelving, so clean im in love <3 <3 <3
 - same with minimising, so clean and easy to implement due to good design patterns <3 <3 <3
+- trying to do new orders stuff on a 3.06 now
