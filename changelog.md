@@ -79,4 +79,5 @@ quick notes
 # day 6
 - unshelving
 - unshelving rect and image fixes for instance states
+    - pretty complicated tbf as when each window changes its image, as the dimensions change requires re-drawing all the rects, and repositioning if necessary, thankfully code so far has been very robust and things have surprisingly just worked as expected by in large :D
 - shelved highlighting
