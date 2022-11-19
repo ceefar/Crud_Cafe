@@ -106,9 +106,8 @@ class Chatbox(pg.sprite.Sprite):
         self.shelved_chat_height = 50
         # -- initial default positions --
         self.opened_pos = vec(50, 100)
+        self.shelved_pos = vec(25, game.pc_screen_surf_height - 110)
         # -- image surf setup --         
-        # self.image = pg.Surface((self.opened_chat_width, self.opened_chat_height)) # <= big note - do want but do want to start in shelved pos probably btw
-        # self.my_bg_colour = LIGHTGREY if self.my_id % 2 == 0 else DARKGREY # <-- REDUNDANT <--
         self.image = self.game.window_img.copy()
         # -- set positions -- 
         initial_pos = (-500, -500) # initial position offscreen
@@ -147,12 +146,13 @@ class Chatbox(pg.sprite.Sprite):
                     self.rect = self.get_true_rect(a_rect=self.rect, move_in_negative=True)
                     # then to picked it up exactly where the mouse picked it up we do one more offset for the clicked pos minus the true position of the window and add that to the x & y
                     self.rect.move_ip(-self.mouse_offset_x, -self.mouse_offset_y)
-
+            # -- handle shelved state -- 
             elif self.my_customer.chatbox_state == "shelved":             
+                self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
                 self.wipe_image() # part works but isnt reseting the true rect and ting as per above so do that regardless, if will be diff image then do it seperately again not as same for open - make functs duhhh
                 self.draw_name_to_chatbox()
-                self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
-                self.set_shelved_chatbox_initial_position()
+                self.game.shelved_chatbox_offset_counter += 1
+                self.set_shelved_chatbox_initial_position() 
 
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
@@ -251,7 +251,9 @@ class Chatbox(pg.sprite.Sprite):
 
     # -- Repositioning Functs --
     def set_shelved_chatbox_initial_position(self):
-        self.rect.x, self.rect.y = 25, self.game.pc_screen_surf_height - 110 # think the additional 25 is the screen edge btw, but should confirm this as am unsure tbf
+        shelved_chatboxes_offset = self.shelved_chat_width * (self.game.shelved_chatbox_offset_counter - 1)
+        self.x, self.y = self.shelved_pos.x + shelved_chatboxes_offset, self.shelved_pos.y
+        self.rect.x, self.rect.y = self.x, self.y # think the additional 25 is the screen edge btw, but should confirm this as am unsure tbf
 
     def set_opened_chatbox_initial_position(self):
         opened_chatboxes_offset = 50 * self.game.opened_chatbox_offset_counter # do need to check the positions tho remember (maybe do this before and not in loop) - skipping for like 2 mins tho

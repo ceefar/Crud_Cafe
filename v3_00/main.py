@@ -87,8 +87,9 @@ class Game:
 
     def update(self):
         """ keep update and draw seperate for best practice, runs before draw() but after events() """
-        # -- want this to reset every frame --
+        # -- notable vars to reset every frame --
         self.opened_chatbox_offset_counter = 0
+        self.shelved_chatbox_offset_counter = 0
         # -- update the browser tabs first since they are on the bottom -- 
         self.browser_tabs.update()         
         # -- store customers by states --
