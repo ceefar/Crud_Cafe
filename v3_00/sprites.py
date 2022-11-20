@@ -64,9 +64,9 @@ class New_Orders_Tab(Browser_Tab):
         super().__init__(game)
         # -- [NEW] v3.06 additions for new orders - current order sidebar --
         # -- declare vars to store lists of orders --
-        self.sidebar_order_1 = {1:"Free Prawn Crackers", 2:"Grilled Charmander (Spicy)", 3:"Large Nuka Cola"}
-        self.sidebar_order_2 = {1:"Free Prawn Crackers", 2:"Mario's Mushroom Soup", 3:"Squirtle Sashimi", 4:"Large Exeggcute Fried Rice"}
-        self.sidebar_order_3 = {1:"Free Prawn Crackers"}
+        self.sidebar_order_1 = {1:"Grilled Charmander (Spicy)", 2:"Large Nuka Cola"}
+        self.sidebar_order_2 = {1:"Mario's Mushroom Soup", 2:"Squirtle Sashimi", 3:"Large Exeggcute Fried Rice"}
+        self.sidebar_order_3 = {}
         # -- create the surface for the orders sidebar -- 
         self.width_offset = 90 # if this is set to zero then the sidebar will take exactly half the screen size, if set to 100 it will be -100px from the width and +100px in x axis 
         self.orders_sidebar_surf = pg.Surface(((self.rect.width / 2) - self.width_offset, self.rect.height))
@@ -97,8 +97,37 @@ class New_Orders_Tab(Browser_Tab):
         self.add_to_order_btn_max_width = (500 - (6 * self.toggle_btn_padding)) / 5 # the size used when there are no toggles, 4 is the max toggles, then + 1 for 5, so then we also need 6 * the padding 
         
     def draw_orders_sidebar(self):
+        # -- new test for drawing active order buttons -but  just indicators for now --
+        self.sidebar_sticky_bottom_surf_height = 140
+        self.sidebar_sticky_bottom_surf = pg.Surface((self.orders_sidebar_surf.get_width(), self.sidebar_sticky_bottom_surf_height))
+        self.sidebar_sticky_bottom_surf.fill(YELLOW)
+        # -- new test continued --
+        self.order_number_indicator_btn_size = 40
+        self.order_number_indicator_btn_padding = 50
+
+        # -- logic here - spit the sections into 3 quadrants, for each of the 3 buttons (30 is just a small adjustment as the width overruns due to the screen edge, i believe) -- 
+        # -- then minuse the button size from those quadrants so you have the padding on either side added together remaining, then simple div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --       
+        btn_increment_pos = (((self.orders_sidebar_surf.get_width() / 3) - 30) - self.order_number_indicator_btn_size) / 2
+        # -- logic continued -- then increment over the amount of buttons to move along by a quadrant and draw the button rect centralised within it -- 
+        # -- new test continued - loop and draw order indicator buttons --
+        for i in range(1,4):
+            self.order_number_indicator_btn = pg.Rect(btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 10, self.order_number_indicator_btn_size, self.order_number_indicator_btn_size)
+            # -- if this indicator buttons index is the same as the order number then draw a green button else draw a red one --
+            indicator_colour = GREEN if self.active_order_number == i else RED
+            # -- draw the rect, get the true rect for hover, and add the basics of the hover functionality tho not adding on click stuff right now --
+            order_number_indicator_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, indicator_colour, self.order_number_indicator_btn)
+            order_number_indicator_btn_true_rect = self.game.get_true_rect(order_number_indicator_btn_true_rect)
+            order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
+            if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):  
+                pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)
+        # -- new test continued - finally blit the new test surface -- 
+        self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
+
+        # -- draw the sidebar
         self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
-        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # also wipe this surface too
+        # -- wipes the surface --
+        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) 
+        
 
     def update(self):
         """ overrides the Browser_Tab parent update() function to include functionality for the orders sidebar """
@@ -118,9 +147,12 @@ class New_Orders_Tab(Browser_Tab):
             # -- loop back to the start, temporary while using keyboard to change order number - note: might keep the keyboard press now tho tbf lol --
             self.active_order_number = 1 
             active_order_list = list(self.sidebar_order_1.values())
+
         # -- loop all the items in the order numbers list and draw them to the order sidebar surface --
         for index, an_item in enumerate(active_order_list):
-            self.draw_text_to_surf(f"- {an_item}", (20, 80 + (index * 40)), self.orders_sidebar_surf)
+            # [ todo! ] - quantity stuff, maybe here
+            self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40)), self.orders_sidebar_surf)
+
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()
             
@@ -206,11 +238,21 @@ class New_Orders_Tab(Browser_Tab):
             self.is_one_menu_item_hovered = False
     
 
+# - toggle order buttons - or atleast active order showing, can add funct to button press change later
+# - add to customer order button and working
+#   - both of the above should be sticky bottom of orders sidebar
+# - possible hover outline rect moving idea but also maybe not just respace a bit more is fine
 # - remove from cart
 # - quants
-# - toggles stuff (cba right now tbf)
+# - then scroll bars 100%
 
-
+# - see phone
+# - but basically first up to do
+#   - orders x customers page
+#   - improved gui stuff
+#   - toggles stuff that i skipped
+#   - talking
+#   - moving
 
 class Chats_Tab(Browser_Tab):
     def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
