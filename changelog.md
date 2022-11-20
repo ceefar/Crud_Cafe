@@ -54,3 +54,54 @@ quick notes
     - honestly from scratch if necessary
 - then on to the gameified elements oooOooOOoooo
     - consider redoing the legit first implementation of the items and buttons tho tbf is clean maybe just a baby refactor for now bosh
+
+
+# day 4
+[v2.03]
+- new ver for playground stuff
+- implemented minimise button with shelving and opening, dynamic shelved positions and reset opened positions
+- im in love <3
+- need to add from notes tbf did a lot more than this lol
+
+
+# day 5
+[v3.01-huge-refactor]
+- decided on refactor to really nail things in terms of cleanliness of the code x functionality
+- working a treat so far just readded properly clean af layering system that reorders everything after performing a move to front operation
+- clean hovering done and finally fixed a lot of issues that i had with the initial implementation <3
+- clicking and move working
+- clicking and move now done via top bar only
+- fixed issue where could click on another top bar that was underneath, and therefore not the active highlighted one
+- now when click top title bar the window is selected at the exact mouse pos <3
+- added extra window image state for when clicked and selected for move the highlight colour is different for visual clarity
+
+
+# day 6
+[v3.04-v3.05+]
+- unshelving
+- unshelving rect and image fixes for instance states
+    - pretty complicated tbf as when each window changes its image, as the dimensions change requires re-drawing all the rects, and repositioning if necessary, thankfully code so far has been very robust and things have surprisingly just worked as expected by in large :D
+- shelved highlighting
+- big note but have noticed that when unshelving the positions are ordered based on how they were instantiated and not when they were added to the active list
+    - i *may* come back to fix this one however for this imo it is prefectly fine, the desire is to just ensure you have the desired window on top
+        i.e. from a ux perspective it is still good and is barely noticeable, it just is to me as im coding it lol
+    - but tbf also may just take a look at this when doing dropping windows as there likely is a reasonably short solution in there too
+- click unshelving, so clean im in love <3 <3 <3
+- same with minimising and setting initial cascading offset positions, so clean and easy to implement due to good design patterns <3 <3 <3
+- trying to do new orders stuff on a 3.06 now
+- extended new orders child class to override the Browser_Tab parent update() function to include functionality for the orders sidebar :D <3
+
+
+# day 7
+- hover and add menu item with button and highlighting and dynamic surface sizing and button placement
+- order number indicator buttons with highlight functionality but not added on click yet
+- scrolling order functionality basics
+- scrolling only when on new orders tab
+- improved that to scrolling when hovering over the actual sidebar
+- added highlight to surf when hovered to improve ux further by making it clear the surface has interactivity on hover
+- dynamic width add to customer order window button started with basic dynamic width button added 
+- added on hover functionality to add to customer btn
+- basics of customer select popup added
+- added close btn to popup and moved close functionality to the button from the entire window rect
+- added names, bg rects, confirm button with hover mouse collision, just more basic setup for the popup window
+- selectable names with hover, click, and valid states functionality
