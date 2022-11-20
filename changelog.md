@@ -101,3 +101,4 @@ quick notes
 - added highlight to surf when hovered to improve ux further by making it clear the surface has interactivity on hover
 - dynamic width add to customer order window button started with basic dynamic width button added 
 - added on hover functionality to add to customer btn
+- basics of customer select popup added

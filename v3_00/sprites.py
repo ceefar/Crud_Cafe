@@ -143,16 +143,10 @@ class New_Orders_Tab(Browser_Tab):
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
             
-            # now the actual functionality
+            
+            # still fair few things to do here obvs 
+            # - start by adding the text for the button
 
-            # - so first a popup window with the active customers with windows in them and hoverable x clickable
-            # - then literally just add the simple message bosh
-
-            # - adding to window message, just as basic for now is fine (will make it be total or sumnt - for now just len of the basket)
-            # - popup or dropdown selector to select from active customers
-            #   - ensure this actually works by only adding in 2 or 3 to test
-            #   - then adding more after with new baskets
-            # - and the text for the button tbf lol
 
         # -- finally blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
@@ -195,8 +189,13 @@ class New_Orders_Tab(Browser_Tab):
             self.customer_selector_popup_window_surf.blit(text_surf, (20, 40 + (60 * (i+1)))) 
 
 
+        # [ here! ]
         # - close button to replace the current close functionality
-        # - now button that says not selected, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
+        # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
+        # - then legit get that to actually do the blit to their window and wipe the order and omg <3 new version
+        #   - note => just as basic for now is fine (will make it be total or sumnt - for now just len of the basket)
+        #   - ensure this actually works by only adding in 2 or 3 to test
+        #   - then adding more after with new baskets created and blit to the window (in a new, next chat position each time) 
         
         
         # -- then blit the actual popup --
