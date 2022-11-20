@@ -238,13 +238,13 @@ class New_Orders_Tab(Browser_Tab):
             self.is_one_menu_item_hovered = False
     
 
-# - toggle order buttons - or atleast active order showing, can add funct to button press change later
+# - scroll bars
+#   - use keyboard up and down key press up for now
 # - add to customer order button and working
-#   - both of the above should be sticky bottom of orders sidebar
+#   - ensure sticky bottom of orders sidebar works
 # - possible hover outline rect moving idea but also maybe not just respace a bit more is fine
 # - remove from cart
 # - quants
-# - then scroll bars 100%
 
 # - see phone
 # - but basically first up to do
