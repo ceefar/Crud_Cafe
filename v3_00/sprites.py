@@ -261,12 +261,29 @@ class New_Orders_Tab(Browser_Tab):
             self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding))
             
 
-        # [ here! ]
+    	    # [ here! ]
+            if self.customer_select_popup_selected_customer:
+                if self.game.mouse_click_up: 
+                    for i, item in enumerate(self.active_order_list):
+                        print(f"Blit {item} to {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1]} for {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer}")
+                        # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
+                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append({"author":"api", "msg":f"{item}"})
+
+                # k so just guna draw to the image from here to test but
+                # actually create a function in the chatbox to handle this, since it needs the order of chats for the position n ting
+
 
         # - then sending just any text to that customers window surface and wiping/resetting the surface vars and tings
         #   - can probably just access that directly using the dict key value pairs in .game that are by id
         #   - obvs need to do the pre-blit list thing first so thats next! 
         #       - eeeee so awesome :D
+
+        # - smashed it
+        # - see below and see notes obvs but mostly i think first just start of this new version with...
+
+        # - scroll for the windows
+        # - oh and also wiping the current one <3
+
 
         # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
         # - then legit get that to actually do the blit to their window and wipe the order and omg <3 new version
@@ -293,17 +310,17 @@ class New_Orders_Tab(Browser_Tab):
         self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf) 
         # -- set the order list we will draw to the surface based on the currently active order number - could make this switch case ternary but probs way too long for a single line --
         if self.active_order_number == 1: 
-            active_order_list = list(self.sidebar_order_1.values())
+            self.active_order_list = list(self.sidebar_order_1.values())
         elif self.active_order_number == 2:
-            active_order_list = list(self.sidebar_order_2.values())
+            self.active_order_list = list(self.sidebar_order_2.values())
         elif self.active_order_number == 3:
-            active_order_list = list(self.sidebar_order_3.values())
+            self.active_order_list = list(self.sidebar_order_3.values())
         else:
             # -- loop back to the start, temporary while using keyboard to change order number - note: might keep the keyboard press now tho tbf lol --
             self.active_order_number = 1 
-            active_order_list = list(self.sidebar_order_1.values())
+            self.active_order_list = list(self.sidebar_order_1.values())
         # -- loop all the items in the order numbers list and draw them to the order sidebar surface using the scroll offset --
-        for index, an_item in enumerate(active_order_list):
+        for index, an_item in enumerate(self.active_order_list):
 
             # Note! => quantity stuff, maybe here
             self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf)
@@ -418,7 +435,6 @@ class New_Orders_Tab(Browser_Tab):
 class Chats_Tab(Browser_Tab):
     def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
         super().__init__(game)
-       
 
 # ---- End Browser Tabs ----
 
@@ -482,7 +498,11 @@ class Chatbox(pg.sprite.Sprite):
         # -- minimise icon setup - note => is when opened unless stated --
         self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
-        self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding    
+        self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
+
+        # -- new test for chatlog blit stuff --
+        self.my_chatlog = [] # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] # am thinking as a list of dicts, i.e. json
+
     # ---- End Init ----
 
     # -- Draw, Update, & Repr --
@@ -496,6 +516,7 @@ class Chatbox(pg.sprite.Sprite):
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
+                    self.test_draw_my_chatlog()
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
@@ -533,7 +554,7 @@ class Chatbox(pg.sprite.Sprite):
             self.image = self.game.window_shelved_1_img.copy()
             self.rect = self.image.get_rect()
 
-    def set_opened_state_image_surf(self):
+    def set_opened_state_image_surf(self): 
         if self.chatbox_move_activated:
             self.image = self.game.window_hl_2_img.copy()
             self.rect = self.image.get_rect()
@@ -541,6 +562,17 @@ class Chatbox(pg.sprite.Sprite):
             self.image = self.game.window_hl_1_img.copy() 
         else: 
             self.image = self.game.window_img.copy()
+
+
+    # -- initial first test implementatino for chatlog drawing --
+    def test_draw_my_chatlog(self):
+        if self.my_chatlog:
+            for i, a_chatlog_item in enumerate(self.my_chatlog):
+                a_msg = a_chatlog_item["msg"]
+                a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{a_msg}", True, BLACK)
+                # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
+                self.image.blit(a_msg_surf, (30, 50 + (40 * i)))
+
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":
