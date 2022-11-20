@@ -90,3 +90,12 @@ quick notes
 - same with minimising and setting initial cascading offset positions, so clean and easy to implement due to good design patterns <3 <3 <3
 - trying to do new orders stuff on a 3.06 now
 - extended new orders child class to override the Browser_Tab parent update() function to include functionality for the orders sidebar :D <3
+
+
+# day 7
+- hover and add menu item with button and highlighting and dynamic surface sizing and button placement
+- order number indicator buttons with highlight functionality but not added on click yet
+- scrolling order functionality basics
+- scrolling only when on new orders tab
+- improved that to scrolling when hovering over the actual sidebar
+- added highlight to surf when hovered to improve ux further by making it clear the surface has interactivity on hover

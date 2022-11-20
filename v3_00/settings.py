@@ -28,14 +28,22 @@ RUST = (210,150,75)             # gold af
 BRIGHTYELLOW = (255,200,0)
 HIGHLIGHTER = (255,255,100)     # yellow af
 SKYBLUE = (0,255,255)
-MIDGREY = (128,128,128)
-TAN = (230,220,170)            
+MIDGREY = (128,128,128)     
 COFFEE =(200,190,140)             
 MOONGLOW = (235,245,255)        
 BROWNTONE = (123, 111, 100)    
 BROWNPALE =  (215, 195, 163)
 BLUEMIDNIGHT = (0, 51, 102)
 GOOGLEMAPSBLUE = (187,197,233)
+
+# -- New Test Vars For Colour Shades -- 
+# ideally write a function to do this dynamically
+# - tan -
+TAN = (230,220,170)       
+TAN_DARKER_1 = (213,196,111)
+TAN_ANALOGOUS_1 = (230,190,170)
+TAN_ANALOGOUS_2 = (210,230,170) # - icky green, dont use, left to show kewl differences in colour patterns, good start point colours for creating a dynamic function to handle colour palette
+TAN_COMPLIMENTARY_1 = (170,180,230)
 
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16

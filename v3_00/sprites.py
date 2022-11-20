@@ -64,7 +64,7 @@ class New_Orders_Tab(Browser_Tab):
         super().__init__(game)
         # -- [NEW] v3.06 additions for new orders - current order sidebar --
         # -- declare vars to store lists of orders --
-        self.sidebar_order_1 = {1:"Grilled Charmander (Spicy)", 2:"Large Nuka Cola"}
+        self.sidebar_order_1 = {1:"Grilled Charmander (Spicy)", 2:"Large Nuka Cola", 3:"Mario's Mushroom Soup", 4:"Squirtle Sashimi", 5:"Large Exeggcute Fried Rice", 6:"Mario's Mushroom Soup", 7:"Squirtle Sashimi", 8:"Large Exeggcute Fried Rice", 9:"Squirtle Sashimi", 10:"Large Exeggcute Fried Rice"}
         self.sidebar_order_2 = {1:"Mario's Mushroom Soup", 2:"Squirtle Sashimi", 3:"Large Exeggcute Fried Rice"}
         self.sidebar_order_3 = {}
         # -- create the surface for the orders sidebar -- 
@@ -95,7 +95,10 @@ class New_Orders_Tab(Browser_Tab):
         # -- item and add to cart button dimensions --
         self.toggle_btn_padding = 20 # preset padding var for item toggle and add to order buttons
         self.add_to_order_btn_max_width = (500 - (6 * self.toggle_btn_padding)) / 5 # the size used when there are no toggles, 4 is the max toggles, then + 1 for 5, so then we also need 6 * the padding 
-        
+        # -- for scrolling functionality --
+        self.orders_sidebar_scroll_y_offset = 0 
+        self.is_orders_sidebar_surf_hovered = False
+
     def draw_orders_sidebar(self):
         # -- new test for drawing active order buttons -but  just indicators for now --
         self.sidebar_sticky_bottom_surf_height = 140
@@ -124,9 +127,22 @@ class New_Orders_Tab(Browser_Tab):
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
 
         # -- draw the sidebar
-        self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
-        # -- wipes the surface --
-        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) 
+        orders_sidebar_surf_true_rect = self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
+
+        # -- new test - adding hover state to orders sidebar to improve scrolling ux, by only allowing scroll when hovered over the surface you want to scroll i.e. this orders sidebar surf --        
+        orders_sidebar_surf_true_rect = self.game.get_true_rect(orders_sidebar_surf_true_rect)
+        if orders_sidebar_surf_true_rect.collidepoint(pg.mouse.get_pos()):  
+            self.is_orders_sidebar_surf_hovered = True
+            print(f"{self.is_orders_sidebar_surf_hovered = }, {orders_sidebar_surf_true_rect = }, {pg.mouse.get_pos() = }")
+        else:
+            self.is_orders_sidebar_surf_hovered = False
+
+        # -- wipes the surface, drawing the analogous bg colour if the orders sidebar surface is hovered --
+        if self.is_orders_sidebar_surf_hovered:
+            bg_colour = TAN_ANALOGOUS_1 # TAN_ANALOGOUS_1 TAN_DARKER_1
+        else:
+            bg_colour = self.orders_sidebar_surf_colour
+        self.orders_sidebar_surf.fill(bg_colour) # is TAN btw
         
 
     def update(self):
@@ -147,12 +163,10 @@ class New_Orders_Tab(Browser_Tab):
             # -- loop back to the start, temporary while using keyboard to change order number - note: might keep the keyboard press now tho tbf lol --
             self.active_order_number = 1 
             active_order_list = list(self.sidebar_order_1.values())
-
-        # -- loop all the items in the order numbers list and draw them to the order sidebar surface --
+        # -- loop all the items in the order numbers list and draw them to the order sidebar surface using the scroll offset --
         for index, an_item in enumerate(active_order_list):
             # [ todo! ] - quantity stuff, maybe here
-            self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40)), self.orders_sidebar_surf)
-
+            self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf)
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()
             
@@ -238,13 +252,20 @@ class New_Orders_Tab(Browser_Tab):
             self.is_one_menu_item_hovered = False
     
 
-# - scroll bars
-#   - use keyboard up and down key press up for now
+# - scroll bars todo
+#   - current basket text needs to be on a bg rect so it looks sticky
+#   - scroll bar to incdicate when scroll is possible
+#       - and only allowing scroll when it is actually possible 
+
 # - add to customer order button and working
 #   - ensure sticky bottom of orders sidebar works
+#   - ensure have adding to new position in customer window functionality surf sorted
+#   - and do on hover scroll for here too
+
 # - possible hover outline rect moving idea but also maybe not just respace a bit more is fine
 # - remove from cart
 # - quants
+# - pricing up the actual cart duhhh lol
 
 # - see phone
 # - but basically first up to do
