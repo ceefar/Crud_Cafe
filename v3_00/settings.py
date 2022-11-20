@@ -35,6 +35,7 @@ BROWNTONE = (123, 111, 100)
 BROWNPALE =  (215, 195, 163)
 BLUEMIDNIGHT = (0, 51, 102)
 GOOGLEMAPSBLUE = (187,197,233)
+DARKRED = (139,0,0)
 
 # -- New Test Vars For Colour Shades -- 
 # ideally write a function to do this dynamically

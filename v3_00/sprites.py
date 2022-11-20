@@ -143,7 +143,7 @@ class New_Orders_Tab(Browser_Tab):
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
             
-            
+
             # still fair few things to do here obvs 
             # - start by adding the text for the button
 
@@ -183,11 +183,26 @@ class New_Orders_Tab(Browser_Tab):
         # -- draw title text to the popup surf -- 
         text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select Customer", True, BLACK) 
         self.customer_selector_popup_window_surf.blit(text_surf, (20, 20)) 
-        
+        # -- draw customer names - semi temp, need rects for them --
         for i, a_customer in enumerate(self.game.all_active_customers.values()):
             text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{a_customer.my_name}", True, BLACK) 
             self.customer_selector_popup_window_surf.blit(text_surf, (20, 40 + (60 * (i+1)))) 
 
+        # -- new test for close button --
+        self.close_btn_size = 30
+        close_btn_padding = 20
+        self.close_btn_surf = pg.Surface((30,30))
+        self.close_btn_surf.fill(RED)
+        self.close_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - close_btn_padding, close_btn_padding)) 
+        self.close_btn_true_rect = self.game.get_true_rect(self.close_btn_true_rect)
+        self.close_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
+        if self.close_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
+            # -- on hover change colour for visual clarity, ux is good mkay -- 
+            self.close_btn_surf.fill(DARKRED)
+            self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - close_btn_padding, close_btn_padding)) 
+            # -- on click, set the state to close the popup window --
+            if self.game.mouse_click_up: 
+                self.want_customer_select_popup = False
 
         # [ here! ]
         # - close button to replace the current close functionality
@@ -201,10 +216,10 @@ class New_Orders_Tab(Browser_Tab):
         # -- then blit the actual popup --
         self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 
         self.customer_selector_popup_window_true_rect = self.game.get_true_rect(self.customer_selector_popup_window_true_rect)
+        # -- temp --
         if self.customer_selector_popup_window_true_rect.collidepoint(pg.mouse.get_pos()): 
-            # -- temp - on click anywhere on the surface, close the popup window --
-            if self.game.mouse_click_up: 
-                self.want_customer_select_popup = False
+            # hovered the popup rect - can remove was temp for closing the popup before adding an actual close button
+            pass
             
 
     def update(self):
