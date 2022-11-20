@@ -262,8 +262,11 @@ class New_Orders_Tab(Browser_Tab):
             
 
         # [ here! ]
-        # - selectable names with hover highlight staying and green confirm button text and colour updating
-        # - then sending then name wiping/resetting the surface vars and tings
+
+        # - then sending just any text to that customers window surface and wiping/resetting the surface vars and tings
+        #   - can probably just access that directly using the dict key value pairs in .game that are by id
+        #   - obvs need to do the pre-blit list thing first so thats next! 
+        #       - eeeee so awesome :D
 
         # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
         # - then legit get that to actually do the blit to their window and wipe the order and omg <3 new version

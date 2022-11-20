@@ -104,3 +104,4 @@ quick notes
 - basics of customer select popup added
 - added close btn to popup and moved close functionality to the button from the entire window rect
 - added names, bg rects, confirm button with hover mouse collision, just more basic setup for the popup window
+- selectable names with hover, click, and valid states functionality
