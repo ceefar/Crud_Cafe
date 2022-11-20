@@ -125,7 +125,13 @@ class Game:
             if isinstance(sprite, Browser_Tab): # really for type hinting
                 if sprite.is_active_tab:  
                     self.chatbox_layers.draw(sprite.image)
+                    # -- for customer selector popup - has to happen after drawing chatbox layers in order of operations as its a popup, it should be on top of everything else --
+                    if isinstance(sprite, New_Orders_Tab):
+                        if sprite.want_customer_select_popup:
+                            sprite.draw_active_customers_selector_popup()
+                    # -- actually draw the tab surface to the screen -- 
                     sprite.draw_tab_to_pc()
+
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               

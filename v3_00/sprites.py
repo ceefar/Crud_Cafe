@@ -98,6 +98,9 @@ class New_Orders_Tab(Browser_Tab):
         # -- for scrolling functionality --
         self.orders_sidebar_scroll_y_offset = 0 
         self.is_orders_sidebar_surf_hovered = False
+        # -- new test - for customer selector popup window --
+        self.want_customer_select_popup = False
+
 
     def draw_orders_sidebar(self):
         # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
@@ -133,17 +136,31 @@ class New_Orders_Tab(Browser_Tab):
         # -- add hover and on click functionality -- 
         add_to_customer_btn_true_rect = self.game.get_true_rect(add_to_customer_btn_true_rect)
         add_to_customer_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
+        # -- on hover - change rect colour --
         if add_to_customer_btn_true_rect.collidepoint(pg.mouse.get_pos()):
-            print(f"Hover Add To Customer Btn")
             pg.draw.rect(self.sidebar_sticky_bottom_surf, SKYBLUE, add_to_customer_btn)
+            # -- on hover - update state to show popup --
+            if self.game.mouse_click_up: 
+                self.want_customer_select_popup = True
+            
+            # now the actual functionality
+
+            # - so first a popup window with the active customers with windows in them and hoverable x clickable
+            # - then literally just add the simple message bosh
+
+            # - adding to window message, just as basic for now is fine (will make it be total or sumnt - for now just len of the basket)
+            # - popup or dropdown selector to select from active customers
+            #   - ensure this actually works by only adding in 2 or 3 to test
+            #   - then adding more after with new baskets
+            # - and the text for the button tbf lol
 
         # -- finally blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
 
-        # -- draw the sidebar
+        # -- draw the sidebar --
         orders_sidebar_surf_true_rect = self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
 
-        # -- new test - adding hover state to orders sidebar to improve scrolling ux, by only allowing scroll when hovered over the surface you want to scroll i.e. this orders sidebar surf --        
+        # -- adds hover state to orders sidebar to improve scrolling ux by only allowing scroll when hovered over the surface you want to scroll i.e. this orders sidebar surf --        
         orders_sidebar_surf_true_rect = self.game.get_true_rect(orders_sidebar_surf_true_rect)
         if orders_sidebar_surf_true_rect.collidepoint(pg.mouse.get_pos()):  
             self.is_orders_sidebar_surf_hovered = True
@@ -156,7 +173,41 @@ class New_Orders_Tab(Browser_Tab):
         else:
             bg_colour = self.orders_sidebar_surf_colour
         self.orders_sidebar_surf.fill(bg_colour) # bg colour = TAN
+
+    
+    def draw_active_customers_selector_popup(self):
+        # -- first blit a background surf for the popup --
+        popup_bg = pg.Surface((self.rect.width, self.rect.height)).convert_alpha()
+        popup_bg.fill(DARKGREY)
+        popup_bg.set_alpha(120)
+        self.image.blit(popup_bg, (0,0))
+        # -- configure the actual popup --
+        self.customer_selector_popup_window_width = 600
+        self.customer_selector_popup_window_height = 400
+        self.customer_selector_popup_window_surf = pg.Surface((self.customer_selector_popup_window_width, self.customer_selector_popup_window_height))
+        self.customer_selector_popup_window_surf.fill(WHITE)
+        # -- draw title text to the popup surf -- 
+        text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select Customer", True, BLACK) 
+        self.customer_selector_popup_window_surf.blit(text_surf, (20, 20)) 
         
+        for i, a_customer in enumerate(self.game.all_active_customers.values()):
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{a_customer.my_name}", True, BLACK) 
+            self.customer_selector_popup_window_surf.blit(text_surf, (20, 40 + (60 * (i+1)))) 
+
+
+        # - close button to replace the current close functionality
+        # - now button that says not selected, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
+        
+        
+        # -- then blit the actual popup --
+        self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 
+        self.customer_selector_popup_window_true_rect = self.game.get_true_rect(self.customer_selector_popup_window_true_rect)
+        if self.customer_selector_popup_window_true_rect.collidepoint(pg.mouse.get_pos()): 
+            # -- temp - on click anywhere on the surface, close the popup window --
+            if self.game.mouse_click_up: 
+                self.want_customer_select_popup = False
+            
+
     def update(self):
         """ overrides the Browser_Tab parent update() function to include functionality for the orders sidebar """
         self.wipe_surface()
@@ -233,6 +284,7 @@ class New_Orders_Tab(Browser_Tab):
             item_add_to_order_btn_true_rect.move_ip(test_item_pos)
             if item_add_to_order_btn_true_rect.collidepoint(pg.mouse.get_pos()):   
                 pg.draw.rect(menu_item_surf, GREEN, add_to_order_btn)  
+
                 # -- if the player clicks the add to order button then add this item to the currently active order number --
                 if self.game.mouse_click_up: 
 
@@ -272,7 +324,7 @@ class New_Orders_Tab(Browser_Tab):
 # - add to customer order button and working
 #   - ensure sticky bottom of orders sidebar works
 #   - ensure have adding to new position in customer window functionality surf sorted
-#   - and do on hover scroll for here too
+#   - and do on hover scroll for these windows too
 
 # - possible hover outline rect moving idea but also maybe not just respace a bit more is fine
 # - remove from cart
