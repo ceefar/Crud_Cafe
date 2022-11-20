@@ -140,10 +140,10 @@ class Game:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit()
-            # -- mouse events --
+            # -- mouse events - mouse up --
             if event.type == pg.MOUSEBUTTONUP: 
                 self.mouse_click_up = True
-            # -- keyboard events --
+            # -- keyboard events - key up --
             if event.type == pg.KEYUP:
                 # -- temp toggle between our 2 tabs --
                 if event.key == pg.K_q:
@@ -161,15 +161,7 @@ class Game:
                 # -- toggle the orders in the orders sidebar --
                 if event.key == pg.K_o:
                     self.new_orders_tab.active_order_number += 1
-                # -- add a new test item to the active order list --    
-                if event.key == pg.K_i:
-                    if self.new_orders_tab.active_order_number == 1:                    
-                        to_add_to_list = self.new_orders_tab.sidebar_order_1
-                    elif self.new_orders_tab.active_order_number == 2:                    
-                        to_add_to_list = self.new_orders_tab.sidebar_order_2
-                    elif self.new_orders_tab.active_order_number == 3:                    
-                        to_add_to_list = self.new_orders_tab.sidebar_order_3
-                    to_add_to_list[len(to_add_to_list) + 1] = "New Test Item!"
+            # -- key down --
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()

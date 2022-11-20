@@ -77,19 +77,25 @@ class New_Orders_Tab(Browser_Tab):
         # -- first test implementation of menu items --
         # -- should put this into settings btw --
         self.menu_items_dict = {1:{"name":"Grilled Charmander", "price":7.99, "my_id":1, "course":"main", "has_toggles":True, "toggles":[("medium",0), ("spicy",0)]},
-                                2:{"name":"Squirtle Sashimi", "price":9.49, "my_id":2, "course":"main"},
+                                2:{"name":"Squirtle Sashimi", "price":9.49, "my_id":2, "course":"main", "has_toggles":False},
                                 3:{"name":"Exeggcute Fried Rice", "price":9.49, "my_id":3, "course":"noodles_rice", "has_toggles":True, "toggles":[("large",2.50), ("regular",0)]},
                                 4:{"name":"Nuka Cola", "price":3.15, "my_id":4, "course":"drinks", "has_toggles":True, "toggles":[("large", 1.75),("regular", 0),("quantum", 3), ("classic", 0)]},
-                                5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter"}}
-        # -- more testing - menu item hover states & rects --
+                                5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter", "has_toggles":False}}
+        # -- menu items dimensions --
+        self.menu_items_hovered_width = 500
+        self.menu_items_normal_width = 300
+        # -- menu item hover states & rects --
         self.menu_items_hover_states = {}
         for index in self.menu_items_dict.keys():
             self.menu_items_hover_states[index] = False
         self.menu_item_hover_rects = {}
         self.is_one_menu_item_hovered = False # if any of them is hovered, update the dimensions of one but use this to offset the y position of the others (remember -> only needs to be those below the hovered item, not above it!)
-        # -- more testing - hover dimensions update --
+        # -- for menu items hover, y pos offset --
         self.hover_height_increment = 50 # for all to scoot by this amount in the y when there is a hover
-
+        # -- item and add to cart button dimensions --
+        self.toggle_btn_padding = 20 # preset padding var for item toggle and add to order buttons
+        self.add_to_order_btn_max_width = (500 - (6 * self.toggle_btn_padding)) / 5 # the size used when there are no toggles, 4 is the max toggles, then + 1 for 5, so then we also need 6 * the padding 
+        
     def draw_orders_sidebar(self):
         self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
         self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # also wipe this surface too
@@ -120,11 +126,14 @@ class New_Orders_Tab(Browser_Tab):
             
     def draw_menu_items_selector(self):
         for index, an_item_dict in enumerate(self.menu_items_dict.values()):
-            menu_item_surf = pg.Surface((300, 50))
+            menu_item_surf = pg.Surface((self.menu_items_normal_width, 50))
             # -- if is hovered --
             if self.menu_items_hover_states[index + 1]:
-                menu_item_surf = pg.Surface((400, 100))
-                menu_item_surf.fill(MAGENTA)
+                menu_item_surf = pg.Surface((self.menu_items_hovered_width, 100))
+                if an_item_dict["has_toggles"]:
+                    menu_item_surf.fill(RED)
+                else:
+                    menu_item_surf.fill(MAGENTA)
                 font_colour = WHITE
             # - else is not hovered, so alternate the colours, can be removed / updated, maybe to by course tbf --
             else:
@@ -144,7 +153,41 @@ class New_Orders_Tab(Browser_Tab):
                 offset_y = 0
             # -- draw the surf dynamic bg surface, draw the item text to that surface, and lastly grab the hover rect and append it to an instance variable so we can check it for mouse collision later --
             test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
-            self.draw_text_to_surf(f"{an_item_dict['name']}", (10, 15), menu_item_surf, font_colour)
+            item_price = an_item_dict["price"]
+            self.draw_text_to_surf(f"{an_item_dict['name']} ${item_price}", (10, 15), menu_item_surf, font_colour) # now includes price
+
+            # -- new test - draw buttons for the toggles if it has buttons else just draw one button to add to order -- 
+            if an_item_dict["has_toggles"]:
+                pass 
+                # -- in progress - for toggle btns --
+                # for index, a_toggle in enumerate(an_item_dict["toggles"]):
+                #     toggle_name = a_toggle[0] 
+                #     toggle_extra_cost = a_toggle[1]
+            else:
+                pass
+
+            # -- finally draw the add to order button at the end regardless of if there are toggles or not --
+            end_btn_x_pos = (self.add_to_order_btn_max_width * 4) + (self.toggle_btn_padding * 5)
+            add_to_order_btn = pg.Rect(end_btn_x_pos, 30, self.add_to_order_btn_max_width, 40)
+            item_add_to_order_btn_true_rect = pg.draw.rect(menu_item_surf, SKYBLUE, add_to_order_btn)
+            item_add_to_order_btn_true_rect = self.game.get_true_rect(item_add_to_order_btn_true_rect)
+            item_add_to_order_btn_true_rect.move_ip(test_item_pos)
+            if item_add_to_order_btn_true_rect.collidepoint(pg.mouse.get_pos()):   
+                pg.draw.rect(menu_item_surf, GREEN, add_to_order_btn)  
+
+                # -- if the player clicks the add to order button then add this item to the currently active order number --
+                if self.game.mouse_click_up: 
+
+                    # -- 100% MAKE THIS A FUNCTION ONCE DONE TESTING! --
+                    if self.game.new_orders_tab.active_order_number == 1:                    
+                        to_add_to_list = self.game.new_orders_tab.sidebar_order_1
+                    elif self.game.new_orders_tab.active_order_number == 2:                    
+                        to_add_to_list = self.game.new_orders_tab.sidebar_order_2
+                    elif self.game.new_orders_tab.active_order_number == 3:                    
+                        to_add_to_list = self.game.new_orders_tab.sidebar_order_3
+                    to_add_to_list[len(to_add_to_list) + 1] = f"{an_item_dict['name']}"
+                        
+            # -- do the blit and store the resulting rect to check hover via mouse collide -- 
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
             self.menu_item_hover_rects[an_item_dict["my_id"]] = item_hover_rect
         
@@ -161,26 +204,12 @@ class New_Orders_Tab(Browser_Tab):
         # reset the .self var if there is no item hovered by the mouse
         if not is_hovered_item:
             self.is_one_menu_item_hovered = False
-       
+    
 
-            
+# - remove from cart
+# - quants
+# - toggles stuff (cba right now tbf)
 
-# make it do it toggles and add the thing to the new item with the correct info
-# - show quantity in the dropdown 100
-# then no cap quickly do an inventory page with mockup prices and quantity
-# - will expand this stock x inventory to add the ability to buy new stock and increase stock with profits (having some items be on offer like irl - could be expanded into the quality of foods you purchase affecting the score you get from customer reviews (which is basically your final in-game score), love it tbf, also possible the expiry too, also love it lol - but i mean not for this version)
-        
-
-
-# doing now, make a function to loop the order side bar associated with the dict for the int
-# - add new item to active one order list using keyboard button press
-# - then make the physical clickable buttons for them
-# - then put items in their own little cards too (for delete button, and maybe for quantities here on this side duhhh!)
-# - should include types and give certain things toggles, i.e. if can be spicy (or whatever) then maybe u can order a range of spices, or maybe like "no xyz ingredient", kinda like maccas, hella simple
-
-# things to remember todo for new orders functionality
-# - quantities duh
-# - delete btn duh
 
 
 class Chats_Tab(Browser_Tab):
