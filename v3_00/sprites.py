@@ -122,14 +122,20 @@ class New_Orders_Tab(Browser_Tab):
             order_number_indicator_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, indicator_colour, self.order_number_indicator_btn)
             order_number_indicator_btn_true_rect = self.game.get_true_rect(order_number_indicator_btn_true_rect)
             order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
-            if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):  
+            if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):
                 pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)
 
         # -- handle the add to customer order button -- 
         add_to_customer_btn_width = 300
         add_to_customer_btn_center_pos = int(((self.orders_sidebar_surf.get_width() - 25) - add_to_customer_btn_width) / 2) # now confirmed - the extra 25 **is** the screen edge lol
         add_to_customer_btn = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
-        pg.draw.rect(self.sidebar_sticky_bottom_surf, BLUE, add_to_customer_btn)
+        add_to_customer_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, BLUE, add_to_customer_btn)
+        # -- add hover and on click functionality -- 
+        add_to_customer_btn_true_rect = self.game.get_true_rect(add_to_customer_btn_true_rect)
+        add_to_customer_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
+        if add_to_customer_btn_true_rect.collidepoint(pg.mouse.get_pos()):
+            print(f"Hover Add To Customer Btn")
+            pg.draw.rect(self.sidebar_sticky_bottom_surf, SKYBLUE, add_to_customer_btn)
 
         # -- finally blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
