@@ -161,11 +161,12 @@ class Game:
                 # -- toggle the orders in the orders sidebar --
                 if event.key == pg.K_o:
                     self.new_orders_tab.active_order_number += 1
+                    self.new_orders_tab.orders_sidebar_scroll_y_offset = 0 # reset the scroll offset to 0 when we change to another order too
                 # -- new test for tap up/down on keyboard to scroll, but only if on the new orders tab --
-                if event.key == pg.K_DOWN:
+                if event.key == pg.K_UP:
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
-                if event.key == pg.K_UP:
+                if event.key == pg.K_DOWN:
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset -= 10
             # -- key down --

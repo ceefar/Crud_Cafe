@@ -99,3 +99,4 @@ quick notes
 - scrolling only when on new orders tab
 - improved that to scrolling when hovering over the actual sidebar
 - added highlight to surf when hovered to improve ux further by making it clear the surface has interactivity on hover
+- dynamic width add to customer order window button started with basic dynamic width button added 

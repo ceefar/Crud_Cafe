@@ -100,17 +100,18 @@ class New_Orders_Tab(Browser_Tab):
         self.is_orders_sidebar_surf_hovered = False
 
     def draw_orders_sidebar(self):
-        # -- new test for drawing active order buttons -but  just indicators for now --
+        # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
         self.sidebar_sticky_bottom_surf_height = 140
         self.sidebar_sticky_bottom_surf = pg.Surface((self.orders_sidebar_surf.get_width(), self.sidebar_sticky_bottom_surf_height))
         self.sidebar_sticky_bottom_surf.fill(YELLOW)
-        # -- new test continued --
+        # -- btn and btn padding dimensions  --
         self.order_number_indicator_btn_size = 40
         self.order_number_indicator_btn_padding = 50
-
+        
+        # -- handle the order number indicator buttons and handle the hover state and colour changes --
         # -- logic here - spit the sections into 3 quadrants, for each of the 3 buttons (30 is just a small adjustment as the width overruns due to the screen edge, i believe) -- 
         # -- then minuse the button size from those quadrants so you have the padding on either side added together remaining, then simple div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --       
-        btn_increment_pos = (((self.orders_sidebar_surf.get_width() / 3) - 30) - self.order_number_indicator_btn_size) / 2
+        btn_increment_pos = (((self.orders_sidebar_surf.get_width() / 3) - 25) - self.order_number_indicator_btn_size) / 2
         # -- logic continued -- then increment over the amount of buttons to move along by a quadrant and draw the button rect centralised within it -- 
         # -- new test continued - loop and draw order indicator buttons --
         for i in range(1,4):
@@ -123,7 +124,14 @@ class New_Orders_Tab(Browser_Tab):
             order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
             if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):  
                 pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)
-        # -- new test continued - finally blit the new test surface -- 
+
+        # -- handle the add to customer order button -- 
+        add_to_customer_btn_width = 300
+        add_to_customer_btn_center_pos = int(((self.orders_sidebar_surf.get_width() - 25) - add_to_customer_btn_width) / 2) # now confirmed - the extra 25 **is** the screen edge lol
+        add_to_customer_btn = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
+        pg.draw.rect(self.sidebar_sticky_bottom_surf, BLUE, add_to_customer_btn)
+
+        # -- finally blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
 
         # -- draw the sidebar
@@ -133,7 +141,6 @@ class New_Orders_Tab(Browser_Tab):
         orders_sidebar_surf_true_rect = self.game.get_true_rect(orders_sidebar_surf_true_rect)
         if orders_sidebar_surf_true_rect.collidepoint(pg.mouse.get_pos()):  
             self.is_orders_sidebar_surf_hovered = True
-            print(f"{self.is_orders_sidebar_surf_hovered = }, {orders_sidebar_surf_true_rect = }, {pg.mouse.get_pos() = }")
         else:
             self.is_orders_sidebar_surf_hovered = False
 
@@ -142,9 +149,8 @@ class New_Orders_Tab(Browser_Tab):
             bg_colour = TAN_ANALOGOUS_1 # TAN_ANALOGOUS_1 TAN_DARKER_1
         else:
             bg_colour = self.orders_sidebar_surf_colour
-        self.orders_sidebar_surf.fill(bg_colour) # is TAN btw
+        self.orders_sidebar_surf.fill(bg_colour) # bg colour = TAN
         
-
     def update(self):
         """ overrides the Browser_Tab parent update() function to include functionality for the orders sidebar """
         self.wipe_surface()
@@ -165,8 +171,10 @@ class New_Orders_Tab(Browser_Tab):
             active_order_list = list(self.sidebar_order_1.values())
         # -- loop all the items in the order numbers list and draw them to the order sidebar surface using the scroll offset --
         for index, an_item in enumerate(active_order_list):
-            # [ todo! ] - quantity stuff, maybe here
+
+            # Note! => quantity stuff, maybe here
             self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf)
+
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()
             
@@ -211,7 +219,6 @@ class New_Orders_Tab(Browser_Tab):
                 #     toggle_extra_cost = a_toggle[1]
             else:
                 pass
-
             # -- finally draw the add to order button at the end regardless of if there are toggles or not --
             end_btn_x_pos = (self.add_to_order_btn_max_width * 4) + (self.toggle_btn_padding * 5)
             add_to_order_btn = pg.Rect(end_btn_x_pos, 30, self.add_to_order_btn_max_width, 40)
@@ -220,7 +227,6 @@ class New_Orders_Tab(Browser_Tab):
             item_add_to_order_btn_true_rect.move_ip(test_item_pos)
             if item_add_to_order_btn_true_rect.collidepoint(pg.mouse.get_pos()):   
                 pg.draw.rect(menu_item_surf, GREEN, add_to_order_btn)  
-
                 # -- if the player clicks the add to order button then add this item to the currently active order number --
                 if self.game.mouse_click_up: 
 
@@ -444,7 +450,6 @@ class Chatbox(pg.sprite.Sprite):
                 if self.my_customer.chatbox_state == "opened":
                     if self.window_minimise_btn_rect.collidepoint(pg.mouse.get_pos()):
                         if self.game.mouse_click_up:
-                            print(f"Clicked Minimise -> {self}")
                             self.my_customer.chatbox_state = "shelved"
                 # -- check for mouse collision on top titlebar rect (up to 10 padding before minimise btn) if state is opened --                 
                     if self.window_titlebar_rect.collidepoint(pg.mouse.get_pos()):
