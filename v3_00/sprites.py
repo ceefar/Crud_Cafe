@@ -180,38 +180,58 @@ class New_Orders_Tab(Browser_Tab):
         self.customer_selector_popup_window_height = 400
         self.customer_selector_popup_window_surf = pg.Surface((self.customer_selector_popup_window_width, self.customer_selector_popup_window_height))
         self.customer_selector_popup_window_surf.fill(WHITE)
+
         # -- draw title text to the popup surf -- 
         text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select Customer", True, BLACK) 
         self.customer_selector_popup_window_surf.blit(text_surf, (20, 20)) 
+
         # -- draw customer names - semi temp, need rects for them --
         for i, a_customer in enumerate(self.game.all_active_customers.values()):
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{a_customer.my_name}", True, BLACK) 
-            self.customer_selector_popup_window_surf.blit(text_surf, (20, 40 + (60 * (i+1)))) 
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{a_customer.my_name}", True, WHITE) 
+            customer_selector_bg_rect = pg.Rect(20, 25 + (50 * (i+1)), 250, 40)
+            pg.draw.rect(self.customer_selector_popup_window_surf, BLUEMIDNIGHT, customer_selector_bg_rect)
+            self.customer_selector_popup_window_surf.blit(text_surf, (30, 32 + (50 * (i+1)))) 
+
 
         # -- new test for close button --
         self.close_btn_size = 30
-        close_btn_padding = 20
-        self.close_btn_surf = pg.Surface((30,30))
+        self.close_btn_padding = 20
+        self.close_btn_surf = pg.Surface((30, 30))
         self.close_btn_surf.fill(RED)
-        self.close_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - close_btn_padding, close_btn_padding)) 
+        self.close_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
         self.close_btn_true_rect = self.game.get_true_rect(self.close_btn_true_rect)
         self.close_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
         if self.close_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
             # -- on hover change colour for visual clarity, ux is good mkay -- 
             self.close_btn_surf.fill(DARKRED)
-            self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - close_btn_padding, close_btn_padding)) 
+            self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
             # -- on click, set the state to close the popup window --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = False
 
+        # -- new test for confirm button --
+        # - want this to be on select dynamic text 
+        self.customer_selector_confirm_btn_surf = pg.Surface((200, 50))
+        self.customer_selector_confirm_btn_surf.fill(PALEGREEN)
+        self.customer_selector_confirm_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding)) # 200 and 50 here is the width and height of the surf, obvs hard code this duh
+        # exact same calculation as above so whack this in a function to return a copy of the rect given as a parameter and reuse the function 
+        self.customer_selector_confirm_btn_true_rect = self.game.get_true_rect(self.customer_selector_confirm_btn_true_rect)
+        self.customer_selector_confirm_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
+       
+        # -- obvs will have on hover like this but also a different condition to update the colour and text when a customer has been selected --
+        if self.customer_selector_confirm_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
+            self.customer_selector_confirm_btn_surf.fill(FORESTGREEN)
+            self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding))
+            
+
         # [ here! ]
-        # - close button to replace the current close functionality
+        # - selectable names with hover highlight staying and green confirm button text and colour updating
         # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
         # - then legit get that to actually do the blit to their window and wipe the order and omg <3 new version
         #   - note => just as basic for now is fine (will make it be total or sumnt - for now just len of the basket)
         #   - ensure this actually works by only adding in 2 or 3 to test
         #   - then adding more after with new baskets created and blit to the window (in a new, next chat position each time) 
-        
+
         
         # -- then blit the actual popup --
         self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 

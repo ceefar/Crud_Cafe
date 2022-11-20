@@ -102,3 +102,5 @@ quick notes
 - dynamic width add to customer order window button started with basic dynamic width button added 
 - added on hover functionality to add to customer btn
 - basics of customer select popup added
+- added close btn to popup and moved close functionality to the button from the entire window rect
+- added names, bg rects, confirm button with hover mouse collision, just more basic setup for the popup window
