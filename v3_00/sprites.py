@@ -281,8 +281,12 @@ class New_Orders_Tab(Browser_Tab):
         # - smashed it
         # - see below and see notes obvs but mostly i think first just start of this new version with...
 
-        # - scroll for the windows
+        # - resize the text a tad (tho dw about formatting rn ffs)
+        # - actually drawing to the correct window
+        #   - just isnt updating customer_select_popup_selected_customer i think btw
+        # - add scroll functionality for the windows
         # - oh and also wiping the current one <3
+        # - once this is done clean up the project and do repo for it and github profile, & linkedin profile, & update new cv x portfolio, & then maybe also a webpage for this?
 
 
         # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"

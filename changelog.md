@@ -93,6 +93,7 @@ quick notes
 
 
 # day 7
+[v3.08-v3.09]
 - hover and add menu item with button and highlighting and dynamic surface sizing and button placement
 - order number indicator buttons with highlight functionality but not added on click yet
 - scrolling order functionality basics
@@ -105,3 +106,8 @@ quick notes
 - added close btn to popup and moved close functionality to the button from the entire window rect
 - added names, bg rects, confirm button with hover mouse collision, just more basic setup for the popup window
 - selectable names with hover, click, and valid states functionality
+- selected order now blitting to selected window, first implementation so got a few things to nail but very happy with everything so far :D
+
+[v3.09]
+
+
