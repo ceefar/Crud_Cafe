@@ -521,19 +521,16 @@ class Chatbox(pg.sprite.Sprite):
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
         self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
 
+        # -- new test for scrolling chat window --
+        self.chatbox_window_scroll_y_offset = 0 
+
         # -- new test for chatlog blit stuff --
         self.chatlog_text_msg_height = 45
-        self.chatlog_payment_msg_height = 208 # < tbf need to confirm
+        self.chatlog_payment_msg_height = 108 
         # -- more new chatlog stuff --
         self.my_chatlog = [] 
         if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
             self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
-        
-        # am thinking as a list of dicts, i.e. json style
-        # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] 
-        # [{"author":"api", "msg":"your order", "end_pos":60},{"author":"api", "msg":"number is 23041309": "end_pos":120}] 
-        
-
 
     # ---- End Init ----
 
@@ -600,45 +597,10 @@ class Chatbox(pg.sprite.Sprite):
         else: 
             self.image = self.game.window_img.copy()
 
-    # next up 
-    # - start doing the whole next line pos idea for this
 
-    # so its guna be like 
-    # - send a msg function
-    # - will decide what to blit based on what it send
-    # - and will create the chatlog dictionary
-    #   - # [{"author":"api", "msg":"your order", "end_pos":60},{"author":"api", "msg":"number is 23041309": "end_pos":120}] 
+    # -- New Chat Message First Test Stuff --
 
-    # -- initial first implementation tests for chatlog drawing --
-    def get_chat_msg_pos(self):
-        # -- gets the position stored in the dictionary for the last chatlog msg --
-        if self.my_chatlog:
-            last_chat_msg = self.my_chatlog[-1] 
-            chat_msg_pos = last_chat_msg["chat_pos"]
-            return chat_msg_pos
-
-    def add_new_chat_message(self):
-        # -- handle payment message --
-        # create message
-        # create chatlog entry
-        # - grab its end pos
-        # it automatically gets blit based on what is in that list x dict, bosh
-        ...
-
-    def create_chat_msg_chatlog_entry(self):
-        # set author
-        # set msg
-        # set time? (mays well huh)
-        # set reactions? (would be no anyway but just skip this?)
-        # set id?
-        self.get_chat_msg_pos() # <- the last one before you've added, as this is where you want the next pos to be after bosh
-        # set chat msg end pos
-        # append completed dict to self.my_chatlog list  
-        
-    def set_chat_msg_pos(self):
-        ...
-
-    def test_draw_payment_element(self, pos):
+    def draw_payment_element(self, pos):
         payment_pending_img = self.game.payment_pending_1_img
         self.image.blit(payment_pending_img, pos)
         # will want a handler function that will sort all the different states
@@ -682,7 +644,6 @@ class Chatbox(pg.sprite.Sprite):
         self.my_chatlog.append(chatlog_dictionary_entry)
 
 
-        
     def draw_my_chatlog(self):
         if self.my_chatlog:
             for i, a_chatlog_item in enumerate(self.my_chatlog):
@@ -694,7 +655,7 @@ class Chatbox(pg.sprite.Sprite):
                 
                 # -- if payment window msg, draw the payment element to the window --
                 if a_msg == "payment_window":
-                    self.test_draw_payment_element((x_pos, a_chat_line_y_pos)) # 50 + (40 * i)
+                    self.draw_payment_element((x_pos, a_chat_line_y_pos + self.chatbox_window_scroll_y_offset)) # 50 + (40 * i)
                 # -- else if any other message, draw it as text -- 
                 else:
                     # -- if valid author create the author text surface --
@@ -704,7 +665,7 @@ class Chatbox(pg.sprite.Sprite):
                     a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{a_msg}", True, BLACK)
                     # -- setup and draw the background rect --
                     text_chat_max_width = 250
-                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos, text_chat_max_width, 45)  
+                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos + self.chatbox_window_scroll_y_offset, text_chat_max_width, 45)  
                     pg.draw.rect(self.image, chat_bg_colour, chat_bg_rect, 0, 5)
                     # -- setup the remaining blit positions --
                     x_pos += 10 # for text the x pos is + 10 from the bg rect
@@ -712,27 +673,13 @@ class Chatbox(pg.sprite.Sprite):
                     y_offset = 5 # general offset since the bg rect is draw at the actual pos, this offsets the text in y so its formatted nicely 
                     # -- if there is a valid author, blit the author text surf to the window, and offset the message pos, else dont
                     if an_author == "customer":
-                        self.image.blit(author_name_surf, (x_pos, a_chat_line_y_pos + y_offset)) 
+                        self.image.blit(author_name_surf, (x_pos, a_chat_line_y_pos + y_offset + self.chatbox_window_scroll_y_offset)) 
                         author_offset += 10 
                     # -- finally blit the actual msg to the window --
-                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos + author_offset + y_offset)) # (x_pos, 50 + (40 * i))
-                
-
-    # so
-    # now upgrading this to...
-    # - add the ability to send a new msg, and it will take what is send and add it
-    # - with the position it should be at based on its size (type of msg - txt or payment for now) and the length of the chatlog so far
-    #       - duhhhhh
-    #       - actually just do pos and height saved to dict, and you can get the height from either the image or the text surf
-    #       - and then its just plus the padding + the last pos + the last height boshhhhhhhhhhhh! 
-    # - then add it to the thing and it should be blit
-    # - do this using the send to order button
-    # - and have it just do choice(item or payment_window)
-    # - then add scroll to the windows
-
-
+                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos + author_offset + y_offset + self.chatbox_window_scroll_y_offset)) # (x_pos, 50 + (40 * i))
 
     # -- End of Test Stuff -- 
+
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":

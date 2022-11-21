@@ -117,8 +117,16 @@ quick notes
     - just need to add scroll to confirm its all working as expected which i think it is, eeeeeee
 - technically just the 3rd day on this version and now its all setup will solid class based structure and i actually *get* it, i feel like im flying tbf
     - but a lot of the stuff is just painstakingly long to do regardless as every rect and pos has to be setup dynamically and im doing everything myself
+- blit on click now working with its own functionality in its class
+- dictionary messages passed and dynamic positions
+- currently is sending messages for each item in the basket but thats just while testing
+- adding scrolling the selected window on hover, and only works for the selected window even if the mouse is overlapping multiple windows due to oop structure choices <3
 
-# note after scroll
+# note - todo
+- literally the only unexpected thing to fix going forward is ensuring the blit location is correct as there is a small bug somewhere with the ._layers ordering 
+    - but will be easy to resolve
+
+# note - after scroll
 - new version
 - add in button to loop through the customers chatlog stuff
 - then confirming the order stuff, just initial basic timed confirm is fine while testing

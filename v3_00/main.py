@@ -168,18 +168,34 @@ class Game:
                         self.id_customer_dict[created_customers + 1].customer_state = "active"
                 except KeyError:
                     pass
-                # -- for dev mode / debugging during new order functionality implementation + testing --
+
                 # -- toggle the orders in the orders sidebar --
-                if event.key == pg.K_o:
+                if event.key == pg.K_o: # mostly for dev mode / debugging during new order functionality implementation + testing
                     self.new_orders_tab.active_order_number += 1
                     self.new_orders_tab.orders_sidebar_scroll_y_offset = 0 # reset the scroll offset to 0 when we change to another order too
-                # -- new test for tap up/down on keyboard to scroll, but only if on the new orders tab --
+
+                # -- for tap up/down on keyboard to scroll, depending on the hovered window / surface --
                 if event.key == pg.K_UP:
+
+                    # -- new test for chatbox scrolling --
+                    for a_chatbox in self.chatboxes:
+                        if a_chatbox.is_hovered:
+                            a_chatbox.chatbox_window_scroll_y_offset += 10
+
+                    # -- new orders scrolling --
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
+
                 if event.key == pg.K_DOWN:
+                    # -- new orders scrolling --
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset -= 10
+
+                    # -- new test for chatbox scrolling --
+                    for a_chatbox in self.chatboxes:
+                        if a_chatbox.is_hovered:
+                            a_chatbox.chatbox_window_scroll_y_offset -= 10
+
             # -- key down --
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
