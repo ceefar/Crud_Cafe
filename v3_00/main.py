@@ -20,12 +20,16 @@ class Game:
         imgs_folder = path.join(game_folder, 'imgs')
         fonts_folder = path.join(game_folder, 'fonts')
         # -- load images -- 
-        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))        
+        # - background scene -
+        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))  
+        # - windows -      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  
         self.window_shelved_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_HL_1_IMG)).convert_alpha()  
+        # - chat elements -
+        self.payment_pending_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_PENDING_IMG_1)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 

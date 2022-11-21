@@ -65,3 +65,6 @@ WINDOW_HL_1_IMG = "window_blank_highlight_1_img.png"
 WINDOW_HL_2_IMG = "window_blank_highlight_2_img.png" 
 WINDOW_SHELVED_1_IMG = "window_blank_shelved_test_img.png" 
 WINDOW_SHELVED_HL_1_IMG = "window_blank_shelved_test_hl_img.png" 
+
+# -- More Faux OS Element Images - Windows --
+PAYMENT_PENDING_IMG_1 = "payment_pending_test_img.png"

@@ -271,9 +271,12 @@ class New_Orders_Tab(Browser_Tab):
             if self.customer_select_popup_selected_customer:
                 if self.game.mouse_click_up: 
                     for i, item in enumerate(self.active_order_list):
+                        
                         print(f"Blit {item} to {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1]} for {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer}")
+                        
                         # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append({"author":"api", "msg":f"{item}"})
+                        chatlog_msg_test = choice([{"author":"api", "msg":f"payment_window"}, {"author":"api", "msg":f"{item}"}])
+                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append(chatlog_msg_test)
 
                 # k so just guna draw to the image from here to test but
                 # actually create a function in the chatbox to handle this, since it needs the order of chats for the position n ting
@@ -511,7 +514,12 @@ class Chatbox(pg.sprite.Sprite):
         self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
 
         # -- new test for chatlog blit stuff --
-        self.my_chatlog = [] # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] # am thinking as a list of dicts, i.e. json
+        self.my_chatlog = [] 
+        if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
+            self.my_chatlog = [{"author":"api", "msg":f"payment_window", "chat_pos":50}, {"author":"api", "msg":f"Chocolate Cake", "chat_pos":50+110+20}] 
+        # am thinking as a list of dicts, i.e. json style
+        # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] 
+        # [{"author":"api", "msg":"your order", "end_pos":60},{"author":"api", "msg":"number is 23041309": "end_pos":120}] 
 
     # ---- End Init ----
 
@@ -526,7 +534,12 @@ class Chatbox(pg.sprite.Sprite):
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
+
+                    # -- NEW --
+                    # - drawing chatlog stuff -
+                    # self.test_draw_payment_element()
                     self.test_draw_my_chatlog()
+                
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
@@ -573,16 +586,79 @@ class Chatbox(pg.sprite.Sprite):
         else: 
             self.image = self.game.window_img.copy()
 
+    # next up 
+    # - start doing the whole next line pos idea for this
 
-    # -- initial first test implementatino for chatlog drawing --
+    # so its guna be like 
+    # - send a msg function
+    # - will decide what to blit based on what it send
+    # - and will create the chatlog dictionary
+    #   - # [{"author":"api", "msg":"your order", "end_pos":60},{"author":"api", "msg":"number is 23041309": "end_pos":120}] 
+
+    # -- initial first implementation tests for chatlog drawing --
+    def get_chat_msg_pos(self):
+        # -- gets the position stored in the dictionary for the last chatlog msg --
+        if self.my_chatlog:
+            last_chat_msg = self.my_chatlog[-1] 
+            chat_msg_pos = last_chat_msg["chat_pos"]
+            return chat_msg_pos
+
+    def add_new_chat_message(self):
+        # -- handle payment message --
+        # create message
+        # create chatlog entry
+        # - grab its end pos
+        # it automatically gets blit based on what is in that list x dict, bosh
+        ...
+
+    def create_chat_msg_chatlog_entry(self):
+        # set author
+        # set msg
+        # set time? (mays well huh)
+        # set reactions? (would be no anyway but just skip this?)
+        # set id?
+        self.get_chat_msg_pos() # <- the last one before you've added, as this is where you want the next pos to be after bosh
+        # set chat msg end pos
+        # append completed dict to self.my_chatlog list  
+        
+    def set_chat_msg_pos(self):
+        ...
+
+    def test_draw_payment_element(self, pos):
+        payment_pending_img = self.game.payment_pending_1_img
+        self.image.blit(payment_pending_img, pos)
+        # will want a handler function that will sort all the different states
+
     def test_draw_my_chatlog(self):
         if self.my_chatlog:
             for i, a_chatlog_item in enumerate(self.my_chatlog):
                 a_msg = a_chatlog_item["msg"]
-                a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{a_msg}", True, BLACK)
-                # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-                self.image.blit(a_msg_surf, (30, 50 + (40 * i)))
+                an_author = a_chatlog_item["author"]
+                a_chat_line_y_pos = a_chatlog_item["chat_pos"]
+                x_pos = 20 if an_author == "api" or an_author == "customer" else 60
+                chat_bg_colour = TAN if an_author == "api" or an_author == "customer" else PURPLE
+                # also will want bg _colour - ig just use a different image, means will want txt_colour then
+                if a_msg == "payment_window":
+                    
+                    self.test_draw_payment_element((x_pos, a_chat_line_y_pos)) # 50 + (40 * i)
 
+                    
+                else:
+                    a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{a_msg}", True, BLACK)
+                    # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
+
+                    # draw author name too in small
+                    # the height needs to be dynamic based on amount of lines? (&/or make windows bigger?)
+
+                    text_chat_max_width = 250
+                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos, text_chat_max_width, 50)  
+
+                    pg.draw.rect(self.image, chat_bg_colour, chat_bg_rect)
+                    x_pos += 10 # for text the x pos is + 10 from the bg rect
+                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos)) # (x_pos, 50 + (40 * i))
+                    
+
+    # -- End of Test Stuff -- 
 
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":
