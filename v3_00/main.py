@@ -34,6 +34,7 @@ class Game:
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
         self.FONT_VETERAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 26) 
+        self.FONT_BOHEMIAN_TYPEWRITER_10 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 10)
         self.FONT_BOHEMIAN_TYPEWRITER_12 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 12)
         self.FONT_BOHEMIAN_TYPEWRITER_14 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 14)
         self.FONT_BOHEMIAN_TYPEWRITER_16 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 16)

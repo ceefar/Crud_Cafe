@@ -272,11 +272,19 @@ class New_Orders_Tab(Browser_Tab):
                 if self.game.mouse_click_up: 
                     for i, item in enumerate(self.active_order_list):
                         
-                        print(f"Blit {item} to {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1]} for {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer}")
+                        # print(f"Blit {item} to {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1]} for {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer}")
                         
                         # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-                        chatlog_msg_test = choice([{"author":"api", "msg":f"payment_window"}, {"author":"api", "msg":f"{item}"}])
-                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append(chatlog_msg_test)
+                        # chatlog_msg_test = choice([{"author":"api", "msg":f"payment_window"}, {"author":"api", "msg":f"{item}"}])                        
+                        # self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append(chatlog_msg_test)
+
+                        # [ new! ] - now instead of doing this above append we're using the chatboxes new function to add a new msg to its chatlog 
+                        # - obvs only want to send payment here but its just easier to do it this way while testing
+                        author_msg_pairs = [("api", "payment_window"), ("customer", f"{item}")]
+                        rng = choice(author_msg_pairs)
+                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1])
+                        print(self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog)
+
 
                 # k so just guna draw to the image from here to test but
                 # actually create a function in the chatbox to handle this, since it needs the order of chats for the position n ting
@@ -514,12 +522,18 @@ class Chatbox(pg.sprite.Sprite):
         self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
 
         # -- new test for chatlog blit stuff --
+        self.chatlog_text_msg_height = 45
+        self.chatlog_payment_msg_height = 208 # < tbf need to confirm
+        # -- more new chatlog stuff --
         self.my_chatlog = [] 
         if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
-            self.my_chatlog = [{"author":"api", "msg":f"payment_window", "chat_pos":50}, {"author":"api", "msg":f"Chocolate Cake", "chat_pos":50+110+20}] 
+            self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
+        
         # am thinking as a list of dicts, i.e. json style
         # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] 
         # [{"author":"api", "msg":"your order", "end_pos":60},{"author":"api", "msg":"number is 23041309": "end_pos":120}] 
+        
+
 
     # ---- End Init ----
 
@@ -538,7 +552,7 @@ class Chatbox(pg.sprite.Sprite):
                     # -- NEW --
                     # - drawing chatlog stuff -
                     # self.test_draw_payment_element()
-                    self.test_draw_my_chatlog()
+                    self.draw_my_chatlog()
                 
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
                 if self.chatbox_move_activated:
@@ -629,34 +643,94 @@ class Chatbox(pg.sprite.Sprite):
         self.image.blit(payment_pending_img, pos)
         # will want a handler function that will sort all the different states
 
-    def test_draw_my_chatlog(self):
+    def add_new_chatlog_msg(self, author:str, msg:str):
+        # -- create the dictionary chatlog item --
+        chatlog_dictionary_entry = {}
+
+        # -- set author --
+        author_entry = author
+
+        # -- set msg entry and chat height --
+        # - payment window - 
+        if msg == "payment_window":
+            msg_entry = "payment_window"
+            chat_height_entry = self.chatlog_payment_msg_height
+        # - text message -
+        else: # only doing these two (payment window vs any other msg) while testing init functionality
+            msg_entry = msg
+            chat_height_entry = self.chatlog_text_msg_height
+            
+        # -- set y position --
+        # -- if there is anything in the chatlog, then we use dynamic positions --
+        if self.my_chatlog:
+            # [ here! ]
+            # <- to do this dynamically based on size of the previous entry
+            last_chat_entry_pos = self.my_chatlog[-1]["chat_pos"]
+            last_chat_entry_height = self.my_chatlog[-1]["height"]
+            chat_pos_entry = last_chat_entry_pos + last_chat_entry_height + 10 # 110 
+        # -- else, this is the first chat message so we set it to the initial position --
+        else:
+            chat_pos_entry = 50
+            
+        # -- create the final dict of the chatlog entry --
+        chatlog_dictionary_entry["author"] = author_entry
+        chatlog_dictionary_entry["msg"] = msg_entry
+        chatlog_dictionary_entry["height"] = chat_height_entry
+        chatlog_dictionary_entry["chat_pos"] = chat_pos_entry
+
+        # -- finally, append the finalised dict to the chatlog list --
+        self.my_chatlog.append(chatlog_dictionary_entry)
+
+
+        
+    def draw_my_chatlog(self):
         if self.my_chatlog:
             for i, a_chatlog_item in enumerate(self.my_chatlog):
                 a_msg = a_chatlog_item["msg"]
                 an_author = a_chatlog_item["author"]
                 a_chat_line_y_pos = a_chatlog_item["chat_pos"]
                 x_pos = 20 if an_author == "api" or an_author == "customer" else 60
-                chat_bg_colour = TAN if an_author == "api" or an_author == "customer" else PURPLE
-                # also will want bg _colour - ig just use a different image, means will want txt_colour then
+                chat_bg_colour = CUSTOMERTAN if an_author == "api" or an_author == "customer" else PURPLE # using bg colour in actual image for the imgs (i.e. payment window) tho
+                
+                # -- if payment window msg, draw the payment element to the window --
                 if a_msg == "payment_window":
-                    
                     self.test_draw_payment_element((x_pos, a_chat_line_y_pos)) # 50 + (40 * i)
-
-                    
+                # -- else if any other message, draw it as text -- 
                 else:
-                    a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{a_msg}", True, BLACK)
-                    # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-
-                    # draw author name too in small
-                    # the height needs to be dynamic based on amount of lines? (&/or make windows bigger?)
-
+                    # -- if valid author create the author text surface --
+                    if an_author == "customer":
+                        author_name_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_10.render(f"{self.my_customer.my_name}", True, BLACK)
+                    # -- create the message text surface --
+                    a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{a_msg}", True, BLACK)
+                    # -- setup and draw the background rect --
                     text_chat_max_width = 250
-                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos, text_chat_max_width, 50)  
-
-                    pg.draw.rect(self.image, chat_bg_colour, chat_bg_rect)
+                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos, text_chat_max_width, 45)  
+                    pg.draw.rect(self.image, chat_bg_colour, chat_bg_rect, 0, 5)
+                    # -- setup the remaining blit positions --
                     x_pos += 10 # for text the x pos is + 10 from the bg rect
-                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos)) # (x_pos, 50 + (40 * i))
-                    
+                    author_offset = 0
+                    y_offset = 5 # general offset since the bg rect is draw at the actual pos, this offsets the text in y so its formatted nicely 
+                    # -- if there is a valid author, blit the author text surf to the window, and offset the message pos, else dont
+                    if an_author == "customer":
+                        self.image.blit(author_name_surf, (x_pos, a_chat_line_y_pos + y_offset)) 
+                        author_offset += 10 
+                    # -- finally blit the actual msg to the window --
+                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos + author_offset + y_offset)) # (x_pos, 50 + (40 * i))
+                
+
+    # so
+    # now upgrading this to...
+    # - add the ability to send a new msg, and it will take what is send and add it
+    # - with the position it should be at based on its size (type of msg - txt or payment for now) and the length of the chatlog so far
+    #       - duhhhhh
+    #       - actually just do pos and height saved to dict, and you can get the height from either the image or the text surf
+    #       - and then its just plus the padding + the last pos + the last height boshhhhhhhhhhhh! 
+    # - then add it to the thing and it should be blit
+    # - do this using the send to order button
+    # - and have it just do choice(item or payment_window)
+    # - then add scroll to the windows
+
+
 
     # -- End of Test Stuff -- 
 

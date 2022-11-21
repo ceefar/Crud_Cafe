@@ -47,6 +47,10 @@ TAN_ANALOGOUS_1 = (230,190,170)
 TAN_ANALOGOUS_2 = (210,230,170) # - icky green, dont use, left to show kewl differences in colour patterns, good start point colours for creating a dynamic function to handle colour palette
 TAN_COMPLIMENTARY_1 = (170,180,230)
 
+# -- New Potentially Finalised Colour Palette Colours --
+CUSTOMERTAN = (241,217,208)
+
+
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16
 HEIGHT = 900 # 16 * 48 or 32 * 24 or 64 * 12
