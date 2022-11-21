@@ -171,6 +171,8 @@ class New_Orders_Tab(Browser_Tab):
 
     
     def draw_active_customers_selector_popup(self):
+        # -- note - i think should probably be resetting this var at the start, but obvs it needs to be set too (not perma off), guna confirm more finalised functionality first before deciding --
+        # self.customer_select_popup_selected_customer = False
         # -- first blit a background surf for the popup --
         popup_bg = pg.Surface((self.rect.width, self.rect.height)).convert_alpha()
         popup_bg.fill(DARKGREY)
@@ -199,13 +201,14 @@ class New_Orders_Tab(Browser_Tab):
                 pg.draw.rect(self.customer_selector_popup_window_surf, BLUEMIDNIGHT, customer_selector_bg_rect)
                 if self.game.mouse_click_up: 
 
-                    # [ CRITICAL! ]
+                    # [ todo! ] 
+                    # - update this to a .game var to be able to reset it here easily 
                     self.customer_select_popup_selected_customer = a_customer
-                    # REMEMBER WHEN YOU CLICK CLOSE OR SELECT TO WIPE THIS VAR!
 
             # -- if this is the selected customer then set the colour to green to visually confirm the click, ux baybayyy -- 
             if self.customer_select_popup_selected_customer is a_customer:
                 pg.draw.rect(self.customer_selector_popup_window_surf, FORESTGREEN, customer_selector_bg_rect)
+               
 
             # -- then at the end draw the text on top --
             self.customer_selector_popup_window_surf.blit(text_surf, (30, 32 + (50 * (i+1)))) 
@@ -225,6 +228,9 @@ class New_Orders_Tab(Browser_Tab):
             # -- on click, set the state to close the popup window --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = False
+                
+                # -- New test --
+                self.customer_select_popup_selected_customer = False # and reset this var
 
         # -- new test for confirm button --
         # - want this to be on select dynamic text 

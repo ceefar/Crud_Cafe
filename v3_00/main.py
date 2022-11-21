@@ -115,7 +115,7 @@ class Game:
         self.reorder_all_window_layers()
  
     def draw(self):
-        pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
+        pg.display.set_caption(f"Crud Cafe v3.09 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
