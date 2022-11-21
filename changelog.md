@@ -108,6 +108,22 @@ quick notes
 - selectable names with hover, click, and valid states functionality
 - selected order now blitting to selected window, first implementation so got a few things to nail but very happy with everything so far :D
 
+# day 8 
 [v3.09]
+- blit on click to correct surface
+- ui fixes
+- setup functionality for blit to surface dynamically, took a few hours
+- blit on click working a treat now *i think*, actually just not 100% sure as i cant see the third line (tho can see its position in debug so its there)
+    - just need to add scroll to confirm its all working as expected which i think it is, eeeeeee
+- technically just the 3rd day on this version and now its all setup will solid class based structure and i actually *get* it, i feel like im flying tbf
+    - but a lot of the stuff is just painstakingly long to do regardless as every rect and pos has to be setup dynamically and im doing everything myself
+
+# note after scroll
+- new version
+- add in button to loop through the customers chatlog stuff
+- then confirming the order stuff, just initial basic timed confirm is fine while testing
+- then msg ui timers and customer screen stuff
+- then really just ironing out all that functionality
+
 
 
