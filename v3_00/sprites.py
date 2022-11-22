@@ -129,6 +129,9 @@ class New_Orders_Tab(Browser_Tab):
         self.customer_select_popup_selected_customer = False
         # -- new test - for current basket total --
         self.current_basket_total = 0.0
+        # temp test for trigger crud fade rect idea
+        self.trigger_active_order_crud_fade = False
+        self.fading_alpha = 0
 
 
     # [ current! ]
@@ -147,15 +150,18 @@ class New_Orders_Tab(Browser_Tab):
         # -- finally blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height)) 
         
+        
     # - note - ideally dont run this all the time, will be easy enough to do once the functionality is more finalised, i.e. set once, then reset on CRUD item only
     def update_basket_total(self):
         # -- store the running total --
         basket_running_total = 0.0
 
-        # [ new-test! ]
+        # [ new-test! ] 
         # updating this to zip the sidebar_order_x_details now too 
         order_details_dict = self.get_active_order_details_dict()
 
+        # [ new! ] 
+        # [ running-total-here ] - want to do save the quantity to self here too and use that instead when passing it! << DO THIS! 
         # -- loop the active items and grab their prices from the menu items dict --
         for an_order_item in self.active_order_list: 
             order_item_price = self.menu_items_price_dict[an_order_item]
@@ -191,7 +197,7 @@ class New_Orders_Tab(Browser_Tab):
     # -- end new stuff -- 
 
 
-    # [ todo ] - really need to chunk this up 
+    # [ todo! ] - really need to chunk this up 
     def draw_orders_sidebar(self):
         # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
         self.sidebar_sticky_bottom_surf_height = 140
@@ -389,6 +395,7 @@ class New_Orders_Tab(Browser_Tab):
                         else:
                             # -- else it just adds the item as a new random message purely to test the functionality -- 
                             self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1])
+
                         # -- debug - print the chatlog --
                         print(self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog)
 
@@ -425,17 +432,50 @@ class New_Orders_Tab(Browser_Tab):
             # [ new! ]
             # -- get the quantity from the new active order details dict --
             order_details_dict = self.get_active_order_details_dict()
-
-            # [ rnrn! ]
-            # print(f"{self.active_order_list = }")
-            # print(f"{order_details_dict = }")
             item_quantity = order_details_dict[an_item]["quantity"]
+            
 
-            # Note! => quantity stuff, maybe here
+            # - doing the bg rect on crud a new item to the active order, so ig have it obvs drawn here, or thereabouts, and have it activated elsewhere, aite 
+            # [ current! ] 
+            # [ here! ] 
+            # [ rnrn! ] 
+            # the setup 
+            crud_highlight_width = 250
+            crud_highlight_height = 30
+            crud_highlight_bg_rect = pg.Rect(20 - 5, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
+            crud_hightlight_bg_surf = pg.Surface((crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
+            crud_hightlight_bg_surf.fill(ORANGE)
+
+
+            if self.trigger_active_order_crud_fade == an_item:
+                # print(f"FIGHT! > {an_item = } vs {self.trigger_active_order_crud_fade = }")
+                if self.fading_alpha > 0:
+                    self.fading_alpha -= 1
+                elif self.fading_alpha == 0:                
+                    self.fading_alpha = 0
+                    self.trigger_active_order_crud_fade = False
+
+                if self.fading_alpha:
+                    crud_hightlight_bg_surf.set_alpha(self.fading_alpha) 
+                    # the blit
+                    self.orders_sidebar_surf.blit(crud_hightlight_bg_surf, crud_highlight_bg_rect)
+
+
+            # -- draw this item and its quantity for the active order to the orders sidebar surf --
             self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=14)
+
+                    
+
 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()
+
+        # new
+        # temp test for fading bg rect on crud thing
+        # -- considering putting this here, either way defo make it its own function --
+    
+        
+        
 
         # [ new! ]
         # -- new test addition for updating the active/current basket total - note is running the calculation the frame after the initial blit --
@@ -515,6 +555,14 @@ class New_Orders_Tab(Browser_Tab):
                     else:
                         active_order_details_dict[an_item_dict["name"]] = {"quantity": 1}
                         to_add_to_list[len(to_add_to_list) + 1] = f"{an_item_dict['name']}"
+
+                    # [ new! ]
+                    # -- testing triggering bg on crud a menu item to the active orders menu, with fade effect (much wow!) --
+                    # so its defo guna have "name" by now since we're doing it after the above dict update stuff
+                    self.trigger_active_order_crud_fade = an_item_dict["name"]                    
+                    #
+                    # self.trigger_active_order_crud_fade = True
+                    self.fading_alpha = 80
                         
             # -- do the blit and store the resulting rect to check hover via mouse collide -- 
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
