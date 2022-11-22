@@ -1,3 +1,5 @@
+# note: incase anyone is reading, this changelog formatting is designed for viewing in vs code and not for .md in github, tho i will soon port it over to the repo .readme 
+
 # day 1 - 14/11
 
 [v0.01]
@@ -143,6 +145,7 @@ quick notes
 - added text bg rect for order number in sidebar but also need to improve/change this (explain better too)
 - looots of sidebar ui changed (+ some additional extras) that ill document tomo
     - basically is customer queue and customer state/status info
+- its *really* starting to come along now wow
 
 
 
