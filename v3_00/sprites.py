@@ -174,7 +174,7 @@ class New_Orders_Tab(Browser_Tab):
             return self.sidebar_order_3_details
 
     
-    # so after taking a well deserved break to get other stuff done
+    # so after taking a well deserved break to get other stuff done 
     # - to finish up its just the rect bg alpha on update thing
     
     # then more generally
