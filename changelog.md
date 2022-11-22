@@ -126,6 +126,7 @@ quick notes
 
 
 # day 9
+[v3.10-v3.12]
 [v3.10]
 - planned upcoming functionality for basket totals, quantities, price info, etc, etc
 - added calculating, updating, and drawing current/active basket total price to new sticky bottom bar on orders sidebar 
@@ -143,13 +144,17 @@ quick notes
 - when adding a new or updating the quantity of an existing (will also do delete soon) menu item to the active order there is now a fading highlight rect around the updated / new item for increased visual clarity, a lil bit of added polish, and a small but useful ux improvement in easily being able to revert changes in the rare case you're unsure or forget what you'd just clicked
 - added border for window blit (explain better)
 - added text bg rect for order number in sidebar but also need to improve/change this (explain better too)
+
+[v3.12]
 - looots of sidebar ui changed (+ some additional extras) that ill document tomo
     - basically is customer queue and customer state/status info
 - its *really* starting to come along now wow
 
 
 
-
+[for-tomo]
+# CRITICAL PERSONAL NOTE!
+# - get highlight on window hover back, where tf did that just go lol?
 
 # generalised to do
 - add in button to loop through the customers chatlog stuff
