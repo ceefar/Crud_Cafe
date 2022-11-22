@@ -24,6 +24,7 @@ class Game:
         self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))  
         # - windows -      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
+        self.window_border_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_1_IMG)).convert_alpha()  
         self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  
@@ -103,14 +104,14 @@ class Game:
             if isinstance(this_customer, Customer): # purely for type hints
                 if this_customer.customer_state == "active":
                     self.all_active_customers[this_customer.my_id] = this_customer
-        # -- loop all chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be problematic -- 
+        # -- loop chatboxes to handle states seperately as we may need to break this loop, there won't be enough windows on screen for this ever to be even slightly problematic -- 
         self.hovered_chatbox = False
         for a_chatbox in reversed(self.chatbox_layer_list):
             if isinstance(a_chatbox, Chatbox): # purely for type hints
                 if a_chatbox.handle_hover_or_click():
                     self.hovered_chatbox = a_chatbox # save this instance as we will unset the hover for every other instance that isnt this one
                     break
-        # -- loop all chatboxes to run each instances update - importantly is done this way as increments a counter for offset positions, else would do self.chatboxes.update() --
+        # -- loop chatboxes to run each instances update - importantly is done this way as increments a counter for offset positions, else would do self.chatboxes.update() --
         for this_chatbox in self.chatboxes:
             if isinstance(this_chatbox, Chatbox): # purely for type hints
                 # -- reset the hovered var on all chatbox instances that weren't the hovered one that we saved when we broke out of the loop above earlier -- 
@@ -121,7 +122,7 @@ class Game:
         self.reorder_all_window_layers()
  
     def draw(self):
-        pg.display.set_caption(f"Crud Cafe v3.09 - {self.clock.get_fps():.2f}")
+        pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
@@ -130,6 +131,13 @@ class Game:
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
                 if sprite.is_active_tab:  
+                    # -- [new!] - loop all the chatboxes and draw the window border if valid --
+                    for a_chatbox_window in self.chatboxes:
+                        if isinstance(a_chatbox_window, Chatbox): # purely for type hints
+                            # -- draw the border for the window, but only if its in the opened state --
+                            if a_chatbox_window.my_customer.chatbox_state == "opened": 
+                                a_chatbox_window.draw_window_border_and_name()
+                    # -- draw the chatbox layers in the correct order on top of one another using ._layer, .image which are self explanitory, & .rect which is for the position -- 
                     self.chatbox_layers.draw(sprite.image)
                     # -- for customer selector popup - has to happen after drawing chatbox layers in order of operations as its a popup, it should be on top of everything else --
                     if isinstance(sprite, New_Orders_Tab):
@@ -137,7 +145,6 @@ class Game:
                             sprite.draw_active_customers_selector_popup()
                     # -- actually draw the tab surface to the screen -- 
                     sprite.draw_tab_to_pc()
-
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               

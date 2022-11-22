@@ -139,6 +139,8 @@ quick notes
 
 [v3.11]
 - when adding a new or updating the quantity of an existing (will also do delete soon) menu item to the active order there is now a fading highlight rect around the updated / new item for increased visual clarity, a lil bit of added polish, and a small but useful ux improvement in easily being able to revert changes in the rare case you're unsure or forget what you'd just clicked
+- added border for window blit (explain better)
+- added text bg rect for order number in sidebar but also need to improve/change this (explain better too)
 
 
 

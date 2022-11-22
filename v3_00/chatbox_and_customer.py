@@ -16,7 +16,7 @@ class Customer(pg.sprite.Sprite):
         self.my_id = len(game.customers) # will start at 1
         self.customer_state = "inactive" # active or completed or cancelled
         self.chatbox_state = choice(["shelved","opened"]) # opened or shelved, have them start shelved - only relevant when customer is active (for now anyways) 
-        self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Steve","Carl","Mike","Brian"])
+        self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Abu","Steve","Carl","Mike","Brian"])
         self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
 
         # -- note --
@@ -77,10 +77,14 @@ class Chatbox(pg.sprite.Sprite):
         # -- new test for chatlog blit stuff --
         self.chatlog_text_msg_height = 45
         self.chatlog_payment_msg_height = 108 
+
         # -- more new chatlog stuff --
         self.my_chatlog = [] 
         if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
             self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
+        
+        # -- new test for window border img --
+        self.window_border_img = self.game.window_border_img.copy()
 
     # ---- End Init ----
 
@@ -94,19 +98,18 @@ class Chatbox(pg.sprite.Sprite):
                     self.set_opened_chatbox_initial_position()
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
-                    self.draw_name_to_chatbox()
 
-                    # -- NEW --
-                    # - drawing chatlog stuff -
-                    # self.test_draw_payment_element()
+                    # [ new! ]
+                    # -- drawing chatlog stuff --
                     self.draw_my_chatlog()
                 
-                # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
+                # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, then offset that pos by the (negative btw >) -pc_screen_width and height --
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
                     self.rect = self.get_true_rect(a_rect=self.rect, move_in_negative=True)
-                    # then to picked it up exactly where the mouse picked it up we do one more offset for the clicked pos minus the true position of the window and add that to the x & y
+                    # -- then to pick it up exactly where the mouse picked it up we do one more offset for the clicked pos minus the true position of the window and add that to the x & y -- 
                     self.rect.move_ip(-self.mouse_offset_x, -self.mouse_offset_y)
+
             # -- handle shelved state -- 
             elif self.my_customer.chatbox_state == "shelved":             
                 self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
@@ -117,6 +120,10 @@ class Chatbox(pg.sprite.Sprite):
 
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
+
+    def draw_window_border_and_name(self):
+        self.image.blit(self.window_border_img, (0,0)) 
+        self.draw_name_to_chatbox()
 
     # -- Blitting To This Chatbox Image Functs --
 

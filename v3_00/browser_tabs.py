@@ -52,7 +52,7 @@ class Browser_Tab(pg.sprite.Sprite):
         self.image.blit(title, (50,30))  
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
-    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16):
+    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16, want_return=False):
         """ the actual blit for this instance's .image surface is executed in draw_tab_to_pc """
         # -- obvs will add functionality for font and font size at some point, just is unnecessary rn --
         if font_size == 10:
@@ -68,7 +68,10 @@ class Browser_Tab(pg.sprite.Sprite):
         elif font_size == 20:
             text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, colour) 
         # -- --
-        surf.blit(text_surf, pos) 
+        resulting_rect = surf.blit(text_surf, pos) 
+        # -- return the resulting rect (pos & size) if you ask... nicely -- 
+        if want_return:
+            return resulting_rect
 
 # -- Browser Tab Children --
 class New_Orders_Tab(Browser_Tab):
@@ -179,10 +182,20 @@ class New_Orders_Tab(Browser_Tab):
         elif self.active_order_number == 3:
             return self.sidebar_order_3_details
 
-    
-   # - the over the top blit for windows and sidebar
+
+   # should do quick vid update at some point, dont have to speak is fine
+   
+   # - slick, smart on hover active delete btn idea using the same rect fade rect ? (the whole slide out "<- delete? / click to delete" idea)
    # - the customer talking stuff
+   # - HUGE - the customer left side scene timer ui idea
+   # - HUGE - the 2x book ideas, see notes
+   # - HUGE - replacing the chats tab with orders x customers, see phone notes
+   # - fade tweening?
+   # - bg traffic?
    # - also port stuff from recent phone note
+
+   # also
+   # - should be auto scrolling btw on new msg!
     
     # then more generally
     # -------------------
@@ -262,10 +275,10 @@ class New_Orders_Tab(Browser_Tab):
 
         # -- wipes the surface, drawing the analogous bg colour if the orders sidebar surface is hovered --
         if self.is_orders_sidebar_surf_hovered:
-            bg_colour = TAN_ANALOGOUS_1 # TAN_ANALOGOUS_1 TAN_DARKER_1
+            self.sidebar_bg_colour = TAN_ANALOGOUS_1 # TAN_ANALOGOUS_1 TAN_DARKER_1
         else:
-            bg_colour = self.orders_sidebar_surf_colour
-        self.orders_sidebar_surf.fill(bg_colour) # bg colour = TAN
+            self.sidebar_bg_colour = self.orders_sidebar_surf_colour
+        self.orders_sidebar_surf.fill(self.sidebar_bg_colour) # bg colour = TAN
 
     
     def draw_active_customers_selector_popup(self):
@@ -414,8 +427,7 @@ class New_Orders_Tab(Browser_Tab):
         self.wipe_surface()
         self.draw_menu_items_selector()
         self.draw_orders_sidebar()
-        # -- todo - make this a draw title instead --
-        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf) 
+        
         # -- set the order list we will draw to the surface based on the currently active order number - could make this switch case ternary but probs way too long for a single line --
         if self.active_order_number == 1: 
             self.active_order_list = list(self.sidebar_order_1.values())
@@ -434,7 +446,6 @@ class New_Orders_Tab(Browser_Tab):
             # -- get the quantity from the new active order details dict --
             order_details_dict = self.get_active_order_details_dict()
             item_quantity = order_details_dict[an_item]["quantity"]
-            
 
             # - doing the bg rect on crud a new item to the active order, so ig have it obvs drawn here, or thereabouts, and have it activated elsewhere, aite 
             # [ current! ] 
@@ -446,7 +457,6 @@ class New_Orders_Tab(Browser_Tab):
             crud_highlight_bg_rect = pg.Rect(20 - 5, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
             crud_hightlight_bg_surf = pg.Surface((crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
             crud_hightlight_bg_surf.fill(ORANGE)
-
 
             if self.trigger_active_order_crud_fade == an_item:
                 # -- decrement if the crud fade trigger activates and is this item, then blit the relevant fading bg surface for this item --
@@ -464,6 +474,14 @@ class New_Orders_Tab(Browser_Tab):
 
             # -- draw this item and its quantity for the active order to the orders sidebar surf --
             self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=14)
+
+        # -- make this a draw title function now, and fix the below double blit --
+        # - note actually also just fix the rect to be a standard rect like the bottom bar instead of just just the small rect behind the text
+        # - note, do this title draw after drawing the scrolling text since it has a bg rect now as we want it to be on the bottom 
+        order_basket_title_true_rect = self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True) 
+        pg.draw.rect(self.orders_sidebar_surf, self.sidebar_bg_colour, order_basket_title_true_rect)
+        # -- yes legit have to fix this to not do this blit twice - do it twice to get the size, can actually just alter that function to not blit and just return, bosh -- 
+        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True) 
 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()        
