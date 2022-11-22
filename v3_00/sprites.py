@@ -52,10 +52,22 @@ class Browser_Tab(pg.sprite.Sprite):
         self.image.blit(title, (50,30))  
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
-    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY):
+    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16):
         """ the actual blit for this instance's .image surface is executed in draw_tab_to_pc """
-        # obvs will add functionality for font and font size at some point, just is unnecessary rn
-        text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, colour) 
+        # -- obvs will add functionality for font and font size at some point, just is unnecessary rn --
+        if font_size == 10:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_10.render(f"{text}", True, colour) 
+        elif font_size == 12:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{text}", True, colour) 
+        elif font_size == 14:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{text}", True, colour) 
+        elif font_size == 16:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, colour) 
+        elif font_size == 18:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"{text}", True, colour) 
+        elif font_size == 20:
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, colour) 
+        # -- --
         surf.blit(text_surf, pos) 
 
 # -- Browser Tab Children --
@@ -64,9 +76,17 @@ class New_Orders_Tab(Browser_Tab):
         super().__init__(game)
         # -- [NEW] v3.06 additions for new orders - current order sidebar --
         # -- declare vars to store lists of orders --
-        self.sidebar_order_1 = {1:"Grilled Charmander (Spicy)", 2:"Large Nuka Cola", 3:"Mario's Mushroom Soup", 4:"Squirtle Sashimi", 5:"Large Exeggcute Fried Rice", 6:"Mario's Mushroom Soup", 7:"Squirtle Sashimi"} # 8:"Large Exeggcute Fried Rice", 9:"Squirtle Sashimi", 10:"Large Exeggcute Fried Rice"
-        self.sidebar_order_2 = {1:"Mario's Mushroom Soup", 2:"Squirtle Sashimi", 3:"Large Exeggcute Fried Rice"}
+        self.sidebar_order_1 = {1:"Grilled Charmander", 2:"Nuka Cola", 3:"Mario's Mushroom Soup", 4:"Squirtle Sashimi", 5:"Exeggcute Fried Rice"} # 6:"Mario's Mushroom Soup", 7:"Squirtle Sashimi", 8:"Large Exeggcute Fried Rice", 9:"Squirtle Sashimi", 10:"Large Exeggcute Fried Rice"
+        self.sidebar_order_2 = {1:"Mario's Mushroom Soup", 2:"Squirtle Sashimi", 3:"Exeggcute Fried Rice"}
         self.sidebar_order_3 = {}
+
+        # [ new! ]
+        # -- again obvs will refactor this into one dictionary but since just adding this functionality in from scratch using this temp dict instead of updating the og dict variables --
+        # quantity only will do for now lol
+        self.sidebar_order_1_details = {"Grilled Charmander":{"quantity":1}, "Nuka Cola":{"quantity":1}, "Mario's Mushroom Soup":{"quantity":1}, "Squirtle Sashimi":{"quantity":1}, "Exeggcute Fried Rice":{"quantity":1}} 
+        self.sidebar_order_2_details = {"Mario's Mushroom Soup":{"quantity":2}, "Squirtle Sashimi":{"quantity":2}, "Exeggcute Fried Rice":{"quantity":3}}
+        self.sidebar_order_3_details = {}
+        
         # -- create the surface for the orders sidebar -- 
         self.width_offset = 90 # if this is set to zero then the sidebar will take exactly half the screen size, if set to 100 it will be -100px from the width and +100px in x axis 
         self.orders_sidebar_surf = pg.Surface(((self.rect.width / 2) - self.width_offset, self.rect.height))
@@ -81,6 +101,12 @@ class New_Orders_Tab(Browser_Tab):
                                 3:{"name":"Exeggcute Fried Rice", "price":9.49, "my_id":3, "course":"noodles_rice", "has_toggles":True, "toggles":[("large",2.50), ("regular",0)]},
                                 4:{"name":"Nuka Cola", "price":3.15, "my_id":4, "course":"drinks", "has_toggles":True, "toggles":[("large", 1.75),("regular", 0),("quantum", 3), ("classic", 0)]},
                                 5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter", "has_toggles":False}}
+        # -- will refactor the dicts in future to encompass this, just adding in it like this for now - also mays well bang it in settings tbf --
+        self.menu_items_price_dict = {"Grilled Charmander":self.menu_items_dict[1]["price"],
+                                        "Squirtle Sashimi":self.menu_items_dict[2]["price"],
+                                        "Exeggcute Fried Rice":self.menu_items_dict[3]["price"],
+                                        "Nuka Cola":self.menu_items_dict[4]["price"],
+                                        "Mario's Mushroom Soup":self.menu_items_dict[5]["price"]}
         # -- menu items dimensions --
         self.menu_items_hovered_width = 500
         self.menu_items_normal_width = 300
@@ -101,8 +127,71 @@ class New_Orders_Tab(Browser_Tab):
         # -- new test - for customer selector popup window --
         self.want_customer_select_popup = False
         self.customer_select_popup_selected_customer = False
+        # -- new test - for current basket total --
+        self.current_basket_total = 0.0
 
 
+    # [ current! ]
+    # - new stuff - 
+    # -- order total sticky surf on the orders sidebar, positioned on top of the sticky bottom surf -- 
+    def draw_basket_total_cost_bar(self):
+        # -- dimensions and surf --
+        self.sidebar_sticky_bottom_basket_cost_height = 40
+        self.sidebar_sticky_bottom_basket_cost_width = self.orders_sidebar_surf.get_width()
+        self.sidebar_sticky_bottom_basket_cost_surf = pg.Surface((self.sidebar_sticky_bottom_basket_cost_width, self.sidebar_sticky_bottom_basket_cost_height))
+        self.sidebar_sticky_bottom_basket_cost_surf.fill(SKYBLUE)
+        # -- text surf -- 
+        basket_total_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"${self.current_basket_total:.2f}", True, BLACK) 
+        # -- draw the text surf to the sticky bottom basket surf -- 
+        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_text_surf, (20,10))
+        # -- finally blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar -- 
+        self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height)) 
+        
+    # - note - ideally dont run this all the time, will be easy enough to do once the functionality is more finalised, i.e. set once, then reset on CRUD item only
+    def update_basket_total(self):
+        # -- store the running total --
+        basket_running_total = 0.0
+
+        # [ new-test! ]
+        # updating this to zip the sidebar_order_x_details now too 
+        order_details_dict = self.get_active_order_details_dict()
+
+        # -- loop the active items and grab their prices from the menu items dict --
+        for an_order_item in self.active_order_list: 
+            order_item_price = self.menu_items_price_dict[an_order_item]
+            item_quantity = order_details_dict[an_order_item]["quantity"]
+            basket_running_total += (order_item_price * item_quantity)
+        # -- set the current basket total to the result -- 
+        self.current_basket_total = basket_running_total
+
+
+    def get_active_order_details_dict(self):
+        if self.active_order_number == 1:
+            return self.sidebar_order_1_details
+        elif self.active_order_number == 2:
+            return self.sidebar_order_2_details
+        elif self.active_order_number == 3:
+            return self.sidebar_order_3_details
+
+    
+    # so after taking a well deserved break to get other stuff done
+    # - to finish up its just the rect bg alpha on update thing
+    
+    # then more generally
+    # -------------------
+    # - increase decrease (and delete?) buttons and functionality
+    # - sending price to customer and resetting
+    #   - HUGE N0TE
+    #       - should be sending or saving the entire order (say save to customer) as a json file, also want to save the entire chatlog as a json file
+    #       - like start doing this now and preparing to output it to sql too
+    #       - and then maaaaybe in future ill actually do a load via sql too 
+    #       - which is pretty much cloud saving functionality if you add simple user account functionality too o: 
+
+
+    # -- end new stuff -- 
+
+
+    # [ todo ] - really need to chunk this up 
     def draw_orders_sidebar(self):
         # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
         self.sidebar_sticky_bottom_surf_height = 140
@@ -144,12 +233,14 @@ class New_Orders_Tab(Browser_Tab):
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
             
-
             # still fair few things to do here obvs 
             # - start by adding the text for the button
 
+        # [ new! ]
+        # -- blit the basket total cost sticky bottom surfaces --  
+        self.draw_basket_total_cost_bar() # - note - have moved self.update_basket_total() to after the active_order switch in update()
 
-        # -- finally blit the new sticky bottom surface -- 
+        # -- then blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
 
         # -- draw the sidebar --
@@ -171,6 +262,8 @@ class New_Orders_Tab(Browser_Tab):
 
     
     def draw_active_customers_selector_popup(self):
+        # -- note - i think should probably be resetting this var at the start, but obvs it needs to be set too (not perma off), guna confirm more finalised functionality first before deciding --
+        # self.customer_select_popup_selected_customer = False
         # -- first blit a background surf for the popup --
         popup_bg = pg.Surface((self.rect.width, self.rect.height)).convert_alpha()
         popup_bg.fill(DARKGREY)
@@ -199,9 +292,8 @@ class New_Orders_Tab(Browser_Tab):
                 pg.draw.rect(self.customer_selector_popup_window_surf, BLUEMIDNIGHT, customer_selector_bg_rect)
                 if self.game.mouse_click_up: 
 
-                    # [ CRITICAL! ]
+                    # - update this to a .game var to be able to reset it here easily 
                     self.customer_select_popup_selected_customer = a_customer
-                    # REMEMBER WHEN YOU CLICK CLOSE OR SELECT TO WIPE THIS VAR!
 
             # -- if this is the selected customer then set the colour to green to visually confirm the click, ux baybayyy -- 
             if self.customer_select_popup_selected_customer is a_customer:
@@ -225,6 +317,9 @@ class New_Orders_Tab(Browser_Tab):
             # -- on click, set the state to close the popup window --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = False
+                
+                # -- New test --
+                self.customer_select_popup_selected_customer = False # and reset this var
 
         # -- new test for confirm button --
         # - want this to be on select dynamic text 
@@ -261,41 +356,42 @@ class New_Orders_Tab(Browser_Tab):
             self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding))
             
 
-    	    # [ here! ]
+    	    # [ todo-stuff! ]
             if self.customer_select_popup_selected_customer:
                 if self.game.mouse_click_up: 
+                    
+                    # [ new! ] 
+                    # -- calculate the true amount of basket items from the quantities --
+                    # should probably make this an update type funct btw and actually execute it in update or sumnt maybe, either way make it its own function
+                    active_order_details_dict = self.get_active_order_details_dict()
+                    basket_total_items = 0 
+                    for basket_item_details in active_order_details_dict.values():
+                        basket_total_items += basket_item_details["quantity"]
+
+                    # [ todo-quickly! ] - so actually do the above stuff when you do the price stuff too (since assume am looping for that too)
+                    # [ todo-quickly! ] - then set it to a self var and use it here bosh
+
+                    # [ note! ] - wont actually be doing this loop here, will just be sending the price stuff, this is just temp for testing
                     for i, item in enumerate(self.active_order_list):
-                        print(f"Blit {item} to {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1]} for {self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer}")
-                        # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-                        self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog.append({"author":"api", "msg":f"{item}"})
+                       
+                        # [ new! ]
+                        # temp implementation for sending the finalised customer order details dict to the customer window
+                        # - potentially could do the confirm (if the order sent matches the order the given customer wanted) logic implementation there too tbf
 
-                # k so just guna draw to the image from here to test but
-                # actually create a function in the chatbox to handle this, since it needs the order of chats for the position n ting
+                        temp_details_dict_to_send = {"basket_price":self.current_basket_total, "basket_total_items":basket_total_items}
 
+                        # - obvs only want to send payment here but its just easier to do it this way while testing
+                        author_msg_pairs = [("api", "payment_window", temp_details_dict_to_send), ("customer", f"{item}")]
+                        rng = choice(author_msg_pairs)
+                        if rng[1] == "payment_window":
+                            # -- now sending with current basket total if we are sending the payment_window msg to the customers message log --
+                            self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1], rng[2])
+                        else:
+                            # -- else it just adds the item as a new random message purely to test the functionality -- 
+                            self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1])
+                        # -- debug - print the chatlog --
+                        print(self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog)
 
-        # - then sending just any text to that customers window surface and wiping/resetting the surface vars and tings
-        #   - can probably just access that directly using the dict key value pairs in .game that are by id
-        #   - obvs need to do the pre-blit list thing first so thats next! 
-        #       - eeeee so awesome :D
-
-        # - smashed it
-        # - see below and see notes obvs but mostly i think first just start of this new version with...
-
-        # - resize the text a tad (tho dw about formatting rn ffs)
-        # - actually drawing to the correct window
-        #   - just isnt updating customer_select_popup_selected_customer i think btw
-        # - add scroll functionality for the windows
-        # - oh and also wiping the current one <3
-        # - once this is done clean up the project and do repo for it and github profile, & linkedin profile, & update new cv x portfolio, & then maybe also a webpage for this?
-
-
-        # - then a button that says not selected bottom right, and then when u click a name it shows it as selected and sets the button text to "add to {selected_name}"
-        # - then legit get that to actually do the blit to their window and wipe the order and omg <3 new version
-        #   - note => just as basic for now is fine (will make it be total or sumnt - for now just len of the basket)
-        #   - ensure this actually works by only adding in 2 or 3 to test
-        #   - then adding more after with new baskets created and blit to the window (in a new, next chat position each time) 
-
-        
         # -- then blit the actual popup --
         self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 
         self.customer_selector_popup_window_true_rect = self.game.get_true_rect(self.customer_selector_popup_window_true_rect)
@@ -326,12 +422,26 @@ class New_Orders_Tab(Browser_Tab):
         # -- loop all the items in the order numbers list and draw them to the order sidebar surface using the scroll offset --
         for index, an_item in enumerate(self.active_order_list):
 
+            # [ new! ]
+            # -- get the quantity from the new active order details dict --
+            order_details_dict = self.get_active_order_details_dict()
+
+            # [ rnrn! ]
+            # print(f"{self.active_order_list = }")
+            # print(f"{order_details_dict = }")
+            item_quantity = order_details_dict[an_item]["quantity"]
+
             # Note! => quantity stuff, maybe here
-            self.draw_text_to_surf(f"1x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf)
+            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=14)
 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()
+
+        # [ new! ]
+        # -- new test addition for updating the active/current basket total - note is running the calculation the frame after the initial blit --
+        self.update_basket_total() # - note -  could easily be resolved by creating an active_order_number switch in that function (do actually have that function now btw if u wanna do this lol), but this is perfectly fine, just noting it incase of a major refactor as its not with draw_basket_total_cost_bar()
             
+
     def draw_menu_items_selector(self):
         for index, an_item_dict in enumerate(self.menu_items_dict.values()):
             menu_item_surf = pg.Surface((self.menu_items_normal_width, 50))
@@ -359,7 +469,7 @@ class New_Orders_Tab(Browser_Tab):
                     offset_y = 0
             else:
                 offset_y = 0
-            # -- draw the surf dynamic bg surface, draw the item text to that surface, and lastly grab the hover rect and append it to an instance variable so we can check it for mouse collision later --
+            # --  draw the item text to that surface after drawing the surf dynamic bg surface underneath, then grab the hover rect and append it to an instance variable so we can check it for mouse collision later --
             test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
             item_price = an_item_dict["price"]
             self.draw_text_to_surf(f"{an_item_dict['name']} ${item_price}", (10, 15), menu_item_surf, font_colour) # now includes price
@@ -385,14 +495,26 @@ class New_Orders_Tab(Browser_Tab):
                 # -- if the player clicks the add to order button then add this item to the currently active order number --
                 if self.game.mouse_click_up: 
 
+                    # [ todo-quick! ]
                     # -- 100% MAKE THIS A FUNCTION ONCE DONE TESTING! --
-                    if self.game.new_orders_tab.active_order_number == 1:                    
-                        to_add_to_list = self.game.new_orders_tab.sidebar_order_1
-                    elif self.game.new_orders_tab.active_order_number == 2:                    
-                        to_add_to_list = self.game.new_orders_tab.sidebar_order_2
-                    elif self.game.new_orders_tab.active_order_number == 3:                    
-                        to_add_to_list = self.game.new_orders_tab.sidebar_order_3
-                    to_add_to_list[len(to_add_to_list) + 1] = f"{an_item_dict['name']}"
+                    if self.active_order_number == 1:                    
+                        to_add_to_list = self.sidebar_order_1
+                    elif self.active_order_number == 2:                    
+                        to_add_to_list = self.sidebar_order_2
+                    elif self.active_order_number == 3:                    
+                        to_add_to_list = self.sidebar_order_3
+                    
+                    # [ new! ]
+                    # -- adds the actual item to the active order and the new associated order detail dict --
+                    # -- first get the details dict for this active order --
+                    active_order_details_dict = self.get_active_order_details_dict()
+                    # -- if this item **is** already in the active sidebar order list, then add it to this orders details dict as a new item to the dict (not a quantity update) --
+                    if an_item_dict["name"] in to_add_to_list.values():                        
+                        active_order_details_dict[an_item_dict["name"]]["quantity"] += 1
+                     # -- else, if its not in the active sidebar order list, then add it to this orders details dict as a new item to the dict (not as an update to the quantity) --
+                    else:
+                        active_order_details_dict[an_item_dict["name"]] = {"quantity": 1}
+                        to_add_to_list[len(to_add_to_list) + 1] = f"{an_item_dict['name']}"
                         
             # -- do the blit and store the resulting rect to check hover via mouse collide -- 
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
@@ -411,30 +533,8 @@ class New_Orders_Tab(Browser_Tab):
         # reset the .self var if there is no item hovered by the mouse
         if not is_hovered_item:
             self.is_one_menu_item_hovered = False
-    
+# -- End New Orders Tab Class --     
 
-# - scroll bars todo
-#   - current basket text needs to be on a bg rect so it looks sticky
-#   - scroll bar to incdicate when scroll is possible
-#       - and only allowing scroll when it is actually possible 
-
-# - add to customer order button and working
-#   - ensure sticky bottom of orders sidebar works
-#   - ensure have adding to new position in customer window functionality surf sorted
-#   - and do on hover scroll for these windows too
-
-# - possible hover outline rect moving idea but also maybe not just respace a bit more is fine
-# - remove from cart
-# - quants
-# - pricing up the actual cart duhhh lol
-
-# - see phone
-# - but basically first up to do
-#   - orders x customers page
-#   - improved gui stuff
-#   - toggles stuff that i skipped
-#   - talking
-#   - moving
 
 class Chats_Tab(Browser_Tab):
     def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
@@ -504,8 +604,16 @@ class Chatbox(pg.sprite.Sprite):
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
         self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
 
+        # -- new test for scrolling chat window --
+        self.chatbox_window_scroll_y_offset = 0 
+
         # -- new test for chatlog blit stuff --
-        self.my_chatlog = [] # [{"author":"api", "msg":"your order"},{"author":"api", "msg":"number is 23041309"}] # am thinking as a list of dicts, i.e. json
+        self.chatlog_text_msg_height = 45
+        self.chatlog_payment_msg_height = 108 
+        # -- more new chatlog stuff --
+        self.my_chatlog = [] 
+        if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
+            self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
 
     # ---- End Init ----
 
@@ -520,7 +628,12 @@ class Chatbox(pg.sprite.Sprite):
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
                     self.draw_name_to_chatbox()
-                    self.test_draw_my_chatlog()
+
+                    # -- NEW --
+                    # - drawing chatlog stuff -
+                    # self.test_draw_payment_element()
+                    self.draw_my_chatlog()
+                
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, the offset that pos by the -pc_screen_width and height
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
@@ -568,14 +681,110 @@ class Chatbox(pg.sprite.Sprite):
             self.image = self.game.window_img.copy()
 
 
-    # -- initial first test implementatino for chatlog drawing --
-    def test_draw_my_chatlog(self):
+    # -- New Chat Message First Test Stuff --
+
+    def draw_payment_element(self, pos, order_details:dict): # {"price": 18.99}
+        payment_pending_img = self.game.payment_pending_1_img.copy()
+        # [ new! ]
+        # -- get the price from the new details dict --
+        self.basket_price = float(f"{order_details['basket_price']:.2f}") # set the precision to 2 decimal places
+        self.basket_total_items = order_details["basket_total_items"]
+        # -- create the text surfaces --
+        basket_price_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_26.render(f"${self.basket_price}", True, FORESTGREEN)
+        basket_total_items_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"basket items: {self.basket_total_items}", True, BLACK)
+        # -- draw the text surfs to this objects copy of the payment window img 
+        payment_pending_img.blit(basket_price_text_surf, (78, 27)) 
+        payment_pending_img.blit(basket_total_items_text_surf, (78, 57)) 
+        # obvs and then can do the delivery charge stuff here too
+        # - even would be cute for them to sometimes stop the transaction because of this but **not** anytime soon
+        
+        # [ rnrn! ] - just last remaining thing to do is the quantities 
+        
+        self.image.blit(payment_pending_img, pos)
+        # will want a handler function that will sort all the different payment plus associated sprite animation states
+
+
+    def add_new_chatlog_msg(self, author:str, msg:str, order_details=None): # [ new! ] just sending price for now but obvs guna update 
+        # -- create the dictionary chatlog item --
+        chatlog_dictionary_entry = {}
+
+        # -- set author --
+        author_entry = author
+
+        # -- set msg entry and chat height --
+        # - payment window - 
+        if msg == "payment_window":
+            msg_entry = "payment_window"
+            chat_height_entry = self.chatlog_payment_msg_height
+        # - text message -
+        else: # only doing these two (payment window vs any other msg) while testing init functionality
+            msg_entry = msg
+            chat_height_entry = self.chatlog_text_msg_height
+            
+        # -- set y position --
+        # -- if there is anything in the chatlog, then we use dynamic positions --
+        if self.my_chatlog:
+            # [ here! ]
+            # <- to do this dynamically based on size of the previous entry
+            last_chat_entry_pos = self.my_chatlog[-1]["chat_pos"]
+            last_chat_entry_height = self.my_chatlog[-1]["height"]
+            chat_pos_entry = last_chat_entry_pos + last_chat_entry_height + 10 # 110 
+        # -- else, this is the first chat message so we set it to the initial position --
+        else:
+            chat_pos_entry = 50
+            
+        # -- create the final dict of the chatlog entry --
+        chatlog_dictionary_entry["author"] = author_entry
+        chatlog_dictionary_entry["msg"] = msg_entry
+        chatlog_dictionary_entry["height"] = chat_height_entry
+        chatlog_dictionary_entry["chat_pos"] = chat_pos_entry
+        if order_details:
+            chatlog_dictionary_entry["order_details"] = order_details
+
+        # -- finally, append the finalised dict to the chatlog list --
+        self.my_chatlog.append(chatlog_dictionary_entry)
+
+
+    def draw_my_chatlog(self):
         if self.my_chatlog:
             for i, a_chatlog_item in enumerate(self.my_chatlog):
                 a_msg = a_chatlog_item["msg"]
-                a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{a_msg}", True, BLACK)
-                # blit to the chatbox associated with this customers id, temporary while testing until doing in chatbox function
-                self.image.blit(a_msg_surf, (30, 50 + (40 * i)))
+                an_author = a_chatlog_item["author"]
+                a_chat_line_y_pos = a_chatlog_item["chat_pos"]
+
+                # [ new! ]
+                if "order_details" in a_chatlog_item:
+                    order_details = a_chatlog_item["order_details"]
+
+                x_pos = 20 if an_author == "api" or an_author == "customer" else 60
+                chat_bg_colour = CUSTOMERTAN if an_author == "api" or an_author == "customer" else PURPLE # using bg colour in actual image for the imgs (i.e. payment window) tho
+                
+                # -- if payment window msg, draw the payment element to the window --
+                if a_msg == "payment_window":
+                    self.draw_payment_element((x_pos, a_chat_line_y_pos + self.chatbox_window_scroll_y_offset), order_details) # 50 + (40 * i)
+                # -- else if any other message, draw it as text -- 
+                else:
+                    # -- if valid author create the author text surface --
+                    if an_author == "customer":
+                        author_name_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_10.render(f"{self.my_customer.my_name}", True, BLACK)
+                    # -- create the message text surface --
+                    a_msg_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{a_msg}", True, BLACK)
+                    # -- setup and draw the background rect --
+                    text_chat_max_width = 250
+                    chat_bg_rect = pg.Rect(x_pos, a_chat_line_y_pos + self.chatbox_window_scroll_y_offset, text_chat_max_width, 45)  
+                    pg.draw.rect(self.image, chat_bg_colour, chat_bg_rect, 0, 5)
+                    # -- setup the remaining blit positions --
+                    x_pos += 10 # for text the x pos is + 10 from the bg rect
+                    author_offset = 0
+                    y_offset = 5 # general offset since the bg rect is draw at the actual pos, this offsets the text in y so its formatted nicely 
+                    # -- if there is a valid author, blit the author text surf to the window, and offset the message pos, else dont
+                    if an_author == "customer":
+                        self.image.blit(author_name_surf, (x_pos, a_chat_line_y_pos + y_offset + self.chatbox_window_scroll_y_offset)) 
+                        author_offset += 10 
+                    # -- finally blit the actual msg to the window --
+                    self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos + author_offset + y_offset + self.chatbox_window_scroll_y_offset)) # (x_pos, 50 + (40 * i))
+
+    # -- End of Test Stuff -- 
 
 
     def draw_name_to_chatbox(self): 

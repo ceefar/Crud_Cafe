@@ -20,19 +20,25 @@ class Game:
         imgs_folder = path.join(game_folder, 'imgs')
         fonts_folder = path.join(game_folder, 'fonts')
         # -- load images -- 
-        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))        
+        # - background scene -
+        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))  
+        # - windows -      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  
         self.window_shelved_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_HL_1_IMG)).convert_alpha()  
+        # - chat elements -
+        self.payment_pending_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_PENDING_IMG_1)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
         self.FONT_VETERAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 26) 
+        self.FONT_BOHEMIAN_TYPEWRITER_10 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 10)
         self.FONT_BOHEMIAN_TYPEWRITER_12 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 12)
         self.FONT_BOHEMIAN_TYPEWRITER_14 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 14)
         self.FONT_BOHEMIAN_TYPEWRITER_16 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 16)
+        self.FONT_BOHEMIAN_TYPEWRITER_18 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 18)
         self.FONT_BOHEMIAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 20)
         self.FONT_BOHEMIAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 26)
         # -- define main gui surface dimensions --
@@ -63,7 +69,7 @@ class Game:
             a_chatbox = Chatbox(self, a_customer)
             self.chatbox_layer_list.append(a_chatbox) # store all the customer instances in a list for accessing them by layer
         # -- initialise the layers group once the object instances are all added to their respective groups --
-        self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
+        self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes)
         # -- misc game x level setup vars --
         self.is_player_moving_chatbox = False        
        
@@ -115,7 +121,7 @@ class Game:
         self.reorder_all_window_layers()
  
     def draw(self):
-        pg.display.set_caption(f"Crud Cafe v1.00 - {self.clock.get_fps():.2f}")
+        pg.display.set_caption(f"Crud Cafe v3.09 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
@@ -163,18 +169,34 @@ class Game:
                         self.id_customer_dict[created_customers + 1].customer_state = "active"
                 except KeyError:
                     pass
-                # -- for dev mode / debugging during new order functionality implementation + testing --
+
                 # -- toggle the orders in the orders sidebar --
-                if event.key == pg.K_o:
+                if event.key == pg.K_o: # mostly for dev mode / debugging during new order functionality implementation + testing
                     self.new_orders_tab.active_order_number += 1
                     self.new_orders_tab.orders_sidebar_scroll_y_offset = 0 # reset the scroll offset to 0 when we change to another order too
-                # -- new test for tap up/down on keyboard to scroll, but only if on the new orders tab --
+
+                # -- for tap up/down on keyboard to scroll, depending on the hovered window / surface --
                 if event.key == pg.K_UP:
+
+                    # -- new test for chatbox scrolling --
+                    for a_chatbox in self.chatboxes:
+                        if a_chatbox.is_hovered:
+                            a_chatbox.chatbox_window_scroll_y_offset += 10
+
+                    # -- new orders scrolling --
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
+
                 if event.key == pg.K_DOWN:
+                    # -- new orders scrolling --
                     if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
                         self.new_orders_tab.orders_sidebar_scroll_y_offset -= 10
+
+                    # -- new test for chatbox scrolling --
+                    for a_chatbox in self.chatboxes:
+                        if a_chatbox.is_hovered:
+                            a_chatbox.chatbox_window_scroll_y_offset -= 10
+
             # -- key down --
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:

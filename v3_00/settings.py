@@ -47,6 +47,10 @@ TAN_ANALOGOUS_1 = (230,190,170)
 TAN_ANALOGOUS_2 = (210,230,170) # - icky green, dont use, left to show kewl differences in colour patterns, good start point colours for creating a dynamic function to handle colour palette
 TAN_COMPLIMENTARY_1 = (170,180,230)
 
+# -- New Potentially Finalised Colour Palette Colours --
+CUSTOMERTAN = (241,217,208)
+
+
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16
 HEIGHT = 900 # 16 * 48 or 32 * 24 or 64 * 12
@@ -65,3 +69,7 @@ WINDOW_HL_1_IMG = "window_blank_highlight_1_img.png"
 WINDOW_HL_2_IMG = "window_blank_highlight_2_img.png" 
 WINDOW_SHELVED_1_IMG = "window_blank_shelved_test_img.png" 
 WINDOW_SHELVED_HL_1_IMG = "window_blank_shelved_test_hl_img.png" 
+
+# -- More Faux OS Element Images - Windows --
+PAYMENT_PENDING_IMG_1 = "payment_pending_blank_img_1.png" # PAYMENT_PENDING_IMG_1 = "payment_pending_test_img.png"
+
