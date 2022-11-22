@@ -48,7 +48,7 @@ class Browser_Tab(pg.sprite.Sprite):
 
     def draw_tab_to_pc(self):
         """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
-        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name} {len(self.game.all_active_customers)}", True, DARKGREY) 
+        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
         self.image.blit(title, (50,30))  
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
@@ -183,12 +183,38 @@ class New_Orders_Tab(Browser_Tab):
             return self.sidebar_order_3_details
 
 
-   # should do quick vid update at some point, dont have to speak is fine
+   # should do quick vid update at some point, can just rush it out without speaking
    
+   # doing first/rn
+   # - so have just added the new left side pinbar ui and started the setup for one of the post it notes
+   # - get the right font and increase the font size for this one orders post it
+   #    - add it to changelog
+   #    - save (not new version tho) and continue to the actual customer class stuff
+   # <<<<< note can just skip here now above is basically done now, means to do it first anyway tbf
+   # - the customer left side scene timer ui idea
+
+
+   # - yanno also for ui, 
+   #    - could change some rects to images (like the blue btn rect or the coloured selectors about that)
+   #    - plus some of the surfs to textures
+   #    - and as previously mentioned do cityscape, moving cars at window, and maybe even bg audio 
+
+   # ok kewl so for this
+   # - when adding a new customer we create them a new image on the sidebar, ig create a surf for this and actually but the image on it
+   # - then we just need to blit like a piece of paper or a rect for the bg / container for each customer
+   # - and lets just do a bar with width (so outline rect) and their name for now, and stage/state mays well tbf even just to set up since we do have it
+   # - then need to do basically the same as blitting the chatlog, have a list that will be the list of all active, and it will do this for each of them
+   # - tbf ig if we do this in customers it makes the most sense 
+    
+
+   # note that after above should actually do the orders x customer tab 
+
+   # then
    # - slick, smart on hover active delete btn idea using the same rect fade rect ? (the whole slide out "<- delete? / click to delete" idea)
    # - the customer talking stuff
-   # - HUGE - the customer left side scene timer ui idea
-   # - HUGE - the 2x book ideas, see notes
+   # - HUGE - the 2x book ideas, see v3_planning_notes but basically is...
+   #            - specials of the day idea
+   #            - and choosing the store map checker idea
    # - HUGE - replacing the chats tab with orders x customers, see phone notes
    # - fade tweening?
    # - bg traffic?
@@ -196,6 +222,7 @@ class New_Orders_Tab(Browser_Tab):
 
    # also
    # - should be auto scrolling btw on new msg!
+   #    - maybe a jump to recent also (only showing it when you scroll X distance past the bottom)
     
     # then more generally
     # -------------------

@@ -18,13 +18,33 @@ class Customer(pg.sprite.Sprite):
         self.chatbox_state = choice(["shelved","opened"]) # opened or shelved, have them start shelved - only relevant when customer is active (for now anyways) 
         self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Abu","Steve","Carl","Mike","Brian"])
         self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
-
+        self.my_pinboard_timer_img = self.game.scene_pinboard_paper_image.copy()
         # -- note --
         # - havent really started to implement this yet except for initialising these to assign them to things like chatboxes and orders
         # - plan is to port a lot of vars from other classes over here once i figure out how the bulk of the functionality and objects all fit together
 
     def __repr__(self):
         return f"Customer ID.{self.my_id} : {self.my_name}"
+
+    # [ new! ]
+    # -- initial test stuff for drawing the customer timer info to the pinboard scene surface --
+    def draw_customer_timer_info_to_pinboard(self):
+        first_pinboard_y_pos = 260
+        pinboard_border_width = 12 # put this stuff in settings once configured 
+
+        # temp positioning - need to do this properly tho, not using id
+        # og version -> # customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, first_pinboard_y_pos, self.my_pinboard_timer_img.get_width(), self.my_pinboard_timer_img.get_height()) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
+        
+        # - newer new test for paper img for pinboard customer timers bg -
+        # - only drawing 3 max for now me thinks (not implemented tho btw)
+        customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, first_pinboard_y_pos + (20 * self.my_id - 1) + (70 * self.my_id - 1), self.my_pinboard_timer_img.get_width(), self.my_pinboard_timer_img.get_height()) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
+        self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
+
+        # so remember this needs stuff like new timer and existing state to be on point
+        # - obvs add the new self timer var
+        #   - then tomo consider a refactor for getter/setter or sumnt idk yet but have a better think lol
+
+
 # -- End Customer Class --
 
  
@@ -80,8 +100,8 @@ class Chatbox(pg.sprite.Sprite):
 
         # -- more new chatlog stuff --
         self.my_chatlog = [] 
-        if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
-            self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
+        # if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
+        #     self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
         
         # -- new test for window border img --
         self.window_border_img = self.game.window_border_img.copy()
@@ -101,7 +121,8 @@ class Chatbox(pg.sprite.Sprite):
 
                     # [ new! ]
                     # -- drawing chatlog stuff --
-                    self.draw_my_chatlog()
+                    if self.my_chatlog:
+                        self.draw_my_chatlog()
                 
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, then offset that pos by the (negative btw >) -pc_screen_width and height --
                 if self.chatbox_move_activated:

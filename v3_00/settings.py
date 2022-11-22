@@ -49,7 +49,8 @@ TAN_COMPLIMENTARY_1 = (170,180,230)
 
 # -- New Potentially Finalised Colour Palette Colours --
 CUSTOMERTAN = (241,217,208)
-
+# - not really finalised palette but is the current colour in the images for these post-its so using for now -
+ORDERPOSTITBLUE = (32, 41, 149) 
 
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16
@@ -62,6 +63,8 @@ GRIDHEIGHT = HEIGHT / TILESIZE
 
 # -- Scene x General Images --
 SCENE_IMG = "crud_cafe_scene.png" 
+SCENE_INFO_PINBOARD_IMG = "info_sidebar_concept_img.png" 
+SCENE_PINBOARD_PAPER_IMG = "continous_paper_bg.png" 
 
 # -- Faux OS Element Images --
 WINDOW_IMG = "window_blank_img.png" 

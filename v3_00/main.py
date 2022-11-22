@@ -21,7 +21,10 @@ class Game:
         fonts_folder = path.join(game_folder, 'fonts')
         # -- load images -- 
         # - background scene -
-        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))  
+        self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))
+        # -- scene elements --  
+        self.scene_pinboard_image = pg.image.load(path.join(imgs_folder, SCENE_INFO_PINBOARD_IMG)).convert_alpha()  
+        self.scene_pinboard_paper_image = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_PAPER_IMG)).copy().convert_alpha() 
         # - windows -      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_border_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_1_IMG)).convert_alpha()  
@@ -120,11 +123,39 @@ class Game:
                 this_chatbox.update() 
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
+
+    def write_to_pinboard(self, font_size=26, pos=(0,0)):
+        """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
+        if font_size == 26:
+            text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+        self.pinboard_image_surf.blit(text_surf, pos)
  
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
+
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0,0)) 
+
+        # -- [new!] --
+        self.pinboard_image_surf = self.scene_pinboard_image.copy() # - added this to stop the over blit issues -
+
+        # due to the nail and string at top of the png, the actual part of the image that you want to draw on (the pinboard) starts at y >= 85
+        pinboard_y_offset = 85
+        pinboard_pos = (0, 20)
+        order_post_it_offset = (50, 10)
+        
+        # -- [new!] - draw the amount of to the pinboard image, just basic setup stuff dw too much about the vars n states yet --
+        self.write_to_pinboard(pos=(pinboard_pos[0] + order_post_it_offset[0], pinboard_pos[1] + pinboard_y_offset + order_post_it_offset[1]))
+
+        # -- [new!] - test to for drawing customer info to the pinboard --
+        for a_customer in self.all_active_customers.values():
+            if isinstance(a_customer, Customer):
+                a_customer.draw_customer_timer_info_to_pinboard()
+        
+        # -- [new!] - draw the new info pinboard concept image --
+        self.scene_img.blit(self.pinboard_image_surf, pinboard_pos)
+
+
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
         self.wipe_computer_screen_surface()
         # -- loop tabs --
@@ -145,6 +176,7 @@ class Game:
                             sprite.draw_active_customers_selector_popup()
                     # -- actually draw the tab surface to the screen -- 
                     sprite.draw_tab_to_pc()
+                    
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
