@@ -3,8 +3,8 @@ import pygame as pg
 import sys
 from os import path
 from settings import *
-from sprites import *
-
+from chatbox_and_customer import Chatbox, Customer
+from browser_tabs import Browser_Tab, New_Orders_Tab, Chats_Tab
 
 class Game:
     def __init__(self):
