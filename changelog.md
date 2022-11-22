@@ -122,16 +122,34 @@ quick notes
 - currently is sending messages for each item in the basket but thats just while testing
 - adding scrolling the selected window on hover, and only works for the selected window even if the mouse is overlapping multiple windows due to oop structure choices <3
 
-# note - todo
-- literally the only unexpected thing to fix going forward is ensuring the blit location is correct as there is a small bug somewhere with the ._layers ordering 
-    - but will be easy to resolve
 
-# note - after scroll
-- new version
+# day 9
+[v3.10]
+- planned upcoming functionality for basket totals, quantities, price info, etc, etc
+- added calculating, updating, and drawing current/active basket total price to new sticky bottom bar on orders sidebar 
+    - took a while due to amount of tasks required to finish functionality
+- added quantities functionality and quantities being taken into consider in active basket price calculation and blits
+    - took a while due to planning and figuring out the functionality before implementing
+- very happy it with it so far
+- updating quantity of items through clicking to add an existing item to the active order basket
+- handling the stacking properly for both adding new items or updating quantities of existing ones with new order details dictionary implementation
+- now blitting (drawing) the true basket price when sending the order info to the selected customer window on click
+- fixed quantity so now it blits the true basket quantity with the price on the payment_window img surface copy now too :D
+- adding 3.11 preview now, get some other stuff done, then returning to this later
+
+
+
+
+# generalised to do
 - add in button to loop through the customers chatlog stuff
-- then confirming the order stuff, just initial basic timed confirm is fine while testing
-- then msg ui timers and customer screen stuff
-- then really just ironing out all that functionality
+- msg ui timers and customer screen gui stuff
+- general minor things as per notes
+- then really just ironing out all that functionality :D
+
+# notable to fix
+- literally the only unexpected thing to fix going forward is ensuring the blit location is correct as there is a small bug somewhere with the ._layers ordering 
+    - but should be easy to resolve
+    - maybe like somewhere its using the id and somewhere its using the index, seems likely
 
 
 

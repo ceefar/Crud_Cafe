@@ -38,6 +38,7 @@ class Game:
         self.FONT_BOHEMIAN_TYPEWRITER_12 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 12)
         self.FONT_BOHEMIAN_TYPEWRITER_14 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 14)
         self.FONT_BOHEMIAN_TYPEWRITER_16 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 16)
+        self.FONT_BOHEMIAN_TYPEWRITER_18 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 18)
         self.FONT_BOHEMIAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 20)
         self.FONT_BOHEMIAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 26)
         # -- define main gui surface dimensions --
@@ -68,7 +69,7 @@ class Game:
             a_chatbox = Chatbox(self, a_customer)
             self.chatbox_layer_list.append(a_chatbox) # store all the customer instances in a list for accessing them by layer
         # -- initialise the layers group once the object instances are all added to their respective groups --
-        self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes) 
+        self.chatbox_layers = pg.sprite.LayeredUpdates(self.chatboxes)
         # -- misc game x level setup vars --
         self.is_player_moving_chatbox = False        
        
