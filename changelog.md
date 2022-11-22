@@ -137,6 +137,10 @@ quick notes
 - fixed quantity so now it blits the true basket quantity with the price on the payment_window img surface copy now too :D
 - adding 3.11 preview now, get some other stuff done, then returning to this later
 
+[v3.11]
+- when adding a new or updating the quantity of an existing (will also do delete soon) menu item to the active order there is now a fading highlight rect around the updated / new item for increased visual clarity, a lil bit of added polish, and a small but useful ux improvement in easily being able to revert changes in the rare case you're unsure or forget what you'd just clicked
+
+
 
 
 
