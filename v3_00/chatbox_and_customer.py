@@ -5,9 +5,7 @@ from settings import *
 vec = pg.math.Vector2
 
 
-# -- Customer Initial First Test Implementation --
-# note: consider making this an Object not a Sprite
-class Customer(pg.sprite.Sprite):
+class Customer(pg.sprite.Sprite): # note: consider making this an Object not a Sprite
     def __init__(self, game):
         self.groups = game.customers
         pg.sprite.Sprite.__init__(self, self.groups)
@@ -19,31 +17,43 @@ class Customer(pg.sprite.Sprite):
         self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Abu","Steve","Carl","Mike","Brian"])
         self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
         self.my_pinboard_timer_img = self.game.scene_pinboard_paper_image.copy()
-        # -- note --
-        # - havent really started to implement this yet except for initialising these to assign them to things like chatboxes and orders
-        # - plan is to port a lot of vars from other classes over here once i figure out how the bulk of the functionality and objects all fit together
+        # -- note - only just started implementing this properly, the plan is to port a lot of vars from other classes over here once i figure out how the bulk of the functionality and objects all fit together --
 
     def __repr__(self):
         return f"Customer ID.{self.my_id} : {self.my_name}"
 
-    # [ new! ]
-    # -- initial test stuff for drawing the customer timer info to the pinboard scene surface --
+
+    def wipe_customer_timer_img(self):
+        ...
+        # self.my_pinboard_timer_img = 
+
+
     def draw_customer_timer_info_to_pinboard(self):
+        """ for drawing the customer timer bg surface, plus the info drawn on that surface, to the pinboard scene surface """
+        # -- positions and dimensions setup --
         first_pinboard_y_pos = 260
         pinboard_border_width = 12 # put this stuff in settings once configured 
-
-        # temp positioning - need to do this properly tho, not using id
-        # og version -> # customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, first_pinboard_y_pos, self.my_pinboard_timer_img.get_width(), self.my_pinboard_timer_img.get_height()) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
-        
-        # - newer new test for paper img for pinboard customer timers bg -
-        # - only drawing 3 max for now me thinks (not implemented tho btw)
         customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, first_pinboard_y_pos + (20 * self.my_id - 1) + (70 * self.my_id - 1), self.my_pinboard_timer_img.get_width(), self.my_pinboard_timer_img.get_height()) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
+        self.draw_text_to_customer_timer_img(f"{self.my_name}")
+        # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
         self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
+ 
+
+    def draw_text_to_customer_timer_img(self, text, font_size=16, pos:tuple[int|float, int|float]|vec = (0, 0)):
+        """ draw any text to a given position on this customers pinboard timer container/surface/image """
+        # -- create the text surface --
+        if font_size == 16:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, BLACK) 
+        # -- blit the text surface to this customers pinboard timer img
+        self.my_pinboard_timer_img.blit(title, pos) # nudging abit for screen width vs minimise btn pos & width to get visually appealing center pos for the title text
+        
+
+
+
 
         # so remember this needs stuff like new timer and existing state to be on point
         # - obvs add the new self timer var
         #   - then tomo consider a refactor for getter/setter or sumnt idk yet but have a better think lol
-
 
 # -- End Customer Class --
 
@@ -90,23 +100,20 @@ class Chatbox(pg.sprite.Sprite):
         self.minimise_icon_width, self.minimise_icon_height = 45, 23 # all hardcoded from the positions on the image
         self.pos_of_minimise_icon = 241 # for centering the title text as if you use opened_chat_width it just looks stupid, so just doing some minor adjustments here to make it a visually appealing center        
         self.shelved_pos_of_minimise_icon = 155 # but -10 from this for the rect width so that theres some padding 
-
-        # -- new test for scrolling chat window --
+        # -- new - for scrolling chat window --
         self.chatbox_window_scroll_y_offset = 0 
-
-        # -- new test for chatlog blit stuff --
+        # -- new - chatlog blit stuff --
         self.chatlog_text_msg_height = 45
         self.chatlog_payment_msg_height = 108 
-
-        # -- more new chatlog stuff --
+        # -- new - chatlog stuff --
         self.my_chatlog = [] 
-        # if self.my_id == 3: # 50 start pos + 110 size + 20 padding -> for testing formatting, then extra 30 is just the move down amount of chococake, likely too much tho but dw
-        #     self.my_chatlog = [{"author":"customer", "msg":f"One Chocolate Cake Plis", "chat_pos":50, "height":45}, {"author":"api", "msg":f"payment_window", "chat_pos":110, "height":208}]  # {"author":f"customer", "msg":f"Chocolate Cake", "chat_pos":225}
-        
-        # -- new test for window border img --
+        # -- new - for window border img --
         self.window_border_img = self.game.window_border_img.copy()
+        # -- new - state addition - note should consider upgrading these (states) shortly --
+        self.image_state = "normal"
 
     # ---- End Init ----
+
 
     # -- Draw, Update, & Repr --
  
@@ -118,19 +125,15 @@ class Chatbox(pg.sprite.Sprite):
                     self.set_opened_chatbox_initial_position()
                     self.game.opened_chatbox_offset_counter += 1
                     self.wipe_image()
-
-                    # [ new! ]
                     # -- drawing chatlog stuff --
                     if self.my_chatlog:
                         self.draw_my_chatlog()
-                
                 # -- if this instances has had move mode activated by clicking the top title bar of the window, then move it to the mouse pos, then offset that pos by the (negative btw >) -pc_screen_width and height --
                 if self.chatbox_move_activated:
                     self.rect.x, self.rect.y = pg.mouse.get_pos()
                     self.rect = self.get_true_rect(a_rect=self.rect, move_in_negative=True)
                     # -- then to pick it up exactly where the mouse picked it up we do one more offset for the clicked pos minus the true position of the window and add that to the x & y -- 
                     self.rect.move_ip(-self.mouse_offset_x, -self.mouse_offset_y)
-
             # -- handle shelved state -- 
             elif self.my_customer.chatbox_state == "shelved":             
                 self.x, self.y = self.get_true_rect(self.rect).x, self.get_true_rect(self.rect).y
@@ -143,8 +146,17 @@ class Chatbox(pg.sprite.Sprite):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
     def draw_window_border_and_name(self):
+        # -- simple switch to set the border img vs its hover state --
+        if self.image_state == "normal":
+            self.window_border_img = self.game.window_border_img.copy()
+        elif self.image_state == "hl1":
+            self.window_border_img = self.game.window_border_hl_1_img.copy()
+        elif self.image_state == "hl2":
+            self.window_border_img = self.game.window_border_hl_2_img.copy()
+        # -- blit the border, bilt the name --
         self.image.blit(self.window_border_img, (0,0)) 
         self.draw_name_to_chatbox()
+
 
     # -- Blitting To This Chatbox Image Functs --
 
@@ -170,17 +182,19 @@ class Chatbox(pg.sprite.Sprite):
         if self.chatbox_move_activated:
             self.image = self.game.window_hl_2_img.copy()
             self.rect = self.image.get_rect()
+            self.image_state = "hl2"
         elif self.is_hovered:
             self.image = self.game.window_hl_1_img.copy() 
+            self.image_state = "hl1"
         else: 
             self.image = self.game.window_img.copy()
+            self.image_state = "normal"
 
 
-    # -- New Chat Message First Test Stuff --
+    # -- New Chat Message Initial Test Stuff --
 
     def draw_payment_element(self, pos, order_details:dict): # {"price": 18.99}
         payment_pending_img = self.game.payment_pending_1_img.copy()
-        # [ new! ]
         # -- get the price from the new details dict --
         self.basket_price = float(f"{order_details['basket_price']:.2f}") # set the precision to 2 decimal places
         self.basket_total_items = order_details["basket_total_items"]
@@ -192,20 +206,14 @@ class Chatbox(pg.sprite.Sprite):
         payment_pending_img.blit(basket_total_items_text_surf, (78, 57)) 
         # obvs and then can do the delivery charge stuff here too
         # - even would be cute for them to sometimes stop the transaction because of this but **not** anytime soon
-        
-        # [ rnrn! ] - just last remaining thing to do is the quantities 
-        
         self.image.blit(payment_pending_img, pos)
-        # will want a handler function that will sort all the different payment plus associated sprite animation states
+        # note - will want a handler function that will sort all the different payment plus associated sprite animation states
 
-
-    def add_new_chatlog_msg(self, author:str, msg:str, order_details=None): # [ new! ] just sending price for now but obvs guna update 
+    def add_new_chatlog_msg(self, author:str, msg:str, order_details=None):
         # -- create the dictionary chatlog item --
         chatlog_dictionary_entry = {}
-
         # -- set author --
         author_entry = author
-
         # -- set msg entry and chat height --
         # - payment window - 
         if msg == "payment_window":
@@ -215,19 +223,16 @@ class Chatbox(pg.sprite.Sprite):
         else: # only doing these two (payment window vs any other msg) while testing init functionality
             msg_entry = msg
             chat_height_entry = self.chatlog_text_msg_height
-            
         # -- set y position --
         # -- if there is anything in the chatlog, then we use dynamic positions --
         if self.my_chatlog:
-            # [ here! ]
-            # <- to do this dynamically based on size of the previous entry
+            # so the last chat entry pos and height are dynamic based on size of the previous entry
             last_chat_entry_pos = self.my_chatlog[-1]["chat_pos"]
             last_chat_entry_height = self.my_chatlog[-1]["height"]
             chat_pos_entry = last_chat_entry_pos + last_chat_entry_height + 10 # 110 
         # -- else, this is the first chat message so we set it to the initial position --
         else:
             chat_pos_entry = 50
-            
         # -- create the final dict of the chatlog entry --
         chatlog_dictionary_entry["author"] = author_entry
         chatlog_dictionary_entry["msg"] = msg_entry
@@ -235,10 +240,8 @@ class Chatbox(pg.sprite.Sprite):
         chatlog_dictionary_entry["chat_pos"] = chat_pos_entry
         if order_details:
             chatlog_dictionary_entry["order_details"] = order_details
-
         # -- finally, append the finalised dict to the chatlog list --
         self.my_chatlog.append(chatlog_dictionary_entry)
-
 
     def draw_my_chatlog(self):
         if self.my_chatlog:
@@ -246,14 +249,12 @@ class Chatbox(pg.sprite.Sprite):
                 a_msg = a_chatlog_item["msg"]
                 an_author = a_chatlog_item["author"]
                 a_chat_line_y_pos = a_chatlog_item["chat_pos"]
-
-                # [ new! ]
+                # -- 
                 if "order_details" in a_chatlog_item:
                     order_details = a_chatlog_item["order_details"]
-
+                # --
                 x_pos = 20 if an_author == "api" or an_author == "customer" else 60
                 chat_bg_colour = CUSTOMERTAN if an_author == "api" or an_author == "customer" else PURPLE # using bg colour in actual image for the imgs (i.e. payment window) tho
-                
                 # -- if payment window msg, draw the payment element to the window --
                 if a_msg == "payment_window":
                     self.draw_payment_element((x_pos, a_chat_line_y_pos + self.chatbox_window_scroll_y_offset), order_details) # 50 + (40 * i)
@@ -279,9 +280,6 @@ class Chatbox(pg.sprite.Sprite):
                     # -- finally blit the actual msg to the window --
                     self.image.blit(a_msg_surf, (x_pos, a_chat_line_y_pos + author_offset + y_offset + self.chatbox_window_scroll_y_offset)) # (x_pos, 50 + (40 * i))
 
-    # -- End of Test Stuff -- 
-
-
     def draw_name_to_chatbox(self): 
         if self.my_customer.chatbox_state == "opened":
             self.draw_name_to_opened_chatbox()
@@ -297,6 +295,7 @@ class Chatbox(pg.sprite.Sprite):
     def draw_name_to_shelved_chatbox(self):        
         title = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{self.my_customer.my_name}", True, BLACK) 
         self.image.blit(title, (5, 8)) # nudging abit for screen width vs minimise btn pos & width to get visually appealing center pos for the title text
+
 
     # -- Handle Hover and Click States --
 

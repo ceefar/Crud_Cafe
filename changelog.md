@@ -29,13 +29,11 @@
 - nailed highlighting on hover and ordering (partially, not yet on click), particularly for ordering almost didnt think id figure out a "cheap" way to do it but i did! :D
 - decision for huge overhaul from scratch again and completely nailed moving to click again from start much cleaner oop structure concept
 
-
 # day 3 
 quick notes
 - looked at layering, tried to implement realised reason why, may refactor after a test later to accomodate for this (literally just found out what it is and how it works and would require a refactor and since is only day 3 im happy with that)
 - improved click to move, now cant have multiple windows selected and held on top of each other, one gets put down before picking up another one, tho this still needs to be improved to do the put down and wait until next frame i.e. next click, before allowing to pick up again 
 - added full new orders items dynamically spaced and added to screenw with clickable & highlighting select buttons
-
 
 # day 3 part 2
 quick notes
@@ -57,14 +55,12 @@ quick notes
 - then on to the gameified elements oooOooOOoooo
     - consider redoing the legit first implementation of the items and buttons tho tbf is clean maybe just a baby refactor for now bosh
 
-
 # day 4
 [v2.03]
 - new ver for playground stuff
 - implemented minimise button with shelving and opening, dynamic shelved positions and reset opened positions
 - im in love <3
 - need to add from notes tbf did a lot more than this lol
-
 
 # day 5
 [v3.01-huge-refactor]
@@ -76,7 +72,6 @@ quick notes
 - fixed issue where could click on another top bar that was underneath, and therefore not the active highlighted one
 - now when click top title bar the window is selected at the exact mouse pos <3
 - added extra window image state for when clicked and selected for move the highlight colour is different for visual clarity
-
 
 # day 6
 [v3.04-v3.05+]
@@ -92,7 +87,6 @@ quick notes
 - same with minimising and setting initial cascading offset positions, so clean and easy to implement due to good design patterns <3 <3 <3
 - trying to do new orders stuff on a 3.06 now
 - extended new orders child class to override the Browser_Tab parent update() function to include functionality for the orders sidebar :D <3
-
 
 # day 7
 [v3.08-v3.09]
@@ -124,7 +118,6 @@ quick notes
 - currently is sending messages for each item in the basket but thats just while testing
 - adding scrolling the selected window on hover, and only works for the selected window even if the mouse is overlapping multiple windows due to oop structure choices <3
 
-
 # day 9
 [v3.10-v3.12]
 [v3.10]
@@ -151,6 +144,18 @@ quick notes
 - its *really* starting to come along now wow
 
 
+
+
+
+
+day 10
+[v3.12]
+- fixed the highlight on hover to include the new 'sticky' border
+- cleaned up chatbox class
+- cleaned up customer class
+- starting to flesh out the customer class now (tho likely will refactor once chatboxes are finalised anyways)
+- cleaned up parent browser tab and child new orders tab 
+- note, started adding more doc strings, mostly to improve the formatting / readability, tho will do mostly going forward but will shortly go back and fill in the missing ones
 
 [for-tomo]
 # CRITICAL PERSONAL NOTE!

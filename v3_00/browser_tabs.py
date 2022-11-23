@@ -77,19 +77,17 @@ class Browser_Tab(pg.sprite.Sprite):
 class New_Orders_Tab(Browser_Tab):
     def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
         super().__init__(game)
-        # -- [NEW] v3.06 additions for new orders - current order sidebar --
+        # -- new - current order sidebar --
         # -- declare vars to store lists of orders --
         self.sidebar_order_1 = {1:"Grilled Charmander", 2:"Nuka Cola", 3:"Mario's Mushroom Soup", 4:"Squirtle Sashimi", 5:"Exeggcute Fried Rice"} # 6:"Mario's Mushroom Soup", 7:"Squirtle Sashimi", 8:"Large Exeggcute Fried Rice", 9:"Squirtle Sashimi", 10:"Large Exeggcute Fried Rice"
         self.sidebar_order_2 = {1:"Mario's Mushroom Soup", 2:"Squirtle Sashimi", 3:"Exeggcute Fried Rice"}
         self.sidebar_order_3 = {}
-
-        # [ new! ]
+        # -- new - sidebar order details --
         # -- again obvs will refactor this into one dictionary but since just adding this functionality in from scratch using this temp dict instead of updating the og dict variables --
         # quantity only will do for now lol
         self.sidebar_order_1_details = {"Grilled Charmander":{"quantity":1}, "Nuka Cola":{"quantity":1}, "Mario's Mushroom Soup":{"quantity":1}, "Squirtle Sashimi":{"quantity":1}, "Exeggcute Fried Rice":{"quantity":1}} 
         self.sidebar_order_2_details = {"Mario's Mushroom Soup":{"quantity":2}, "Squirtle Sashimi":{"quantity":2}, "Exeggcute Fried Rice":{"quantity":3}}
         self.sidebar_order_3_details = {}
-        
         # -- create the surface for the orders sidebar -- 
         self.width_offset = 90 # if this is set to zero then the sidebar will take exactly half the screen size, if set to 100 it will be -100px from the width and +100px in x axis 
         self.orders_sidebar_surf = pg.Surface(((self.rect.width / 2) - self.width_offset, self.rect.height))
@@ -136,11 +134,8 @@ class New_Orders_Tab(Browser_Tab):
         self.trigger_active_order_crud_fade = False
         self.fading_alpha = 0
 
-
-    # [ current! ]
-    # - new stuff - 
-    # -- order total sticky surf on the orders sidebar, positioned on top of the sticky bottom surf -- 
     def draw_basket_total_cost_bar(self):
+        """ draws the order total sticky surf on the orders sidebar, positioned on top of the sticky bottom surf """
         # -- dimensions and surf --
         self.sidebar_sticky_bottom_basket_cost_height = 40
         self.sidebar_sticky_bottom_basket_cost_width = self.orders_sidebar_surf.get_width()
@@ -153,9 +148,9 @@ class New_Orders_Tab(Browser_Tab):
         # -- finally blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height)) 
         
-        
-    # - note - ideally dont run this all the time, will be easy enough to do once the functionality is more finalised, i.e. set once, then reset on CRUD item only
     def update_basket_total(self):
+        # - note - once this functionality is more finalised dont run it all the timem i.e. set once, then reset on CRUD item only
+
         # -- store the running total --
         basket_running_total = 0.0
 
@@ -173,7 +168,6 @@ class New_Orders_Tab(Browser_Tab):
         # -- set the current basket total to the result -- 
         self.current_basket_total = basket_running_total
 
-
     def get_active_order_details_dict(self):
         if self.active_order_number == 1:
             return self.sidebar_order_1_details
@@ -182,64 +176,8 @@ class New_Orders_Tab(Browser_Tab):
         elif self.active_order_number == 3:
             return self.sidebar_order_3_details
 
-
-   # should do quick vid update at some point, can just rush it out without speaking
-   
-   # doing first/rn
-   # - so have just added the new left side pinbar ui and started the setup for one of the post it notes
-   # - get the right font and increase the font size for this one orders post it
-   #    - add it to changelog
-   #    - save (not new version tho) and continue to the actual customer class stuff
-   # <<<<< note can just skip here now above is basically done now, means to do it first anyway tbf
-   # - the customer left side scene timer ui idea
-
-
-   # - yanno also for ui, 
-   #    - could change some rects to images (like the blue btn rect or the coloured selectors about that)
-   #    - plus some of the surfs to textures
-   #    - and as previously mentioned do cityscape, moving cars at window, and maybe even bg audio 
-
-   # ok kewl so for this
-   # - when adding a new customer we create them a new image on the sidebar, ig create a surf for this and actually but the image on it
-   # - then we just need to blit like a piece of paper or a rect for the bg / container for each customer
-   # - and lets just do a bar with width (so outline rect) and their name for now, and stage/state mays well tbf even just to set up since we do have it
-   # - then need to do basically the same as blitting the chatlog, have a list that will be the list of all active, and it will do this for each of them
-   # - tbf ig if we do this in customers it makes the most sense 
-    
-
-   # note that after above should actually do the orders x customer tab 
-
-   # then
-   # - slick, smart on hover active delete btn idea using the same rect fade rect ? (the whole slide out "<- delete? / click to delete" idea)
-   # - the customer talking stuff
-   # - HUGE - the 2x book ideas, see v3_planning_notes but basically is...
-   #            - specials of the day idea
-   #            - and choosing the store map checker idea
-   # - HUGE - replacing the chats tab with orders x customers, see phone notes
-   # - fade tweening?
-   # - bg traffic?
-   # - also port stuff from recent phone note
-
-   # also
-   # - should be auto scrolling btw on new msg!
-   #    - maybe a jump to recent also (only showing it when you scroll X distance past the bottom)
-    
-    # then more generally
-    # -------------------
-    # - increase decrease (and delete?) buttons and functionality
-    # - sending price to customer and resetting
-    #   - HUGE N0TE
-    #       - should be sending or saving the entire order (say save to customer) as a json file, also want to save the entire chatlog as a json file
-    #       - like start doing this now and preparing to output it to sql too
-    #       - and then maaaaybe in future ill actually do a load via sql too 
-    #       - which is pretty much cloud saving functionality if you add simple user account functionality too o: 
-
-
-    # -- end new stuff -- 
-
-
-    # [ todo! ] - really need to chunk this up 
     def draw_orders_sidebar(self):
+        # [ todo! ] - really need to chunk this up 
         # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
         self.sidebar_sticky_bottom_surf_height = 140
         self.sidebar_sticky_bottom_surf = pg.Surface((self.orders_sidebar_surf.get_width(), self.sidebar_sticky_bottom_surf_height))
@@ -280,19 +218,14 @@ class New_Orders_Tab(Browser_Tab):
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
             
-            # still fair few things to do here obvs 
-            # - start by adding the text for the button
+            # still fair few things to do here obvs - i.e. the text for the button
 
-        # [ new! ]
         # -- blit the basket total cost sticky bottom surfaces --  
         self.draw_basket_total_cost_bar() # - note - have moved self.update_basket_total() to after the active_order switch in update()
-
         # -- then blit the new sticky bottom surface -- 
         self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height)) 
-
         # -- draw the sidebar --
         orders_sidebar_surf_true_rect = self.image.blit(self.orders_sidebar_surf, ((self.rect.width / 2) + self.width_offset, 0)) 
-
         # -- adds hover state to orders sidebar to improve scrolling ux by only allowing scroll when hovered over the surface you want to scroll i.e. this orders sidebar surf --        
         orders_sidebar_surf_true_rect = self.game.get_true_rect(orders_sidebar_surf_true_rect)
         if orders_sidebar_surf_true_rect.collidepoint(pg.mouse.get_pos()):  
@@ -307,10 +240,7 @@ class New_Orders_Tab(Browser_Tab):
             self.sidebar_bg_colour = self.orders_sidebar_surf_colour
         self.orders_sidebar_surf.fill(self.sidebar_bg_colour) # bg colour = TAN
 
-    
     def draw_active_customers_selector_popup(self):
-        # -- note - i think should probably be resetting this var at the start, but obvs it needs to be set too (not perma off), guna confirm more finalised functionality first before deciding --
-        # self.customer_select_popup_selected_customer = False
         # -- first blit a background surf for the popup --
         popup_bg = pg.Surface((self.rect.width, self.rect.height)).convert_alpha()
         popup_bg.fill(DARKGREY)
@@ -321,11 +251,9 @@ class New_Orders_Tab(Browser_Tab):
         self.customer_selector_popup_window_height = 400
         self.customer_selector_popup_window_surf = pg.Surface((self.customer_selector_popup_window_width, self.customer_selector_popup_window_height))
         self.customer_selector_popup_window_surf.fill(WHITE)
-
         # -- draw title text to the popup surf -- 
         text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select Customer", True, BLACK) 
         self.customer_selector_popup_window_surf.blit(text_surf, (20, 20)) 
-
         # -- draw customer names buttons - semi temp, kinda buttons but not really but whatever --
         for i, a_customer in enumerate(self.game.all_active_customers.values()):
             text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{a_customer.my_name}", True, WHITE) 
@@ -345,10 +273,8 @@ class New_Orders_Tab(Browser_Tab):
             # -- if this is the selected customer then set the colour to green to visually confirm the click, ux baybayyy -- 
             if self.customer_select_popup_selected_customer is a_customer:
                 pg.draw.rect(self.customer_selector_popup_window_surf, FORESTGREEN, customer_selector_bg_rect)
-
             # -- then at the end draw the text on top --
             self.customer_selector_popup_window_surf.blit(text_surf, (30, 32 + (50 * (i+1)))) 
-
         # -- new test for close button --
         self.close_btn_size = 30
         self.close_btn_padding = 20
@@ -364,10 +290,8 @@ class New_Orders_Tab(Browser_Tab):
             # -- on click, set the state to close the popup window --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = False
-                
-                # -- New test --
+                # -- new test addition --
                 self.customer_select_popup_selected_customer = False # and reset this var
-
         # -- new test for confirm button --
         # - want this to be on select dynamic text 
         self.customer_selector_confirm_btn_surf = pg.Surface((200, 50))
@@ -375,17 +299,14 @@ class New_Orders_Tab(Browser_Tab):
             self.customer_selector_confirm_btn_surf.fill(FORESTGREEN)
         else:
             self.customer_selector_confirm_btn_surf.fill(PALEGREEN)
-
         # -- if we have confirm text then draw it --
         if self.customer_select_popup_selected_customer:
             confirm_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.customer_select_popup_selected_customer.my_name}", True, WHITE)
             self.customer_selector_confirm_btn_surf.blit(confirm_text_surf, (20, 20)) 
-
         self.customer_selector_confirm_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding)) # 200 and 50 here is the width and height of the surf, obvs hard code this duh
         # exact same calculation as above so whack this in a function to return a copy of the rect given as a parameter and reuse the function 
         self.customer_selector_confirm_btn_true_rect = self.game.get_true_rect(self.customer_selector_confirm_btn_true_rect)
         self.customer_selector_confirm_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
-       
         # -- obvs will have on hover like this but also a different condition to update the colour and text when a customer has been selected --
         if self.customer_selector_confirm_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
             if self.customer_select_popup_selected_customer:
@@ -394,15 +315,14 @@ class New_Orders_Tab(Browser_Tab):
             else:
                 # else if we cant click this button, on hover show red colour
                 self.customer_selector_confirm_btn_surf.fill(RED)
-            
             # -- again, if we have confirm text then draw it --
             if self.customer_select_popup_selected_customer:
                 confirm_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.customer_select_popup_selected_customer.my_name}", True, WHITE)
                 self.customer_selector_confirm_btn_surf.blit(confirm_text_surf, (20, 20)) 
-                
+            # --
             self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding))
             
-
+            # -------- under construction - mind your head --------
     	    # [ todo-stuff! ]
             if self.customer_select_popup_selected_customer:
                 if self.game.mouse_click_up: 
@@ -414,13 +334,11 @@ class New_Orders_Tab(Browser_Tab):
                     basket_total_items = 0 
                     for basket_item_details in active_order_details_dict.values():
                         basket_total_items += basket_item_details["quantity"]
-
                     # [ todo-quickly! ] - so actually do the above stuff when you do the price stuff too (since assume am looping for that too)
                     # [ todo-quickly! ] - then set it to a self var and use it here bosh
 
                     # [ note! ] - wont actually be doing this loop here, will just be sending the price stuff, this is just temp for testing
                     for i, item in enumerate(self.active_order_list):
-                       
                         # [ new! ]
                         # temp implementation for sending the finalised customer order details dict to the customer window
                         # - potentially could do the confirm (if the order sent matches the order the given customer wanted) logic implementation there too tbf
@@ -443,18 +361,12 @@ class New_Orders_Tab(Browser_Tab):
         # -- then blit the actual popup --
         self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 
         self.customer_selector_popup_window_true_rect = self.game.get_true_rect(self.customer_selector_popup_window_true_rect)
-        # -- temp --
-        if self.customer_selector_popup_window_true_rect.collidepoint(pg.mouse.get_pos()): 
-            # hovered the popup rect - can remove was temp for closing the popup before adding an actual close button
-            pass
             
-
     def update(self):
         """ overrides the Browser_Tab parent update() function to include functionality for the orders sidebar """
         self.wipe_surface()
         self.draw_menu_items_selector()
         self.draw_orders_sidebar()
-        
         # -- set the order list we will draw to the surface based on the currently active order number - could make this switch case ternary but probs way too long for a single line --
         if self.active_order_number == 1: 
             self.active_order_list = list(self.sidebar_order_1.values())
@@ -468,23 +380,16 @@ class New_Orders_Tab(Browser_Tab):
             self.active_order_list = list(self.sidebar_order_1.values())
         # -- loop all the items in the order numbers list and draw them to the order sidebar surface using the scroll offset --
         for index, an_item in enumerate(self.active_order_list):
-
-            # [ new! ]
             # -- get the quantity from the new active order details dict --
             order_details_dict = self.get_active_order_details_dict()
             item_quantity = order_details_dict[an_item]["quantity"]
-
-            # - doing the bg rect on crud a new item to the active order, so ig have it obvs drawn here, or thereabouts, and have it activated elsewhere, aite 
-            # [ current! ] 
-            # [ here! ] 
-            # [ rnrn! ] 
-            # the setup 
+            # -- setup the bg fading alpha rect on crud a new item to the active order --
             crud_highlight_width = 250
             crud_highlight_height = 30
             crud_highlight_bg_rect = pg.Rect(20 - 5, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
             crud_hightlight_bg_surf = pg.Surface((crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
             crud_hightlight_bg_surf.fill(ORANGE)
-
+            # --
             if self.trigger_active_order_crud_fade == an_item:
                 # -- decrement if the crud fade trigger activates and is this item, then blit the relevant fading bg surface for this item --
                 if self.fading_alpha > 0:
@@ -498,10 +403,10 @@ class New_Orders_Tab(Browser_Tab):
                     crud_hightlight_bg_surf.set_alpha(self.fading_alpha) 
                     # -- the final blit --
                     self.orders_sidebar_surf.blit(crud_hightlight_bg_surf, crud_highlight_bg_rect)
-
             # -- draw this item and its quantity for the active order to the orders sidebar surf --
             self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=14)
 
+        # [ todo-? ]
         # -- make this a draw title function now, and fix the below double blit --
         # - note actually also just fix the rect to be a standard rect like the bottom bar instead of just just the small rect behind the text
         # - note, do this title draw after drawing the scrolling text since it has a bg rect now as we want it to be on the bottom 
@@ -512,12 +417,9 @@ class New_Orders_Tab(Browser_Tab):
 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()        
-
-        # [ new! ]
         # -- new test addition for updating the active/current basket total - note is running the calculation the frame after the initial blit --
         self.update_basket_total() # - note -  could easily be resolved by creating an active_order_number switch in that function (do actually have that function now btw if u wanna do this lol), but this is perfectly fine, just noting it incase of a major refactor as its not with draw_basket_total_cost_bar()
             
-
     def draw_menu_items_selector(self):
         for index, an_item_dict in enumerate(self.menu_items_dict.values()):
             menu_item_surf = pg.Surface((self.menu_items_normal_width, 50))
@@ -549,8 +451,7 @@ class New_Orders_Tab(Browser_Tab):
             test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
             item_price = an_item_dict["price"]
             self.draw_text_to_surf(f"{an_item_dict['name']} ${item_price}", (10, 15), menu_item_surf, font_colour) # now includes price
-
-            # -- new test - draw buttons for the toggles if it has buttons else just draw one button to add to order -- 
+            # -- new consideration - draw buttons for the toggles if it has buttons else just draw one button to add to order -- 
             if an_item_dict["has_toggles"]:
                 pass 
                 # -- in progress - for toggle btns --
@@ -571,7 +472,7 @@ class New_Orders_Tab(Browser_Tab):
                 # -- if the player clicks the add to order button then add this item to the currently active order number --
                 if self.game.mouse_click_up: 
 
-                    # [ todo-quick! ]
+                    # [ todo-quickly! ]
                     # -- 100% MAKE THIS A FUNCTION ONCE DONE TESTING! --
                     if self.active_order_number == 1:                    
                         to_add_to_list = self.sidebar_order_1
@@ -579,8 +480,7 @@ class New_Orders_Tab(Browser_Tab):
                         to_add_to_list = self.sidebar_order_2
                     elif self.active_order_number == 3:                    
                         to_add_to_list = self.sidebar_order_3
-                    
-                    # [ new! ]
+        
                     # -- adds the actual item to the active order and the new associated order detail dict --
                     # -- first get the details dict for this active order --
                     active_order_details_dict = self.get_active_order_details_dict()
@@ -591,15 +491,11 @@ class New_Orders_Tab(Browser_Tab):
                     else:
                         active_order_details_dict[an_item_dict["name"]] = {"quantity": 1}
                         to_add_to_list[len(to_add_to_list) + 1] = f"{an_item_dict['name']}"
-
-                    # [ new! ]
-                    # -- testing triggering bg on crud a menu item to the active orders menu, with fade effect (much wow!) --
+                    # -- for triggering bg on crud a menu item to the active orders menu, with fade effect (much wow!) --
                     # so its defo guna have "name" by now since we're doing it after the above dict update stuff
                     self.trigger_active_order_crud_fade = an_item_dict["name"]                    
-                    #
-                    # self.trigger_active_order_crud_fade = True
-                    self.fading_alpha = 80
-                        
+                    # --
+                    self.fading_alpha = 80         
             # -- do the blit and store the resulting rect to check hover via mouse collide -- 
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
             self.menu_item_hover_rects[an_item_dict["my_id"]] = item_hover_rect

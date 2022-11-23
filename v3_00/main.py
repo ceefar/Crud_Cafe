@@ -28,6 +28,8 @@ class Game:
         # - windows -      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_border_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_1_IMG)).convert_alpha()  
+        self.window_border_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_HL_1_IMG)).convert_alpha()  
+        self.window_border_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_HL_2_IMG)).convert_alpha()  
         self.window_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_1_IMG)).convert_alpha()  
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  

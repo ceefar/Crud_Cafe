@@ -69,6 +69,8 @@ SCENE_PINBOARD_PAPER_IMG = "continous_paper_bg.png"
 # -- Faux OS Element Images --
 WINDOW_IMG = "window_blank_img.png" 
 WINDOW_BORDER_1_IMG = "window_blank_border_test_img.png" 
+WINDOW_BORDER_HL_1_IMG = "window_blank_border_h1_1_img.png" 
+WINDOW_BORDER_HL_2_IMG = "window_blank_border_h1_2_img.png" 
 WINDOW_HL_1_IMG = "window_blank_highlight_1_img.png" 
 WINDOW_HL_2_IMG = "window_blank_highlight_2_img.png" 
 WINDOW_SHELVED_1_IMG = "window_blank_shelved_test_img.png" 
