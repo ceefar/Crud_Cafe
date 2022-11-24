@@ -130,14 +130,20 @@ class Game:
             self.update()
             self.draw()
 
-    def wipe_computer_screen_surface(self):
-        """ we use this as a base to draw everything on to, it is basically our game surface """
-        self.pc_screen_surf = pg.Surface((self.pc_screen_surf_width, self.pc_screen_surf_height))
-        self.pc_screen_surf.fill(SKYBLUE) # once setup the actual tab bar, make this black - then will make boot up / boot down animation hella easy
-
     def quit(self):
         pg.quit()
         sys.exit()
+    
+    def render_start_screen(self):
+        """ render the start screen... thank you for coming to my TEDtalk """
+        ...
+
+    def game_over_man_game_over(self):
+        """ render the game over screen """
+        ...
+
+
+    # ---- Draw, Update, Events Reordering Layers ----
 
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
@@ -164,13 +170,9 @@ class Game:
                     # -- [new!] - loop all the chatboxes and draw the window border if valid --
                     for a_chatbox_window in self.chatboxes:
                         if isinstance(a_chatbox_window, Chatbox): # purely for type hints
-
-                            # [ temp-test! ]
-                            # -- [new!] - if the customer is in the cancelled sub-state (or soon to be `completed` too), then dont blit the chatbox to the screen, by moving its rect off screen --
-                            
+                            # -- [new!] - maybe temp? - if the customer is in the cancelled sub-state (or soon to be `completed` too), then dont blit the chatbox to the screen, by moving its rect off screen --                            
                             if a_chatbox_window.my_customer.customer_state == "inactive":
                                 a_chatbox_window.rect = pg.Rect(-500, -500, 0, 0)
-
                             # -- draw the border for the window, but only if its in the opened state --
                             if a_chatbox_window.my_customer.chatbox_state == "opened": 
                                 a_chatbox_window.draw_window_border_and_name()
@@ -217,40 +219,8 @@ class Game:
                 this_chatbox.update() 
         # -- then at the end of update reset the chatbox layers to be in the correct order --
         self.reorder_all_window_layers()
-
         # -- temp new test --
         self.customers.update()
-
-    def write_info_counters_to_pinboard(self, font_size=26, post_it="ordering"):
-        """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
-        # -- preset positions for each post-it area --
-        # due to the nail and string at top of the png, the actual part of the image that you want to draw on (the pinboard) starts at y >= 85
-        pinboard_y_offset = 85
-        ordering_post_it_offset = (50, 7)
-        cancelled_post_it_offset = (75, 117)
-        # -- switch to handle each post it value and position seperately --
-        if post_it == "ordering":
-            # -- handle blit position --
-            pos = (self.pinboard_pos[0] + ordering_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + ordering_post_it_offset[1])
-            # -- handle font size, will do this properly shortly --
-            if font_size == 26:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
-            elif font_size == 32:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
-            elif font_size == 46:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
-        elif post_it == "cancelled":
-            # -- handle blit position --
-            pos = (self.pinboard_pos[0] + cancelled_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + cancelled_post_it_offset[1])
-            # -- handle font size, will do this properly shortly --
-            if font_size == 26:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_cancelled_customers)}", True, RED) 
-            elif font_size == 32:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_cancelled_customers)}", True, RED) 
-            elif font_size == 46:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_cancelled_customers)}", True, RED) 
-        # -- finally do the actually blit -- 
-        self.pinboard_image_surf.blit(text_surf, pos)
 
     def events(self):
         """ handle all events here, executes before update() and draw() """
@@ -285,42 +255,62 @@ class Game:
                 if event.key == pg.K_o: # mostly for dev mode / debugging during new order functionality implementation + testing
                     self.new_orders_tab.active_order_number += 1
                     self.new_orders_tab.orders_sidebar_scroll_y_offset = 0 # reset the scroll offset to 0 when we change to another order too
-
-                # -- super duper temp test for resetting *all* customer timers --
-                if event.key == pg.K_r:
-                    for a_customer in self.customers:
-                        if isinstance(a_customer, Customer):
-                            a_customer.reset_ordering_state_timer()
-                
                 # -- for tap up/down on keyboard to scroll, depending on the hovered window / surface --
                 if event.key == pg.K_UP:
-                    # -- for chatbox scrolling --
-                    for a_chatbox in self.chatboxes:
-                        if a_chatbox.is_hovered:
-                            a_chatbox.chatbox_window_scroll_y_offset += 10
-                    # -- for orders sidebar scrolling --
-                    if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
-                        self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
+                    self.handle_scroll_up()
                 if event.key == pg.K_DOWN:
-                    # -- for orders sidebar scrolling --
-                    if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
-                        self.new_orders_tab.orders_sidebar_scroll_y_offset -= 10
-                    # -- for chatbox scrolling --
-                    for a_chatbox in self.chatboxes:
-                        if a_chatbox.is_hovered:
-                            a_chatbox.chatbox_window_scroll_y_offset -= 10
+                    self.handle_scroll_down()
+                    
             # -- key down --
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
 
-    def render_start_screen(self):
-        pass
 
-    def game_over_man_game_over(self):
-        pass
+    # ---- For Main Scene GUI ----
 
-    # -- For Reordering Layers --
+    def wipe_computer_screen_surface(self):
+        """ we use this as a base to draw everything on to, it is basically our game surface """
+        self.pc_screen_surf = pg.Surface((self.pc_screen_surf_width, self.pc_screen_surf_height))
+        self.pc_screen_surf.fill(SKYBLUE) # once setup the actual tab bar, make this black - then will make boot up / boot down animation hella easy
+
+
+    # ---- For Pinboard Scene GUI ----
+
+    def write_info_counters_to_pinboard(self, font_size=26, post_it="ordering"):
+        """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
+        # -- preset positions for each post-it area --
+        # due to the nail and string at top of the png, the actual part of the image that you want to draw on (the pinboard) starts at y >= 85
+        pinboard_y_offset = 85
+        ordering_post_it_offset = (50, 7)
+        cancelled_post_it_offset = (75, 117)
+        # -- switch to handle each post it value and position seperately --
+        if post_it == "ordering":
+            # -- handle blit position --
+            pos = (self.pinboard_pos[0] + ordering_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + ordering_post_it_offset[1])
+            # -- handle font size, will do this properly shortly --
+            if font_size == 26:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+            elif font_size == 32:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+            elif font_size == 46:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+        elif post_it == "cancelled":
+            # -- handle blit position --
+            pos = (self.pinboard_pos[0] + cancelled_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + cancelled_post_it_offset[1])
+            # -- handle font size, will do this properly shortly --
+            if font_size == 26:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_cancelled_customers)}", True, RED) 
+            elif font_size == 32:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_cancelled_customers)}", True, RED) 
+            elif font_size == 46:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_cancelled_customers)}", True, RED) 
+        # -- finally do the actually blit -- 
+        self.pinboard_image_surf.blit(text_surf, pos)
+
+
+    # ---- For Reordering Layers ----
+
     def reorder_all_window_layers(self):
         """ after all windows have been updated, run this to reorder them into a consistent, incrementing integers """
         reorder_counter = 1
@@ -343,7 +333,34 @@ class Game:
             moved_rect.move_ip(self.pc_screen_surf_x, self.pc_screen_surf_true_y)
         return moved_rect
 
-# -- instantiate a game object and run the game --
+
+    # ---- For Events & Misc ----
+
+    def handle_scroll_down(self):
+        """ when hovering a valid chatbox window or tab element, scrolls the window down using the down key """
+        # -- for orders sidebar scrolling --
+        if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
+            self.new_orders_tab.orders_sidebar_scroll_y_offset -= 10
+        # -- for chatbox scrolling --
+        for a_chatbox in self.chatboxes:
+            if a_chatbox.is_hovered:
+                a_chatbox.chatbox_window_scroll_y_offset -= 10
+
+    def handle_scroll_up(self):
+        """ when hovering a valid chatbox window or tab element, scrolls the window up using the up key """
+        # -- for chatbox scrolling --
+        for a_chatbox in self.chatboxes:
+            if a_chatbox.is_hovered:
+                a_chatbox.chatbox_window_scroll_y_offset += 10
+        # -- for orders sidebar scrolling --
+        if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
+            self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
+
+
+# ---- End Game Class ----
+
+
+# -- instantiate a new game object and run the game --
 g = Game()
 g.render_start_screen()
 while True:
