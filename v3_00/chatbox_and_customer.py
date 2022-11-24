@@ -6,54 +6,178 @@ vec = pg.math.Vector2
 
 
 class Customer(pg.sprite.Sprite): # note: consider making this an Object not a Sprite
+    # -- note - i've only just started implementing this after laying other foundations (i.e. chatbox, tabs, ui, etc), the plan is to port a lot of vars from other classes over here once i figure out how the bulk of the functionality and objects all fit together --
     def __init__(self, game):
         self.groups = game.customers
         pg.sprite.Sprite.__init__(self, self.groups)
         self.game = game
-        # -- general stuff -
+        # -- general stuff --
         self.my_id = len(game.customers) # will start at 1
-        self.customer_state = "inactive" # active or completed or cancelled
-        self.chatbox_state = choice(["shelved","opened"]) # opened or shelved, have them start shelved - only relevant when customer is active (for now anyways) 
+        self.customer_state = "inactive" # active or inactive, the main state - note -> completed and cancelled customers are also inactive
+        self.chatbox_state = "shelved" # "shelved" or "opened", have them start shelved - only relevant when customer is active (for now anyways) 
         self.my_name = choice(["James","Jim","John","Jack","Josh","Tim","Tom","Jonathon","Abu","Steve","Carl","Mike","Brian"])
         self.my_name += " " + choice(["A","B","C","D","E","F","G","H","I","J","K","L"]) # add a display id - e.g KX139 or sumnt (have it be zones or sumnt but its slightly obscure so you dont twig it for a while, maybe like EWSN for cardinal directions)
+        
+        # [ new! ]
+        # -- customer timer sidebar initial test stuff -- 
         self.my_pinboard_timer_img = self.game.scene_pinboard_paper_image.copy()
-        # -- note - only just started implementing this properly, the plan is to port a lot of vars from other classes over here once i figure out how the bulk of the functionality and objects all fit together --
+        self.pinboard_timer_width = self.my_pinboard_timer_img.get_width()
+        self.pinboard_timer_height = self.my_pinboard_timer_img.get_height()
+
+        # [ new! ]
+        # -- customer sub states --
+        self.my_active_sub_state = False # ordering, preparing, delivery
+        self.my_inactive_sub_state = "inactive" # for when in the inactive state, either inactive, completed or cancelled - with inactive being the default, standard state when you are initially created (with ur homies) at the start of the level
+
+        # [ new! ]
+        # -- customer state timers and traits --
+        # -- note - each instance gets their own seperate timer, which is created for them once they are activated, and then moved into each state x sub-state --
+        self.ordering_sub_state_timer = False 
+        # -- note - during the ordering process if the customer is ever left alone for too long they will drop off and cancel --
+        # -- give our customer some basic rng personality traits which affect how they interact with the player, will want to expand this at some point --
+        self.customer_trait_schedule = choice(["busy","average","lazy"])
+        # note - can hardcode these, even at the top of here tbf, or even as class vars, or settings or whatever, also at some point will generally improve this - 
+        # also note - using shortened timers for testing, and havent tested balance for ideal/wanted timers yet either but first test cases are commented out below
+        state_timer_cancel_times = {"ordering":{"busy":10, "average":20 ,"lazy":30}, "preparing":{}, "delivering":{}}  # 20 30 60?
+        # state_timer_cancel_times = {"ordering":{"busy":2, "average":5 ,"lazy":10}, "preparing":{}, "delivering":{}} 
+        # -- set the ordering times now just as its easier, tho once get all this stuff added in will put these in handler functions --
+        self.customer_order_cancel_time = state_timer_cancel_times["ordering"][self.customer_trait_schedule]
+
+        # [ new! ]
+        # -- new super duper test implementation of customers actual order, the one that they will read out (with ocassional mistakes that the player will have to get correct at the end) --
+        if self.my_id % 2 == 0:
+            self.my_wanted_order_details = {"Grilled Charmander":{"quantity":1}, "Nuka Cola":{"quantity":1}, "Mario's Mushroom Soup":{"quantity":1}, "Squirtle Sashimi":{"quantity":1}, "Exeggcute Fried Rice":{"quantity":1}} 
+        else:
+            self.my_wanted_order_details = {"Mario's Mushroom Soup":{"quantity":2}, "Squirtle Sashimi":{"quantity":2}, "Exeggcute Fried Rice":{"quantity":3}}
 
     def __repr__(self):
-        return f"Customer ID.{self.my_id} : {self.my_name}"
+        return f"{self.my_name} [ ID.{self.my_id} ]"
 
+
+    # -- State & Timer Handling --
+
+    def update_activate_customer_substate(self):
+        """ run this when we set the state to active from inactive
+        and then (shortly) when updating the state from ordering to preparing, preparing to delivering, and maybe delivering to inactive + inactive_substate completed
+        ------
+        - ordering
+        - preparing
+        - delivering
+        """
+        # -- first if is for when we move from the inactive state, to being activated in the level, currently set to button press 1 --
+        if self.my_active_sub_state == False:
+            self.my_active_sub_state = "ordering"
+            # -- [new!] - also add us to this new customer info pinboard sidebar timer blit tracker --
+            self.game.customer_sidebar_queue[self.my_id] = self
+            # -- start this customers ordering timer --
+            self.activate_ordering_state_timer()
+        elif self.my_active_sub_state == "ordering":
+            self.my_active_sub_state = "preparing"
+        elif self.my_active_sub_state == "preparing":
+            self.my_active_sub_state = "delivering"
+        elif self.my_active_sub_state == "delivering":
+            # -- once moving from delivered to a new state, unless interjected with cancelled or similar, it will be finished and move to inactive with a completed inactive sub state --
+            self.customer_state = "inactive"
+            self.my_inactive_sub_state = "completed"
+
+    def activate_ordering_state_timer(self): 
+        """ stores the time at which this customer activated this state, if this time minus """
+        self.ordering_sub_state_timer = pg.time.get_ticks()
+
+    def reset_ordering_state_timer(self):
+        """ each time we interact with the customer we reset this timer, if we dont move them from ordering to preparing before their timer expires fully they becomes cancelled and inactive """
+        self.ordering_sub_state_timer = False
+        self.ordering_sub_state_timer = pg.time.get_ticks()
+        # print(f"\n{self} {self.ordering_sub_state_timer = }\n{self.customer_trait_schedule = }, {self.customer_order_cancel_time = }\n")
+
+    def update(self):
+        # -- get the current time this frame --
+        state_check_timer = pg.time.get_ticks()
+        # if the timer is active, because the customer is in the active state (not inactive)
+        if self.customer_state == "active":
+            if self.ordering_sub_state_timer:
+                # [new!]    
+                # if this customers order cancel time has been reached as they havent had a customer interaction in a certain amount of time dictated by their schedule trait
+                if state_check_timer - self.ordering_sub_state_timer > (self.customer_order_cancel_time * 1000):
+                    self.update_customer_to_cancelled()
+
+    def update_customer_to_cancelled(self):
+        """ when a customer cancels an order run this function to break them out of their default flow, make them inactive, and add them to the .game all_cancelled_customers dictionary"""
+        self.customer_state = "inactive"
+        self.my_inactive_sub_state = "cancelled"
+        self.game.all_cancelled_customers[self.my_id] = self
+        # -- also reset this timer so we dont keep rerunning this function from update --
+        self.ordering_sub_state_timer = False
+        # -- and remove them from this dictionary as they arent active anymore --
+        del self.game.all_active_customers[self.my_id]
+        # -- [new!] - and now also take them out of the new customer sidebar timer blit queue tracker var --
+        del self.game.customer_sidebar_queue[self.my_id]
+        print(f"UH OH! - customer {self} has cancelled")
+
+    # -- Customer Timer & Pinboard --
 
     def wipe_customer_timer_img(self):
-        ...
-        # self.my_pinboard_timer_img = 
-
+        """ at the start of each frame create a new, blank customer timer image from a copy of the original """
+        self.my_pinboard_timer_img = self.game.scene_pinboard_paper_image.copy()
 
     def draw_customer_timer_info_to_pinboard(self):
         """ for drawing the customer timer bg surface, plus the info drawn on that surface, to the pinboard scene surface """
         # -- positions and dimensions setup --
         first_pinboard_y_pos = 260
         pinboard_border_width = 12 # put this stuff in settings once configured 
-        customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, first_pinboard_y_pos + (20 * self.my_id - 1) + (70 * self.my_id - 1), self.my_pinboard_timer_img.get_width(), self.my_pinboard_timer_img.get_height()) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
-        self.draw_text_to_customer_timer_img(f"{self.my_name}")
-        # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
-        self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
- 
+
+        # -- note - actually just added this to intentionally break sidebar to test something, now actually leaving it just incase with a console input so im alerted if this happens again, if it doesnt as i expect, after a bit remove the try except --
+        try:
+            # -- quick note for this, basically using dynamically offset y positions based the order in the active customers list to blit these timers, and only want 3 to be shown btw but havent added that yet, and again just its the y pos --
+            # -- ok so, convert the sidebar queue dictionary to a list, go thru it's id keys (ID:customer) and find this customer (by its id), then get the index of the keyvalue pair in the list converted from the original dictionary --
+            position_in_the_queue = list(self.game.customer_sidebar_queue.keys()).index(self.my_id) 
+            # -- that gives us the position in the sidebar list, and we will then use that to blit the top three in order, le bosh --
+            timer_y_pos_1 = first_pinboard_y_pos + (20 * (position_in_the_queue + 1)) + (70 * (position_in_the_queue + 1)) # plus 1 for offsetting the zero indexing 
+            # -- create position rect and draw the customers name to the the surface
+            customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, timer_y_pos_1, self.pinboard_timer_width, self.pinboard_timer_height) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
+            self.draw_text_to_customer_timer_img(f"{self.my_name}", font_size=14, pos=(18,2))
+
+            # -- [new!] - for drawing the percentage chargebar of time remaining until this customer cancels --
+            self.draw_percent_bar_for_state_timer()
+            # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
+            self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
+        # test
+        except ValueError as valerr:
+            print(f"{valerr}")
+            faux_input = input("Press Any Key To Continue")
 
     def draw_text_to_customer_timer_img(self, text, font_size=16, pos:tuple[int|float, int|float]|vec = (0, 0)):
         """ draw any text to a given position on this customers pinboard timer container/surface/image """
         # -- create the text surface --
-        if font_size == 16:
+        # - note - should put this switch in its own function for each font i want, then group those functions in another function, and call that to get the font object you want, can do this in main too 
+        if font_size == 12:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{text}", True, BLACK) 
+        elif font_size == 14:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{text}", True, BLACK) 
+        elif font_size == 16:
             title = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, BLACK) 
-        # -- blit the text surface to this customers pinboard timer img
+        elif font_size == 18:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"{text}", True, BLACK) 
+        elif font_size == 20:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, BLACK) 
+        elif font_size == 26:
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{text}", True, BLACK) 
+        # -- blit the text surface to this customers pinboard timer img --
         self.my_pinboard_timer_img.blit(title, pos) # nudging abit for screen width vs minimise btn pos & width to get visually appealing center pos for the title text
-        
+                
+    def draw_percent_bar_for_state_timer(self):
+        # -- dimensions --
+        timer_bar_max_width = 210
+        timer_bar_height = 35
+        # -- create the timer vars to get the accurate percent of time passed vs time until cancelling --
+        state_check_timer = pg.time.get_ticks()
+        current_time = state_check_timer - self.ordering_sub_state_timer
+        # -- setup percentage chargebar rect --
+        bar_percent = current_time * (100 / (self.customer_order_cancel_time * 1000)) 
+        self.timer_bar_rect = pg.Rect(20, 22, bar_percent * (timer_bar_max_width / 100), timer_bar_height)
+        # -- draw the chargebar --
+        pg.draw.rect(self.my_pinboard_timer_img, RED, self.timer_bar_rect)
 
-
-
-
-        # so remember this needs stuff like new timer and existing state to be on point
-        # - obvs add the new self timer var
-        #   - then tomo consider a refactor for getter/setter or sumnt idk yet but have a better think lol
 
 # -- End Customer Class --
 
@@ -145,20 +269,8 @@ class Chatbox(pg.sprite.Sprite):
     def __repr__(self):
         return f"Chatbox ID: {self.my_id}, layer: {self._layer}"
 
-    def draw_window_border_and_name(self):
-        # -- simple switch to set the border img vs its hover state --
-        if self.image_state == "normal":
-            self.window_border_img = self.game.window_border_img.copy()
-        elif self.image_state == "hl1":
-            self.window_border_img = self.game.window_border_hl_1_img.copy()
-        elif self.image_state == "hl2":
-            self.window_border_img = self.game.window_border_hl_2_img.copy()
-        # -- blit the border, bilt the name --
-        self.image.blit(self.window_border_img, (0,0)) 
-        self.draw_name_to_chatbox()
 
-
-    # -- Blitting To This Chatbox Image Functs --
+    # -- Functions For Blitting To This Instance's Image --
 
     def wipe_image(self):
         """ run this each frame before drawing anything to our image
@@ -190,8 +302,66 @@ class Chatbox(pg.sprite.Sprite):
             self.image = self.game.window_img.copy()
             self.image_state = "normal"
 
+    def draw_window_border_and_name(self):
+        """ simple switch to set the border img vs the hovered and moving states """
+        if self.image_state == "normal":
+            self.window_border_img = self.game.window_border_img.copy()
+        elif self.image_state == "hl1": # should rename hovered and moving huh XD
+            self.window_border_img = self.game.window_border_hl_1_img.copy()
+        elif self.image_state == "hl2":
+            self.window_border_img = self.game.window_border_hl_2_img.copy()
+        # -- blit the outer border img, bilt the name --
+        self.image.blit(self.window_border_img, (0,0)) 
+        self.draw_name_to_chatbox()
 
-    # -- New Chat Message Initial Test Stuff --
+
+    # [ new! ]
+    # -- test stuff for drawing the button to interact with the customer --
+    
+    def draw_customer_interaction_button(self):
+        """ write me plis ceefar """
+        if self.my_customer.customer_state == "active":
+            if self.my_customer.chatbox_state == "opened":
+                # -- setup dimensions and position --
+                self.chat_interact_button_width = 120
+                self.chat_interact_button_height = 40
+                self.chat_interact_button_surf = pg.Surface((120, 40)) 
+
+                # just make this an image now, so doing that just after this quickly...
+                self.chat_interact_btn_true_rect = self.image.blit(self.chat_interact_button_surf, (self.opened_chat_width - self.chat_interact_button_width - 15, self.opened_chat_height - self.chat_interact_button_height - 15))
+
+                # ok so get the collide i think you want to just make a rect instead 
+                self.chat_interact_btn_true_rect = pg.Rect(self.true_chatbox_window_rect.x, self.true_chatbox_window_rect.y, self.chat_interact_button_width, self.chat_interact_button_height)
+                self.chat_interact_btn_true_rect = self.get_true_rect(self.chat_interact_btn_true_rect)
+
+                self.chat_interact_btn_true_rect.move_ip(-self.chat_interact_button_width - 15, 45)
+
+                if self.chat_interact_btn_true_rect.collidepoint(pg.mouse.get_pos()):
+                    if self.game.mouse_click_up:
+                        
+                        # [ new! ]
+                        # -- send the customers message when we click their interact button --
+
+                        # temp functionality for now
+                        # -- choose a random item from our wanted_order -- 
+                        rng = choice(list(self.my_customer.my_wanted_order_details.keys()))
+                        # -- add the rng message on clicking the customers interact button
+                        self.add_new_chatlog_msg("customer", rng)
+
+                        # [ todo-note! ]
+                        # - we wanna be sending a randomised message from us too
+                        # - wanna be having that actually blitted on the button (thinking like mass effect, i.e. you actually *say* something different, but the btn says a summarised version)
+                        # - and be adding in a slightly randomised response from them each time
+                        # - and if not including now ensure you take the whole, making changes to order concept
+                        # - also need to do the auto-scrolling to last item thing which will be easy af, could also add a jump to button too but thats just meh extras anyways
+                            
+                        # -- also reset the ordering state timer now we have interacted with the customer --
+                        self.my_customer.reset_ordering_state_timer()
+                        # -- note --
+                        # - i think actually at the payment point (not here but still), it should pause, while its doing the payment and check stuff, then its either going to a new state timer, or this state timer is starting again
+
+
+    # -- New Chat Message Initial Test Implementation Stuff --
 
     def draw_payment_element(self, pos, order_details:dict): # {"price": 18.99}
         payment_pending_img = self.game.payment_pending_1_img.copy()
@@ -245,7 +415,7 @@ class Chatbox(pg.sprite.Sprite):
 
     def draw_my_chatlog(self):
         if self.my_chatlog:
-            for i, a_chatlog_item in enumerate(self.my_chatlog):
+            for _, a_chatlog_item in enumerate(self.my_chatlog): # note - dont need to enumerate this now?
                 a_msg = a_chatlog_item["msg"]
                 an_author = a_chatlog_item["author"]
                 a_chat_line_y_pos = a_chatlog_item["chat_pos"]
@@ -349,7 +519,8 @@ class Chatbox(pg.sprite.Sprite):
         """ unsets the hovered state... thank you for coming to my TEDtalk """
         self.is_hovered = False
 
-    # -- Repositioning Functs --
+    # -- Functions For Repositioning & Rect Stuff --
+
     def set_shelved_chatbox_initial_position(self):
         shelved_chatboxes_offset = self.shelved_chat_width * (self.game.shelved_chatbox_offset_counter - 1)
         self.x, self.y = self.shelved_pos.x + shelved_chatboxes_offset, self.shelved_pos.y
@@ -369,6 +540,6 @@ class Chatbox(pg.sprite.Sprite):
         else:
             moved_rect.move_ip(self.game.pc_screen_surf_x, self.game.pc_screen_surf_true_y)
         return moved_rect
-# -- End Chatbox Class --
 
+# -- End Chatbox Class --
 

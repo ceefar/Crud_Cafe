@@ -332,31 +332,30 @@ class New_Orders_Tab(Browser_Tab):
                     # should probably make this an update type funct btw and actually execute it in update or sumnt maybe, either way make it its own function
                     active_order_details_dict = self.get_active_order_details_dict()
                     basket_total_items = 0 
+                    # todo - so actually do this quantity stuff when you do the price stuff too (since assume am looping for that too) - pretty sure actually am already doing it there so just use that self var lol
                     for basket_item_details in active_order_details_dict.values():
                         basket_total_items += basket_item_details["quantity"]
-                    # [ todo-quickly! ] - so actually do the above stuff when you do the price stuff too (since assume am looping for that too)
-                    # [ todo-quickly! ] - then set it to a self var and use it here bosh
+                  
+                    # [ new! ] 
+                    # temp implementation for sending the finalised customer order details dict to the customer window
+                    # - potentially could do the confirm (if the order sent matches the order the given customer wanted) logic implementation there too tbf
+                    temp_details_dict_to_send = {"basket_price":self.current_basket_total, "basket_total_items":basket_total_items}
 
-                    # [ note! ] - wont actually be doing this loop here, will just be sending the price stuff, this is just temp for testing
-                    for i, item in enumerate(self.active_order_list):
-                        # [ new! ]
-                        # temp implementation for sending the finalised customer order details dict to the customer window
-                        # - potentially could do the confirm (if the order sent matches the order the given customer wanted) logic implementation there too tbf
+                    # -- now sending with current basket total if we are sending the payment_window msg to the customers message log --
+                    self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg("api", "payment_window", temp_details_dict_to_send) # think parameters here are - author, msg, details dict (if is payment_window msg)
+                    # -- also quickly do the reset for the customers state timer here, tho this particular part of that functionality might get removed or altered in some way --
+                    self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_customer.reset_ordering_state_timer()
+                    
+                    # [ newer-new-update! ] 
+                    # - so sliding in here quickly to add in the functionality for on click chat, so removing that from here
+                    # - and setting this up so it just does what it actually should do and just send the payment window
+                    # - will still need to tidy up and deal with all the notes tho
 
-                        temp_details_dict_to_send = {"basket_price":self.current_basket_total, "basket_total_items":basket_total_items}
+                    # [ note! ] 
+                    # - i think actually at the payment point, it should pause, while its doing the payment and check stuff, then its either going to a new state timer, or this state timer is starting again
 
-                        # - obvs only want to send payment here but its just easier to do it this way while testing
-                        author_msg_pairs = [("api", "payment_window", temp_details_dict_to_send), ("customer", f"{item}")]
-                        rng = choice(author_msg_pairs)
-                        if rng[1] == "payment_window":
-                            # -- now sending with current basket total if we are sending the payment_window msg to the customers message log --
-                            self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1], rng[2])
-                        else:
-                            # -- else it just adds the item as a new random message purely to test the functionality -- 
-                            self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].add_new_chatlog_msg(rng[0], rng[1])
-
-                        # -- debug - print the chatlog --
-                        print(self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog)
+                    # -- debug - print the chatlog --
+                    print(self.game.chatbox_layer_list[self.customer_select_popup_selected_customer.my_id - 1].my_chatlog)
 
         # -- then blit the actual popup --
         self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 

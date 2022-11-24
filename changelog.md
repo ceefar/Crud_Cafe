@@ -150,27 +150,45 @@ quick notes
 
 day 10
 [v3.12]
-- fixed the highlight on hover to include the new 'sticky' border
+- fixed the highlight on hover to include the new 'sticky' border [10am]
 - cleaned up chatbox class
 - cleaned up customer class
 - starting to flesh out the customer class now (tho likely will refactor once chatboxes are finalised anyways)
 - cleaned up parent browser tab and child new orders tab 
 - note, started adding more doc strings, mostly to improve the formatting / readability, tho will do mostly going forward but will shortly go back and fill in the missing ones
+- fixed bug in main code with write_to_pinboard order of operations
+- fixed image copy issue with new customer timer containers
+- improving customer state functionality, adding customer sub-states - inactive (completed/cancelled) or active (ordering/preparing/delivering) substates
+- adding basic buttons and attributions to main header
+- added update customer sub-state functionality to key press 1 
+- adding in actual sub-state timers, starting with the ordering sub-state
+    - alot of the stuff to add in the sub state, timers, etc for customer taking quite some time due to planning so its clean and implementing properly but has been more than worth it so far so keeping it up
+- added cancelled counter and gui element to scene top left info pinbar
+- added customer state functionality to move from active to inactive and cancelled substate when not interacted with by the amount of time dictated by their unique schedule trait 
+- hooked up the cancelled and active counter functionality for customers and updating states :D
+- now drawing the dynamic charging timers for each customer with the percent based on their own unique schedule trait :D
+- made timer positions dynamic and gave them their own unique queue to store them so we can easily implement capping the amount to 3
+- bar resetting functionality on r key temporarily, which will shortly then move to where it should be which is interacting with the customer
+- added blitting name to timer bar too incase i didnt add that
+- resolved that one and only bug as it was stupid af, noted below absolutely pmsl, but anyway so now highlight working again as expected 
+- added the surface for the customer interact button [8pm]
+- removed r to reset each customer timer and replaced with customer window button (just a black surf for now but is fine as am only sorting out the functionality for now)
+- convo button sticky setup
+- started the basic functionality for wanted_basket concept  
+- convo button blitting random item from wanted_basket [9:20pm]
+- send payment window to customer now just sending the payment window (not a random selection of items or payment window lol)
+    - should get this wiping the sent order asap yanno
+- done a load of stuff for setting, resetting, fixing vars for chatlogs update and order states, etc
+- ensured chatbox blit is working as expected and is still printing after the customer cancels, plus for multiple instances with their own seperate wanted orders and blitting to their own windows seperately, hover still working, etc - just standard things to make sure everything is still as expected, which it is! :D
 
-[for-tomo]
-# CRITICAL PERSONAL NOTE!
-# - get highlight on window hover back, where tf did that just go lol?
+
+# random to do
+- need to add overview to main header (obvs need in readme too, could also bang in its own file too, along with this changelog, etc)
 
 # generalised to do
 - add in button to loop through the customers chatlog stuff
 - msg ui timers and customer screen gui stuff
 - general minor things as per notes
 - then really just ironing out all that functionality :D
-
-# notable to fix
-- literally the only unexpected thing to fix going forward is ensuring the blit location is correct as there is a small bug somewhere with the ._layers ordering 
-    - but should be easy to resolve
-    - maybe like somewhere its using the id and somewhere its using the index, seems likely
-
 
 
