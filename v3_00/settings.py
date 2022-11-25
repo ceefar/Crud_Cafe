@@ -31,9 +31,9 @@ SKYBLUE = (0,255,255)
 MIDGREY = (128,128,128)     
 COFFEE =(200,190,140)             
 MOONGLOW = (235,245,255)        
-BROWNTONE = (123, 111, 100)    
-BROWNPALE =  (215, 195, 163)
-BLUEMIDNIGHT = (0, 51, 102)
+BROWNTONE = (123,111,100)    
+BROWNPALE =  (215,195,163)
+BLUEMIDNIGHT = (0,51,102)
 GOOGLEMAPSBLUE = (187,197,233)
 DARKRED = (139,0,0)
 PALEGREEN = (177, 237, 171)
@@ -49,8 +49,11 @@ TAN_COMPLIMENTARY_1 = (170,180,230)
 
 # -- New Potentially Finalised Colour Palette Colours --
 CUSTOMERTAN = (241,217,208)
+
 # - not really finalised palette but is the current colour in the images for these post-its so using for now -
-ORDERPOSTITBLUE = (32, 41, 149) 
+ORDERPOSTITBLUE = (32,41,149) 
+# - test colour for payment window 
+SUCCESSGREEN = (21,151,76)
 
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16
@@ -78,4 +81,5 @@ WINDOW_SHELVED_HL_1_IMG = "window_blank_shelved_test_hl_img.png"
 
 # -- More Faux OS Element Images - Windows --
 PAYMENT_PENDING_IMG_1 = "payment_pending_blank_img_1.png" # PAYMENT_PENDING_IMG_1 = "payment_pending_test_img.png"
+PAYMENT_SUCCESS_IMG_1 = "payment_pending_blank_success_img_1.png" 
 

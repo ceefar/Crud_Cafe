@@ -182,6 +182,35 @@ day 10
 - ensured chatbox blit is working as expected and is still printing after the customer cancels, plus for multiple instances with their own seperate wanted orders and blitting to their own windows seperately, hover still working, etc - just standard things to make sure everything is still as expected, which it is! :D
 
 
+
+day 11
+- was travelling to sheffield but did work on this for about half the day
+- didnt make notes tho, will try to go back and fill this in a bit later on today tho
+- basically just started the new preparing orders tab tho
+- and the basic functionality for the map popup
+- and then the start of customer paid functionality too 
+- improved new tab structure a tad by abstracting out some functionality 
+
+
+
+day 12
+[v3.14]
+- configured ticks timer to set customer to paid after a short amount of time and update their payment window img to show this too
+- state resetting
+- cleaned up code a tad to remove some unnecessary repetion 
+- added removing the ordering timer when the customer has paid
+- added a new surface / section to the new preparing tab for the queueing customers
+- moved the button to this new top surface and repositioned and resized so its dynamic sized and in a more logical location
+- now blits a yellow 'card' for each customer in the new preparing tabs - preparing customers top bar
+- added dynamic positioning to the preparing customer cards
+- added simple name text blit to the prep customer cards
+
+
+
+# note
+- really need to get a new version out quickly and a vid update btw
+
+
 # random to do
 - need to add overview to main header (obvs need in readme too, could also bang in its own file too, along with this changelog, etc)
 

@@ -42,7 +42,7 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         # state_timer_cancel_times = {"ordering":{"busy":2, "average":5 ,"lazy":10}, "preparing":{}, "delivering":{}} 
         # -- set the ordering times now just as its easier, tho once get all this stuff added in will put these in handler functions --
         self.customer_order_cancel_time = state_timer_cancel_times["ordering"][self.customer_trait_schedule]
-
+        
         # [ new! ]
         # -- new super duper test implementation of customers actual order, the one that they will read out (with ocassional mistakes that the player will have to get correct at the end) --
         if self.my_id % 2 == 0:
@@ -50,8 +50,78 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         else:
             self.my_wanted_order_details = {"Mario's Mushroom Soup":{"quantity":2}, "Squirtle Sashimi":{"quantity":2}, "Exeggcute Fried Rice":{"quantity":3}}
 
+        # [ new! ]
+        # -- kinda temp, but keeping the functionality - for handling payment state after sending the payment window to a customer  --
+        self.has_customer_paid = False
+        self.customer_payment_timer = 0 # times in ticks
+        self.customer_payment_wait_time = 200 # ticks
+
     def __repr__(self):
         return f"{self.my_name} [ ID.{self.my_id} ]"
+
+
+    # [ new! ]
+    # -- Payment Handling --
+
+    # send the payment window and activate timer stuff
+    # when check timer greater than payment timer
+    # set has paid to true
+    # then when has paid add them to a new very very top bar (before stores) which will just be customers who need to have their order start preparing 
+
+    # - will be some additional functionality added to this shortly, this is just the basics -
+    def handle_customer_payment(self):
+        if not self.has_customer_paid:
+            if self.customer_payment_timer > self.customer_payment_wait_time:
+                self.has_customer_paid = True
+                print(f"{self.customer_payment_timer = }")
+        if self.has_customer_paid:
+            # -- reset vars --
+            self.customer_payment_time = False 
+            self.ordering_sub_state_timer = False
+            # -- update the players state --
+            self.update_activate_customer_substate()
+
+   
+    	    # [ here! ]
+            # rnrn
+
+            # - adding them to prepare top left ting when their active substate is set (sumnt like active_substate == "ordering")
+            #   - and obvs removing them from order
+            #   - use self.game.all_preparing_customers
+            #   - legit will take like 5 mins just smash it out quickly
+
+            # - then do a simple preparing route?
+            #   - see below [prep-flow-note]
+            
+            # - then do map popup close button
+            #   - have already ported the old code tbf but clean it up a tad anyways huh
+
+            # - then from here will be the whole click them, see the map and their street name (maybe location tbf), and select and move them to that stores bar
+            #   - not doing that part rn tho, come back to it after below
+            
+            # - start functionality to hook up a customer random location and have it print on to the map surface for each customer seperately
+            #   - from here its sending their order to the correct store n stuff but basically just moving them into the right stores prepare route thing and then doing that
+           
+           
+            # [also-quick-note] # [ <-important! ]
+            # - yanno the windows should just go once they've paid yanno
+            #   - ig add like a final button press that says bye and then it auto closes after 2 sec or sumnt
+            
+            # [also-also-quick-note]
+            # - ideally would like the map popup to be blit over the window btw
+            #   - should be easy enough to do tbf but is hardly urgent
+
+            # [prep-flow-note]
+            # - as for preparing route / flow, just have them move along it at a certain amount of time (maybe speeds differ by order side but not by a lot tho actually no thats too much extra complication)
+            #   - just have them move along at a set speed just showing like the dominos app, and maybe color changing the card as its moving or sumnt
+            #   - then when they get to the end have them click and get removed from this and added to another tab (just map ig or just orders or sumnt - both probs)
+            #       - but again no where near there tbf, at that point tho just lay down that basic functionality and then we really have a flow tbf 
+            #           - as delivery could be hella hella simple, just click and they go and its done even, bosh
+
+
+    def activate_payment_timer(self): 
+        """ times up in ticks - so really is a counter not a timer, but you get it anyway """
+        self.customer_payment_timer += 1
 
 
     # -- State & Timer Handling --
@@ -100,6 +170,10 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
                 # if this customers order cancel time has been reached as they havent had a customer interaction in a certain amount of time dictated by their schedule trait
                 if state_check_timer - self.ordering_sub_state_timer > (self.customer_order_cancel_time * 1000):
                     self.update_customer_to_cancelled()
+            # [ new! ]
+            # - this will trigger to paid in the function based on the ticks timer/counter, then invalidate running itself all the time after resetting everything 
+            if not self.has_customer_paid:
+                self.handle_customer_payment()
 
     def update_customer_to_cancelled(self):
         """ when a customer cancels an order run this function to break them out of their default flow, make them inactive, and add them to the .game all_cancelled_customers dictionary"""
@@ -125,27 +199,19 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         # -- positions and dimensions setup --
         first_pinboard_y_pos = 260
         pinboard_border_width = 12 # put this stuff in settings once configured 
-
-        # -- note - actually just added this to intentionally break sidebar to test something, now actually leaving it just incase with a console input so im alerted if this happens again, if it doesnt as i expect, after a bit remove the try except --
-        try:
-            # -- quick note for this, basically using dynamically offset y positions based the order in the active customers list to blit these timers, and only want 3 to be shown btw but havent added that yet, and again just its the y pos --
-            # -- ok so, convert the sidebar queue dictionary to a list, go thru it's id keys (ID:customer) and find this customer (by its id), then get the index of the keyvalue pair in the list converted from the original dictionary --
-            position_in_the_queue = list(self.game.customer_sidebar_queue.keys()).index(self.my_id) 
-            # -- that gives us the position in the sidebar list, and we will then use that to blit the top three in order, le bosh --
-            timer_y_pos_1 = first_pinboard_y_pos + (20 * (position_in_the_queue + 1)) + (70 * (position_in_the_queue + 1)) # plus 1 for offsetting the zero indexing 
-            # -- create position rect and draw the customers name to the the surface
-            customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, timer_y_pos_1, self.pinboard_timer_width, self.pinboard_timer_height) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
-            self.draw_text_to_customer_timer_img(f"{self.my_name}", font_size=14, pos=(18,2))
-
-            # -- [new!] - for drawing the percentage chargebar of time remaining until this customer cancels --
-            self.draw_percent_bar_for_state_timer()
-            # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
-            self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
-        # test
-        except ValueError as valerr:
-            print(f"{valerr}")
-            faux_input = input("Press Any Key To Continue")
-
+        # -- quick note for this, basically using dynamically offset y positions based the order in the active customers list to blit these timers, and only want 3 to be shown btw but havent added that yet, and again just its the y pos --
+        # -- ok so, convert the sidebar queue dictionary to a list, go thru it's id keys (ID:customer) and find this customer (by its id), then get the index of the keyvalue pair in the list converted from the original dictionary --
+        position_in_the_queue = list(self.game.customer_sidebar_queue.keys()).index(self.my_id) 
+        # -- that gives us the position in the sidebar list, and we will then use that to blit the top three in order, le bosh --
+        timer_y_pos_1 = first_pinboard_y_pos + (20 * (position_in_the_queue + 1)) + (70 * (position_in_the_queue + 1)) # plus 1 for offsetting the zero indexing 
+        # -- create position rect and draw the customers name to the the surface
+        customer_timer_container_rect = pg.Rect(pinboard_border_width + 10, timer_y_pos_1, self.pinboard_timer_width, self.pinboard_timer_height) # trying 260/270/280 as width is 280 proper, but with 12 12 border outside is 304 total
+        self.draw_text_to_customer_timer_img(f"{self.my_name}", font_size=14, pos=(18,2))
+        # -- [new!] - for drawing the percentage chargebar of time remaining until this customer cancels --
+        self.draw_percent_bar_for_state_timer()
+        # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
+        self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
+       
     def draw_text_to_customer_timer_img(self, text, font_size=16, pos:tuple[int|float, int|float]|vec = (0, 0)):
         """ draw any text to a given position on this customers pinboard timer container/surface/image """
         # -- create the text surface --
@@ -364,12 +430,18 @@ class Chatbox(pg.sprite.Sprite):
     # -- New Chat Message Initial Test Implementation Stuff --
 
     def draw_payment_element(self, pos, order_details:dict): # {"price": 18.99}
-        payment_pending_img = self.game.payment_pending_1_img.copy()
+        # -- [new!] - added in functionality to set the customer to paid after a few seconds 
+        if self.my_customer.has_customer_paid:
+            payment_pending_img = self.game.payment_success_1_img.copy()
+            green_clr = SUCCESSGREEN
+        else:
+            payment_pending_img = self.game.payment_pending_1_img.copy()
+            green_clr = FORESTGREEN
         # -- get the price from the new details dict --
         self.basket_price = float(f"{order_details['basket_price']:.2f}") # set the precision to 2 decimal places
         self.basket_total_items = order_details["basket_total_items"]
         # -- create the text surfaces --
-        basket_price_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_26.render(f"${self.basket_price}", True, FORESTGREEN)
+        basket_price_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_26.render(f"${self.basket_price}", True, green_clr)
         basket_total_items_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"basket items: {self.basket_total_items}", True, BLACK)
         # -- draw the text surfs to this objects copy of the payment window img 
         payment_pending_img.blit(basket_price_text_surf, (78, 27)) 
@@ -378,6 +450,10 @@ class Chatbox(pg.sprite.Sprite):
         # - even would be cute for them to sometimes stop the transaction because of this but **not** anytime soon
         self.image.blit(payment_pending_img, pos)
         # note - will want a handler function that will sort all the different payment plus associated sprite animation states
+        
+        # [ new! ]
+        # - note, unsure if this will officially be here but just putting it for now while testing anyways
+        self.my_customer.activate_payment_timer()
 
     def add_new_chatlog_msg(self, author:str, msg:str, order_details=None):
         # -- create the dictionary chatlog item --

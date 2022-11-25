@@ -5,7 +5,8 @@ from settings import *
 vec = pg.math.Vector2
 
 
-# -- Browser Tab Parent -- 
+# ---- Browser Tab Parent Class ---- 
+
 class Browser_Tab(pg.sprite.Sprite):
     def __init__(self, game):
         self.groups = game.browser_tabs
@@ -27,29 +28,18 @@ class Browser_Tab(pg.sprite.Sprite):
 
     def __repr__(self):
         return f"Tab {self.my_tab_name}"
-                
-    def get_tab_name(self):
-        if isinstance(self, New_Orders_Tab):
-            return "New Orders"
-        else:
-            return "Chats"
-                
-    def set_bg_colour(self):
-        if isinstance(self, New_Orders_Tab):
-            self.image.fill(WHITE)
-        else:
-            self.image.fill(GOOGLEMAPSBLUE)
 
     def update(self):
         self.wipe_surface()
 
-    def wipe_surface(self):
-        self.set_bg_colour()    
-
     def draw_tab_to_pc(self):
         """ runs in main draw loop, draw to our background image then draw out background image to the screen every frame """
-        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
-        self.image.blit(title, (50,30))  
+        # [ possibly-temp ]
+        # - actually not doing this for the Preparing_Orders_Tab now, and tbf might refactor to do it the new way for all of the Tab subclasses via the parent
+        if not isinstance(self, Preparing_Orders_Tab):
+            title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
+            self.image.blit(title, (50,30))  
+        # -- end likely temp --
         self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
 
     def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16, want_return=False):
@@ -73,9 +63,26 @@ class Browser_Tab(pg.sprite.Sprite):
         if want_return:
             return resulting_rect
 
-# -- Browser Tab Children --
+    def get_tab_name(self):
+        if isinstance(self, New_Orders_Tab):
+            return "New Orders"
+        elif isinstance(self, Preparing_Orders_Tab):
+            return "Preparing Orders"
+                
+    def wipe_surface(self):
+        self.set_bg_colour()              
+    
+    def set_bg_colour(self):
+        if isinstance(self, New_Orders_Tab):
+            self.image.fill(WHITE)
+        elif isinstance(self, Preparing_Orders_Tab):
+            self.image.fill(GOOGLEMAPSBLUE)
+
+
+# ---- Browser Tab Child Classes ----
+
 class New_Orders_Tab(Browser_Tab):
-    def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
+    def __init__(self, game): 
         super().__init__(game)
         # -- new - current order sidebar --
         # -- declare vars to store lists of orders --
@@ -150,7 +157,6 @@ class New_Orders_Tab(Browser_Tab):
         
     def update_basket_total(self):
         # - note - once this functionality is more finalised dont run it all the timem i.e. set once, then reset on CRUD item only
-
         # -- store the running total --
         basket_running_total = 0.0
 
@@ -512,11 +518,213 @@ class New_Orders_Tab(Browser_Tab):
         # reset the .self var if there is no item hovered by the mouse
         if not is_hovered_item:
             self.is_one_menu_item_hovered = False
+
+
 # -- End New Orders Tab Class --     
 
-
-class Chats_Tab(Browser_Tab):
-    def __init__(self, game): # < add any specific parameters for the child class here, and then underneath super().__init__()
+class Preparing_Orders_Tab(Browser_Tab):
+    def __init__(self, game): # < add any specific parameters that you want to pass to the child class here, and then underneath super().__init__()
         super().__init__(game)
+        # -- setup scrollable screen dimensions, and then create a filled surface --
+        self.scrollable_screen_width = self.rect.width - 50
+        self.scrollable_screen_height = 900
+        self.scrollable_screen_surf = pg.Surface((self.scrollable_screen_width, self.scrollable_screen_height))
+        self.scrollable_screen_surf.fill(WHITE)
+        # -- top prep bars container dimensions --
+        self.top_prep_bars_bg_container_width = self.scrollable_screen_width 
+        self.top_prep_bars_bg_container_height = 400
+        # -- prep queue height --
+        self.top_prep_prep_queue_height = 150
+        # -- inner store prep bars dimensions --
+        self.store_prep_bar_width = self.scrollable_screen_width - (20 * 2) # 20 = side padding
+        self.store_prep_bar_height = 140
+        # -- tab scroll -- 
+        self.tab_scroll_offset = 0
+        
+        # [ new-test! ]
+        # - for toggling map popup on and off
+        self.map_popup_activated = False
 
-# ---- End Browser Tabs ----
+
+    # ---- Draw, Update ----
+
+    def draw(self):
+        if self.is_active_tab:
+            # -- setup the sections
+            self.create_top_preparing_customers_queue_bar()
+            self.create_mid_preparation_flow_bar()
+            # -- draw stuff to those sections
+            self.draw_new_customer_to_prep_queue()
+            # -- blit the actual sections
+            self.draw_cust_prep_queue_surf()
+            self.draw_stores_container_surf()
+            # -- do map stuff
+            self.draw_show_map_button() 
+            # -- [new!] -- 
+            if self.map_popup_activated:
+                self.draw_map_popup()          
+            # -- finally, blit the main/default scrollable screen surface to this tab image, if it is the active tab --
+            self.image.blit(self.scrollable_screen_surf, (25, 0 + self.tab_scroll_offset))
+                
+    def update(self):
+        ...
+
+
+    # ---- General x Misc ----
+
+    def draw_title(self, surf:pg.Surface, text, pos=(10, 10)):
+        """ new implementation to replace the way we are currently doing it in the parent class """
+        title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, DARKGREY) 
+        surf.blit(title, pos)  
+
+
+    # ---- Create Section Containers To Scrollable Screen Surf ----
+
+    def draw_stores_container_surf(self):
+        # -- [new!] - also quickly draw the title here since we're doing this new full screen scrollable surf thing here --
+        self.draw_title(self.stores_container_surf, "Stores Prep Queue")
+        # - note - need to update the positioning here as have removed the title from this section -
+        self.scrollable_screen_surf.blit(self.stores_container_surf, (0, self.top_prep_prep_queue_height))
+
+    def draw_cust_prep_queue_surf(self):
+        # -- [new!] - also quickly draw the title here since we're doing this new full screen scrollable surf thing here --
+        self.draw_title(self.cust_prep_queue_surf, "Customer Prep Queue")
+        # -- blit their container to the scrollable screen surface --
+        self.scrollable_screen_surf.blit(self.cust_prep_queue_surf, (0, 0))
+        
+
+    # ---- Preparing Customers Queue Top Bar ----  
+
+    def create_top_preparing_customers_queue_bar(self): # considering sticky but probably not now tbf
+        # -- create a bg container for the current stores (design with expanding to add more stores in mind) --
+        self.cust_prep_queue_surf = pg.Surface((self.top_prep_bars_bg_container_width, self.top_prep_prep_queue_height))
+        self.cust_prep_queue_surf.fill(PURPLE)
+
+    def draw_new_customer_to_prep_queue(self):
+        # -- define card dimensions -- 
+        self.customer_prep_card_width = 150 # note - should probably move these to init btw
+        self.customer_prep_card_height = 110
+        # -- setup bottom pos --
+        self.bottom_pos = self.top_prep_prep_queue_height - self.customer_prep_card_height
+        # -- loop and draw prep queue cards -- 
+        for index, (_, a_customer) in enumerate(self.game.all_preparing_customers.items()): # a_customer_id, a_customer
+            # - note - was considering animating these in and sure totally can do but its such a polish thing that dw about it for now at all -
+            customer_surf = pg.Surface((self.customer_prep_card_width, self.customer_prep_card_height))
+            customer_surf.fill(YELLOW)
+            # -- blit their name quickly too just so we know who it is - will improve this in due course obvs --
+            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{a_customer.my_name}", True, DARKGREY) 
+            customer_surf.blit(text_surf, (5, 5))
+            # -- do the blit, based on your position/index in the dictionary -- 
+            self.cust_prep_queue_surf.blit(customer_surf, (10 + (index * self.customer_prep_card_width) + (10 * index), self.bottom_pos))
+
+
+    # ---- Stores Preparing Orders Mid Bar (Changed From Top) ----  
+
+    def create_mid_preparation_flow_bar(self): 
+        # -- create a bg container for the current stores (design with expanding to add more stores in mind) --
+        self.stores_container_surf = pg.Surface((self.top_prep_bars_bg_container_width, self.top_prep_bars_bg_container_height))
+        self.stores_container_surf.fill(GOOGLEMAPSBLUE)
+        # -- create the inner store preparing orders bar surfaces --
+        store_1_prep_bar_surf = pg.Surface((self.store_prep_bar_width, self.store_prep_bar_height)) 
+        store_2_prep_bar_surf = pg.Surface((self.store_prep_bar_width, self.store_prep_bar_height)) 
+        # -- blit those stores to their background container --
+        self.stores_container_surf.blit(store_1_prep_bar_surf, (20, 80))
+        self.stores_container_surf.blit(store_2_prep_bar_surf, (20, 80 + self.store_prep_bar_height + 20))
+
+
+    # ---- New Initial Maps Test Stuff ----
+
+    def draw_show_map_button(self):
+        # -- setup the btn dimensions and the surface --
+        self.show_map_btn_width = 150
+        self.show_map_btn_height = 110
+        self.show_map_btn = pg.Surface((self.show_map_btn_width, self.show_map_btn_height))
+        self.show_map_btn.fill(BLUEMIDNIGHT)
+        # -- blit the button and get the true rect for checking mouse collisions -- 
+        # - note - this is just blit on top and not to the specific section surfaces, it still scrolls tho its not sticky, and note the minus 20 below here is for padding btw (screen edge has been taken into consideration in the rest of the calculation already)
+        self.map_btn_true_rect = self.scrollable_screen_surf.blit(self.show_map_btn, (self.top_prep_bars_bg_container_width - self.show_map_btn_width - 20, 20)) # guna be like the above container height (make that stuff self btw) (dont think i need scroll but i might)
+        # -- move the blitted rect to its true position on the screen based on the surface it was itself blit on to --
+        self.map_btn_true_rect = self.game.get_true_rect(self.map_btn_true_rect) 
+        self.map_btn_true_rect.move_ip(25, 0) # nudge in the x for the border edge which i forgot to include in initial calculations -- 
+        # -- not *entirely* ideal to do hover checks in draw, but is completely fine tbf so dw about it --
+        if self.map_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
+            if self.game.mouse_click_up:
+                print(f"Button Click Registed => Show Map")
+                self.map_popup_activated = True
+                
+
+    # [ here! ] 
+    # make it bigger
+    # add close btn
+    # start doing the actual map stuff oooooo
+
+    # [ todo! ] 
+    # should real quick lay down the orders moving to pos 1 (or maybe just there, skip animating for now)
+    # and with a given state (requires order_info, timer, etc)
+
+    def draw_map_popup(self): 
+        # -- configure the popup bg --
+        self.popup_bg_width = self.image.get_width()
+        self.popup_bg_height = self.image.get_height()
+        self.popup_bg_surf = pg.Surface((self.popup_bg_width, self.popup_bg_height)).convert_alpha()
+        self.popup_bg_surf.fill(DARKGREY)
+        self.popup_bg_surf.set_alpha(120)
+        self.scrollable_screen_surf.blit(self.popup_bg_surf, (0,0))
+        # -- configure the main surface --
+        x_padding, y_padding = 200, 100
+        self.map_popup_width = self.popup_bg_width - x_padding  
+        self.map_popup_height = self.popup_bg_height - y_padding
+        self.map_popup = pg.Surface((self.map_popup_width, self.map_popup_height))
+        self.map_popup.fill(CUSTOMERTAN)
+        # -- draw title text to the popup surf -- 
+        title_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select A Store To Start Preparing This Order", True, BLACK) 
+        self.map_popup.blit(title_text_surf, (10, 10)) 
+        # -- final blit -- 
+        self.scrollable_screen_surf.blit(self.map_popup, ((x_padding / 2) - 25, (y_padding / 2) - 25)) # minus 25 for screen edge/border btw # - old centralised position just incase decide to update the gui for this idea - # self.scrollable_screen_surf.blit(self.map_popup, ((self.image.get_width() - self.map_popup_width - 50) / 2, (self.image.get_height() - self.map_popup_height - 25)))         
+        # # -- new test for close button --
+        # self.close_btn_size = 30
+        # self.close_btn_padding = 20
+        # self.close_btn_surf = pg.Surface((30, 30))
+        # self.close_btn_surf.fill(RED)
+        # self.close_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
+        # self.close_btn_true_rect = self.game.get_true_rect(self.close_btn_true_rect)
+        # self.close_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
+        # if self.close_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
+        #     # -- on hover change colour for visual clarity, ux is good mkay -- 
+        #     self.close_btn_surf.fill(DARKRED)
+        #     self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
+        #     # -- on click, set the state to close the popup window --
+        #     if self.game.mouse_click_up: 
+        #         self.want_customer_select_popup = False
+        #         # -- new test addition --
+        #         self.customer_select_popup_selected_customer = False # and reset this var
+        
+
+        # # -- then blit the actual popup --
+        # self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 
+        # self.customer_selector_popup_window_true_rect = self.game.get_true_rect(self.customer_selector_popup_window_true_rect)
+            
+
+    # new update notes
+    # ----------------
+    # so thinking...
+    # - we will handle preparing here in some way
+    # - this will show some basic stats about current orders also ?
+    # - when preparing state is finished, we'll move the customer to the next delivering stage from here too (thats what im guna mock up now)
+    # - yeahhhh duhhhhh
+    # - so you've completed the order, now the actual first thing to do is choose the store for it to start preparing
+    # - the first thing on this tab should be a vertical list of orders moving thru as they start preparing and their time 
+    #   - maybe have 2 bars 1 for each store, and stuff at the end is done, kinda like those pizza ovens, it moves thru and then its ready to go out
+    # - and then when stuff is done you can move it to the delivered page and handle it there (or it does it itself whatever)
+    
+
+    # [rn]
+    # - replace chats with order x customer x etc
+    # - just do one button 
+    # - to open this map functionality stuff
+    # - and ig just start setting that up
+    # - and then also doing sumnt for 
+
+
+
+# ---- End of File ----

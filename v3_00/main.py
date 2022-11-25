@@ -40,7 +40,7 @@ import sys
 from os import path
 from settings import *
 from chatbox_and_customer import Chatbox, Customer
-from browser_tabs import Browser_Tab, New_Orders_Tab, Chats_Tab
+from browser_tabs import Browser_Tab, New_Orders_Tab, Preparing_Orders_Tab
 
 class Game:
     def __init__(self):
@@ -72,6 +72,7 @@ class Game:
         self.window_shelved_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_HL_1_IMG)).convert_alpha()  
         # - chat elements -
         self.payment_pending_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_PENDING_IMG_1)).convert_alpha()  
+        self.payment_success_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_SUCCESS_IMG_1)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
@@ -105,7 +106,7 @@ class Game:
         self.chatboxes = pg.sprite.Group()
         # -- initialising sprite object instances -- 
         self.new_orders_tab = New_Orders_Tab(self)
-        self.chats_tab = Chats_Tab(self)
+        self.preparing_orders_tab = Preparing_Orders_Tab(self)
         # -- loop customers needed for this level --
         for _ in range(0, self.total_customers_for_level):
             a_customer = Customer(self)
@@ -117,7 +118,8 @@ class Game:
         # -- misc game x level setup vars --
         self.is_player_moving_chatbox = False 
         # -- new x misc --
-        self.all_cancelled_customers = {}
+        self.all_cancelled_customers = {} # should move this above
+        self.all_preparing_customers = {} # should move this above too
         self.pinboard_pos = (0, 20)   
         self.customer_sidebar_queue = {}   
        
@@ -143,7 +145,7 @@ class Game:
         ...
 
 
-    # ---- Draw, Update, Events Reordering Layers ----
+    # ---- Events, Update, Draw - Executes In That Order ----
 
     def draw(self):
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
@@ -157,8 +159,15 @@ class Game:
         # -- [new!] - test to for drawing customer info to the pinboard --
         for a_customer in self.all_active_customers.values():
             if isinstance(a_customer, Customer):
-                a_customer.wipe_customer_timer_img()
-                a_customer.draw_customer_timer_info_to_pinboard()
+                # -- [new!] - adding customers to new all_preparing_customers dictionary 
+                if a_customer.my_active_sub_state == "preparing":
+                    if a_customer.my_id not in self.all_preparing_customers.keys():
+                        self.all_preparing_customers[a_customer.my_id] = a_customer
+
+                # -- [new!] - only draw the customers sidebar ordering timer stuff if they have paid, means making an update to the dictionary timers idea since probs dont need that anymore -- 
+                if not a_customer.has_customer_paid:
+                    a_customer.wipe_customer_timer_img()
+                    a_customer.draw_customer_timer_info_to_pinboard()
         # -- [new!] - draw the new info pinboard concept image --
         self.scene_img.blit(self.pinboard_image_surf, self.pinboard_pos)
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
@@ -183,8 +192,13 @@ class Game:
                     if isinstance(sprite, New_Orders_Tab):
                         if sprite.want_customer_select_popup:
                             sprite.draw_active_customers_selector_popup()
-                    # -- actually draw the tab surface to the screen -- 
-                    sprite.draw_tab_to_pc()                    
+                    # -- finally, run this for all child instances, if they are they active tab you draw their surface to the scene screen image --                     
+                    sprite.draw_tab_to_pc()       
+
+        # [ new! ] 
+        # -- new first implementation of preparing orders tab & its functionality --
+        self.preparing_orders_tab.draw()          
+
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
@@ -238,7 +252,9 @@ class Game:
                 # -- temp toggle between our 2 tabs --
                 if event.key == pg.K_q:
                     self.new_orders_tab.is_active_tab = not self.new_orders_tab.is_active_tab
-                    self.chats_tab.is_active_tab = not self.chats_tab.is_active_tab
+                    self.preparing_orders_tab.is_active_tab = not self.preparing_orders_tab.is_active_tab
+                    if self.preparing_orders_tab.is_active_tab:
+                        self.preparing_orders_tab.tab_scroll_offset = 0
                 # -- temporary way to incrememntally make customers active, this will be handled by a game timer in future but this is waaay better for testing --  
                 created_customers = len(self.all_active_customers) # the amount of customers you've manually added in already
                 # -- handle the exception if we accidentally try to add too many customers than we have available by just skipping over it, in the real game this will basically be the end level state - once the last customer has been completed or cancelled anyways --
@@ -260,8 +276,7 @@ class Game:
                     self.handle_scroll_up()
                 if event.key == pg.K_DOWN:
                     self.handle_scroll_down()
-                    
-            # -- key down --
+            # -- keyboard events - key down --
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     self.quit()
@@ -345,6 +360,9 @@ class Game:
         for a_chatbox in self.chatboxes:
             if a_chatbox.is_hovered:
                 a_chatbox.chatbox_window_scroll_y_offset -= 10
+        # -- for preparing tab scrolling --
+        if self.preparing_orders_tab.is_active_tab:
+            self.preparing_orders_tab.tab_scroll_offset -= 10
 
     def handle_scroll_up(self):
         """ when hovering a valid chatbox window or tab element, scrolls the window up using the up key """
@@ -355,7 +373,11 @@ class Game:
         # -- for orders sidebar scrolling --
         if self.new_orders_tab.is_active_tab and self.new_orders_tab.is_orders_sidebar_surf_hovered:
             self.new_orders_tab.orders_sidebar_scroll_y_offset += 10
-
+        # -- for preparing tab scrolling --
+        if self.preparing_orders_tab.is_active_tab:
+            self.preparing_orders_tab.tab_scroll_offset += 10
+            if self.preparing_orders_tab.tab_scroll_offset > 0:
+                self.preparing_orders_tab.tab_scroll_offset = 0 # coube achieved with min() too tbf
 
 # ---- End Game Class ----
 
