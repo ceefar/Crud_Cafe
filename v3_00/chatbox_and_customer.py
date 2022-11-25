@@ -84,7 +84,7 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
    
     	    # [ here! ]
             # rnrn
-
+ 
             # - adding them to prepare top left ting when their active substate is set (sumnt like active_substate == "ordering")
             #   - and obvs removing them from order
             #   - use self.game.all_preparing_customers
