@@ -1,6 +1,6 @@
 # -- imports --
 import pygame as pg
-from random import choice, randint
+from random import choice, randint, uniform
 from settings import *
 vec = pg.math.Vector2
 
@@ -185,27 +185,37 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         # [ new! ]
         # -- image rotation handler test --
         self.timer_rot_handler()
+        # [ new! ]
+        # -- draw customer emoji/icon --
+        self.draw_customer_emoji()
         # -- rotate the image around it center based on how far along the charge/percent bar the customer is -- 
-        rotated_img = self.rotate_at_center(self.my_pinboard_timer_img, self.rot, self.my_pinboard_timer_img.get_rect().x, self.my_pinboard_timer_img.get_rect().y)
+        rotated_img = self.rotate_at_center(self.my_pinboard_timer_img, self.rot)
         # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
         self.game.pinboard_image_surf.blit(rotated_img, customer_timer_container_rect)
         # self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
        
     def timer_rot_handler(self):
-        # - new test, loop our rot ticker 1 to 4
+        # -- loop our rot ticker 1 to 6 --
         if self.rot_ticker >= 6:
             self.rot_ticker = 1
-        # - 
+        # -- set rot and img based on this customers wait time chargebar percent --
         if self.rot_ticker == 1:
-            if self.bar_percent < 50:
+            if self.bar_percent < 30:
                 self.rot = 1
+                self.emoji_img = self.game.emoji_1_img.copy()
+            elif self.bar_percent < 45:
+                self.rot = uniform(-1.0, 1.0)
+                self.emoji_img = self.game.emoji_2_img.copy()
+            elif self.bar_percent < 60:
+                self.rot = uniform(-2.0, 2.0)
+                self.emoji_img = self.game.emoji_3_img.copy()
             elif self.bar_percent < 75:
-                self.rot = randint(-2, 2)
-            elif self.bar_percent < 90:
-                self.rot = randint(-5, 5)
+                self.rot = uniform(-3.0, 3.0)
+                self.emoji_img = self.game.emoji_4_img.copy()
             else:
-                self.rot = randint(-8, 8)
-        # - do this at the end not the start, since we want it to start on 1, not 2 -
+                self.rot = uniform(-4.0, 4.0)
+                self.emoji_img = self.game.emoji_5_img.copy()
+        # -- do this at the end not the start, since we want it to start on 1, not 2 --
         self.rot_ticker += 1
 
     def draw_text_to_customer_timer_img(self, text, font_size=16, pos:tuple[int|float, int|float]|vec = (0, 0)):
@@ -239,12 +249,15 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         # -- setup percentage chargebar rect --
         self.bar_percent = current_time * (100 / (self.customer_order_cancel_time * 1000)) 
         self.timer_bar_rect = pg.Rect(20 + icon_spacing, 22, self.bar_percent * (timer_bar_max_width / 100), timer_bar_height)
-
         # [ new! ] 
         # -- dynamic chargebar colouring --
         self.handle_chargebar_rgb()
         # -- draw the chargebar to this customers timer img --
         pg.draw.rect(self.my_pinboard_timer_img, (self.r, self.g, self.b), self.timer_bar_rect)
+
+    def draw_customer_emoji(self):
+        """ draw the different emote icons based on the customers wait time chargebar percent, which is set in `self.timer_rot_handler()` """
+        self.my_pinboard_timer_img.blit(self.emoji_img, (25, 18))
 
     def handle_chargebar_rgb(self):
         """ decrement green and increment red based on the current percentage """  
@@ -252,9 +265,8 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         self.r = self.r * (self.bar_percent * 2.55)
         self.g = self.g - self.r
 
-    # [ todo-asap! ] 
-    # use @staticmethod decorator oooo
-    def rotate_at_center(self, image:pg.Surface, angle, x, y):
+    @staticmethod
+    def rotate_at_center(image:pg.Surface, angle):
         rotated_image = pg.transform.rotate(image, angle)
         return rotated_image
 
@@ -262,6 +274,8 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
 
     # [ new! ]
     # - now adding in emote next to charge/percent bar for customer timer
+    #   - grab the old draw outline function for icons?
+    # - improve the colour transition so it isnt so icky half way thru
     # - also haved moved the bar to the right a tad to accomodate for the icon  
 
 

@@ -217,6 +217,13 @@ day 13
 - new rotation image handler
 - timer container now rotating based on wait time chargebar percentage
 - dynamic colour change on chargebar rgb based on percentage (green to orange to red)
+- added emojis icons
+- made them sticker style
+- making them dynamic
+- some ui element design work
+- added new login screen
+- updated functionality for adding before game start state and start game "login" screen
+- added in the basic start screen with login img and core scene imgs 
 
 # note
 - really need to get a new version out quickly and a vid update btw

@@ -17,7 +17,7 @@ class Browser_Tab(pg.sprite.Sprite):
         self.x, self.y = 0, 0 # we're blitting to the pc screen surface so we dont need to worry about the position its already handled
         self.pos = vec(self.x, self.y)
         # -- image and rect --
-        self.image = pg.Surface((self.width, self.height))
+        self.image = pg.Surface((self.width, self.height)) 
         self.set_bg_colour()
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.pos # align to top right - for align to center use -> self.rect.centerx = self.rect.x + (self.width / 2) 
@@ -39,24 +39,32 @@ class Browser_Tab(pg.sprite.Sprite):
         if not isinstance(self, Preparing_Orders_Tab):
             title = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{self.my_tab_name}", True, DARKGREY) 
             self.image.blit(title, (50,30))  
-        # -- end likely temp --
-        self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height)) # 50 is the top tabs area, need to hard code this once added it in 
+        # -- end temp --
+        # [new!] - note - test 15 (from 0) for tab bar adjustment
+        self.game.pc_screen_surf.blit(self.image, (0, self.game.tab_bar_height + 15)) # 50 is the top tabs area, need to hard code this once added it in 
 
-    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16, want_return=False):
+    def draw_text_to_surf(self, text:str, pos:tuple[int|float, int|float], surf:pg.Surface, colour=DARKGREY, font_size=16, want_return=False, font="bohemian"):
         """ the actual blit for this instance's .image surface is executed in draw_tab_to_pc """
         # -- obvs will add functionality for font and font size at some point, just is unnecessary rn --
-        if font_size == 10:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_10.render(f"{text}", True, colour) 
-        elif font_size == 12:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{text}", True, colour) 
-        elif font_size == 14:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{text}", True, colour) 
-        elif font_size == 16:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, colour) 
-        elif font_size == 18:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"{text}", True, colour) 
-        elif font_size == 20:
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, colour) 
+        if font == "bohemian":
+            if font_size == 10:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_10.render(f"{text}", True, colour) 
+            elif font_size == 12:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{text}", True, colour) 
+            elif font_size == 14:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_14.render(f"{text}", True, colour) 
+            elif font_size == 16:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_16.render(f"{text}", True, colour) 
+            elif font_size == 18:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"{text}", True, colour) 
+            elif font_size == 20:
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, colour) 
+        # -- lato --
+        elif font == "lato":
+            if font_size == 16:
+                text_surf = self.game.FONT_LATO_16.render(f"{text}", True, colour) 
+            elif font_size == 20:
+                text_surf = self.game.FONT_LATO_20.render(f"{text}", True, colour)
         # -- --
         resulting_rect = surf.blit(text_surf, pos) 
         # -- return the resulting rect (pos & size) if you ask... nicely -- 
@@ -74,7 +82,7 @@ class Browser_Tab(pg.sprite.Sprite):
     
     def set_bg_colour(self):
         if isinstance(self, New_Orders_Tab):
-            self.image.fill(WHITE)
+            self.image.fill(TABBLUE)
         elif isinstance(self, Preparing_Orders_Tab):
             self.image.fill(GOOGLEMAPSBLUE)
 
@@ -98,7 +106,7 @@ class New_Orders_Tab(Browser_Tab):
         # -- create the surface for the orders sidebar -- 
         self.width_offset = 90 # if this is set to zero then the sidebar will take exactly half the screen size, if set to 100 it will be -100px from the width and +100px in x axis 
         self.orders_sidebar_surf = pg.Surface(((self.rect.width / 2) - self.width_offset, self.rect.height))
-        self.orders_sidebar_surf_colour = TAN
+        self.orders_sidebar_surf_colour = WHITE
         self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour)
         # -- for tracking the active order --
         self.active_order_number = 1
@@ -241,11 +249,10 @@ class New_Orders_Tab(Browser_Tab):
 
         # -- wipes the surface, drawing the analogous bg colour if the orders sidebar surface is hovered --
         if self.is_orders_sidebar_surf_hovered:
-            self.sidebar_bg_colour = TAN_ANALOGOUS_1 # TAN_ANALOGOUS_1 TAN_DARKER_1
+            self.orders_sidebar_surf.fill(VLIGHTGREY) # bg colour = TAN
         else:
-            self.sidebar_bg_colour = self.orders_sidebar_surf_colour
-        self.orders_sidebar_surf.fill(self.sidebar_bg_colour) # bg colour = TAN
-
+            self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # bg colour = TAN
+            
     def draw_active_customers_selector_popup(self):
         # -- first blit a background surf for the popup --
         popup_bg = pg.Surface((self.rect.width, self.rect.height)).convert_alpha()
@@ -409,16 +416,16 @@ class New_Orders_Tab(Browser_Tab):
                     # -- the final blit --
                     self.orders_sidebar_surf.blit(crud_hightlight_bg_surf, crud_highlight_bg_rect)
             # -- draw this item and its quantity for the active order to the orders sidebar surf --
-            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=14)
+            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=16, font="lato")
 
         # [ todo-? ]
         # -- make this a draw title function now, and fix the below double blit --
         # - note actually also just fix the rect to be a standard rect like the bottom bar instead of just just the small rect behind the text
         # - note, do this title draw after drawing the scrolling text since it has a bg rect now as we want it to be on the bottom 
-        order_basket_title_true_rect = self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True) 
-        pg.draw.rect(self.orders_sidebar_surf, self.sidebar_bg_colour, order_basket_title_true_rect)
+        order_basket_title_true_rect = self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True, font="lato") 
+        pg.draw.rect(self.orders_sidebar_surf, self.orders_sidebar_surf_colour, order_basket_title_true_rect)
         # -- yes legit have to fix this to not do this blit twice - do it twice to get the size, can actually just alter that function to not blit and just return, bosh -- 
-        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True) 
+        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, font_size=20, want_return=True, font="lato") 
 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()        
@@ -455,7 +462,7 @@ class New_Orders_Tab(Browser_Tab):
             # --  draw the item text to that surface after drawing the surf dynamic bg surface underneath, then grab the hover rect and append it to an instance variable so we can check it for mouse collision later --
             test_item_pos = (50, 80 + (index * 40) + (index * 20) + offset_y)
             item_price = an_item_dict["price"]
-            self.draw_text_to_surf(f"{an_item_dict['name']} ${item_price}", (10, 15), menu_item_surf, font_colour) # now includes price
+            self.draw_text_to_surf(f"{an_item_dict['name']} ${item_price}", (10, 15), menu_item_surf, font_colour, font="lato") # now includes price
             # -- new consideration - draw buttons for the toggles if it has buttons else just draw one button to add to order -- 
             if an_item_dict["has_toggles"]:
                 pass 
@@ -598,7 +605,7 @@ class Preparing_Orders_Tab(Browser_Tab):
     def create_top_preparing_customers_queue_bar(self): # considering sticky but probably not now tbf
         # -- create a bg container for the current stores (design with expanding to add more stores in mind) --
         self.cust_prep_queue_surf = pg.Surface((self.top_prep_bars_bg_container_width, self.top_prep_prep_queue_height))
-        self.cust_prep_queue_surf.fill(PURPLE)
+        self.cust_prep_queue_surf.fill(TABBLUE)
 
     def draw_new_customer_to_prep_queue(self):
         # -- define card dimensions -- 

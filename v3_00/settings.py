@@ -54,6 +54,10 @@ CUSTOMERTAN = (241,217,208)
 ORDERPOSTITBLUE = (32,41,149) 
 # - test colour for payment window 
 SUCCESSGREEN = (21,151,76)
+# - test colour for default tab bg 
+TABBLUE = (203,220,247)
+# - test -
+VLIGHTGREY = (234,234,234)
 
 # -- General --
 WIDTH = 1600 # 16:9  # 16 * 64 or 32 * 32 or 64 * 16
@@ -68,6 +72,11 @@ GRIDHEIGHT = HEIGHT / TILESIZE
 SCENE_IMG = "crud_cafe_scene.png" 
 SCENE_INFO_PINBOARD_IMG = "info_sidebar_concept_img.png" 
 SCENE_PINBOARD_PAPER_IMG = "continous_paper_bg.png" 
+SCENE_PINBOARD_ICON_1_IMG = "emoji_1.png"
+SCENE_PINBOARD_ICON_2_IMG = "emoji_2.png"
+SCENE_PINBOARD_ICON_3_IMG = "emoji_3.png"
+SCENE_PINBOARD_ICON_4_IMG = "emoji_4.png"
+SCENE_PINBOARD_ICON_5_IMG = "emoji_5.png"
 
 # -- Faux OS Element Images --
 WINDOW_IMG = "window_blank_img.png" 
@@ -82,6 +91,14 @@ WINDOW_SHELVED_HL_1_IMG = "window_blank_shelved_test_hl_img.png"
 # -- More Faux OS Element Images - Windows --
 PAYMENT_PENDING_IMG_1 = "payment_pending_blank_img_1.png" # PAYMENT_PENDING_IMG_1 = "payment_pending_test_img.png"
 PAYMENT_SUCCESS_IMG_1 = "payment_pending_blank_success_img_1.png" 
+
+# -- Tab Bar Faux OS Elements - Login -- 
+START_LOGIN_IMG_1 = "login_screen_1.png"
+
+# -- Tab Bar Faux OS Elements -- 
+TAB_BAR_PREPARING_IMG = "tab_bar_prep_img.png"
+TAB_BAR_ORDERING_IMG = "tab_bar_take_img.png"
+
 
 # -- Map Test Images -- 
 MAP_TEST_IMG_1 = "test_map_1.png" 
