@@ -208,6 +208,9 @@ day 12
 - added temp click to map popup to select a store (well just closes for now but adding that in next) [friday-21:15]
 - temp functionality to send preparing order to store on button press (just removes from the queue for now but doing that next) 
 
+[took-saturday-off-for-once]
+- did do like an hour tbf but hardly worth including
+
 day 13
 [v3.15]
 - new rotate around center

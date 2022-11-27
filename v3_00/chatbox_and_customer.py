@@ -197,11 +197,11 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
             self.rot_ticker = 1
         # - 
         if self.rot_ticker == 1:
-            if self.bar_percent < 15:
+            if self.bar_percent < 50:
                 self.rot = 1
-            elif self.bar_percent < 55:
-                self.rot = randint(-2, 2)
             elif self.bar_percent < 75:
+                self.rot = randint(-2, 2)
+            elif self.bar_percent < 90:
                 self.rot = randint(-5, 5)
             else:
                 self.rot = randint(-8, 8)
@@ -242,23 +242,25 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
 
         # [ new! ] 
         # -- dynamic chargebar colouring --
-        # -  make this its own function 100
-        self.r, self.g, self.b = 1, 255, 1
-        # -- decrement green and increment red based on the current percentage --  
-        self.r = self.r * (self.bar_percent * 2.55)
-        self.g = self.g - self.r
+        self.handle_chargebar_rgb()
         # -- draw the chargebar to this customers timer img --
         pg.draw.rect(self.my_pinboard_timer_img, (self.r, self.g, self.b), self.timer_bar_rect)
 
+    def handle_chargebar_rgb(self):
+        """ decrement green and increment red based on the current percentage """  
+        self.r, self.g, self.b = 1, 255, 1
+        self.r = self.r * (self.bar_percent * 2.55)
+        self.g = self.g - self.r
 
+    # [ todo-asap! ] 
     # use @staticmethod decorator oooo
     def rotate_at_center(self, image:pg.Surface, angle, x, y):
         rotated_image = pg.transform.rotate(image, angle)
         return rotated_image
 
 
+
     # [ new! ]
-    # - doing rotation test 
     # - now adding in emote next to charge/percent bar for customer timer
     # - also haved moved the bar to the right a tad to accomodate for the icon  
 
