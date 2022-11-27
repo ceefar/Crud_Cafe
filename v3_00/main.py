@@ -73,6 +73,8 @@ class Game:
         # - chat elements -
         self.payment_pending_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_PENDING_IMG_1)).convert_alpha()  
         self.payment_success_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_SUCCESS_IMG_1)).convert_alpha()  
+        # -- map popup --
+        self.map_test_img_1 = pg.image.load(path.join(imgs_folder, MAP_TEST_IMG_1)).convert_alpha()  
         # -- load fonts -- 
         self.FONT_TWINMARKER_26 = pg.font.Font((path.join(fonts_folder, "TwinMarker.ttf")), 26) 
         self.FONT_VETERAN_TYPEWRITER_20 = pg.font.Font((path.join(fonts_folder, "veteran typewriter.ttf")), 20) 
@@ -119,7 +121,8 @@ class Game:
         self.is_player_moving_chatbox = False 
         # -- new x misc --
         self.all_cancelled_customers = {} # should move this above
-        self.all_preparing_customers = {} # should move this above too
+        self.all_ordering_customers = {} # should move this above too
+        self.all_preparing_customers = {} # should move this above also
         self.pinboard_pos = (0, 20)   
         self.customer_sidebar_queue = {}   
        
@@ -156,14 +159,18 @@ class Game:
         # -- [new!] - draw to the pinboard image, just basic setup stuff dw too much about the vars n states yet --
         self.write_info_counters_to_pinboard(font_size=46, post_it="ordering")
         self.write_info_counters_to_pinboard(font_size=46, post_it="cancelled")
+        self.write_info_counters_to_pinboard(font_size=46, post_it="preparing")
         # -- [new!] - test to for drawing customer info to the pinboard --
         for a_customer in self.all_active_customers.values():
             if isinstance(a_customer, Customer):
-                # -- [new!] - adding customers to new all_preparing_customers dictionary 
+                # -- [new!] - adding customers to new all_preparing_customers dictionary --
                 if a_customer.my_active_sub_state == "preparing":
                     if a_customer.my_id not in self.all_preparing_customers.keys():
                         self.all_preparing_customers[a_customer.my_id] = a_customer
-
+                # -- [new!] - creating a new ordering version of the above instead of using all_customers for ordering as i was previous --
+                if a_customer.my_active_sub_state == "ordering":
+                    if a_customer.my_id not in self.all_ordering_customers.keys():
+                        self.all_ordering_customers[a_customer.my_id] = a_customer                        
                 # -- [new!] - only draw the customers sidebar ordering timer stuff if they have paid, means making an update to the dictionary timers idea since probs dont need that anymore -- 
                 if not a_customer.has_customer_paid:
                     a_customer.wipe_customer_timer_img()
@@ -299,17 +306,29 @@ class Game:
         pinboard_y_offset = 85
         ordering_post_it_offset = (50, 7)
         cancelled_post_it_offset = (75, 117)
+        preparing_post_it_offset = (135, 12)
         # -- switch to handle each post it value and position seperately --
         if post_it == "ordering":
             # -- handle blit position --
             pos = (self.pinboard_pos[0] + ordering_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + ordering_post_it_offset[1])
+            # -- handle font size, will do this properly (i.e. in its own function) shortly --
+            if font_size == 26:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_ordering_customers)}", True, ORDERPOSTITBLUE) 
+            elif font_size == 32:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_ordering_customers)}", True, ORDERPOSTITBLUE) 
+            elif font_size == 46:
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_ordering_customers)}", True, ORDERPOSTITBLUE) 
+        # -- preparing --
+        elif post_it == "preparing":
+            pos = (self.pinboard_pos[0] + preparing_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + preparing_post_it_offset[1])
             # -- handle font size, will do this properly shortly --
             if font_size == 26:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_26.render(f"{len(self.all_preparing_customers)}", True, PURPLE) 
             elif font_size == 32:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_32.render(f"{len(self.all_preparing_customers)}", True, PURPLE) 
             elif font_size == 46:
-                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_active_customers)}", True, ORDERPOSTITBLUE) 
+                text_surf = self.FONT_BOHEMIAN_TYPEWRITER_46.render(f"{len(self.all_preparing_customers)}", True, PURPLE) 
+        # -- cancelled --
         elif post_it == "cancelled":
             # -- handle blit position --
             pos = (self.pinboard_pos[0] + cancelled_post_it_offset[0], self.pinboard_pos[1] + pinboard_y_offset + cancelled_post_it_offset[1])

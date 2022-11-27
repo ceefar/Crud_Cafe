@@ -83,3 +83,5 @@ WINDOW_SHELVED_HL_1_IMG = "window_blank_shelved_test_hl_img.png"
 PAYMENT_PENDING_IMG_1 = "payment_pending_blank_img_1.png" # PAYMENT_PENDING_IMG_1 = "payment_pending_test_img.png"
 PAYMENT_SUCCESS_IMG_1 = "payment_pending_blank_success_img_1.png" 
 
+# -- Map Test Images -- 
+MAP_TEST_IMG_1 = "test_map_1.png" 

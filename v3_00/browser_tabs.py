@@ -608,14 +608,15 @@ class Preparing_Orders_Tab(Browser_Tab):
         self.bottom_pos = self.top_prep_prep_queue_height - self.customer_prep_card_height
         # -- loop and draw prep queue cards -- 
         for index, (_, a_customer) in enumerate(self.game.all_preparing_customers.items()): # a_customer_id, a_customer
-            # - note - was considering animating these in and sure totally can do but its such a polish thing that dw about it for now at all -
-            customer_surf = pg.Surface((self.customer_prep_card_width, self.customer_prep_card_height))
-            customer_surf.fill(YELLOW)
-            # -- blit their name quickly too just so we know who it is - will improve this in due course obvs --
-            text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{a_customer.my_name}", True, DARKGREY) 
-            customer_surf.blit(text_surf, (5, 5))
-            # -- do the blit, based on your position/index in the dictionary -- 
-            self.cust_prep_queue_surf.blit(customer_surf, (10 + (index * self.customer_prep_card_width) + (10 * index), self.bottom_pos))
+            if a_customer.preparing_substate == "queued":
+                # - note - was considering animating these in and sure totally can do but its such a polish thing that dw about it for now at all -
+                customer_surf = pg.Surface((self.customer_prep_card_width, self.customer_prep_card_height))
+                customer_surf.fill(YELLOW)
+                # -- blit their name quickly too just so we know who it is - will improve this in due course obvs --
+                text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_12.render(f"{a_customer.my_name}", True, DARKGREY) 
+                customer_surf.blit(text_surf, (5, 5))
+                # -- do the blit, based on your position/index in the dictionary -- 
+                self.cust_prep_queue_surf.blit(customer_surf, (10 + (index * self.customer_prep_card_width) + (10 * index), self.bottom_pos))
 
 
     # ---- Stores Preparing Orders Mid Bar (Changed From Top) ----  
@@ -627,6 +628,8 @@ class Preparing_Orders_Tab(Browser_Tab):
         # -- create the inner store preparing orders bar surfaces --
         store_1_prep_bar_surf = pg.Surface((self.store_prep_bar_width, self.store_prep_bar_height)) 
         store_2_prep_bar_surf = pg.Surface((self.store_prep_bar_width, self.store_prep_bar_height)) 
+        store_1_prep_bar_surf.fill(TAN)
+        store_2_prep_bar_surf.fill(TAN)
         # -- blit those stores to their background container --
         self.stores_container_surf.blit(store_1_prep_bar_surf, (20, 80))
         self.stores_container_surf.blit(store_2_prep_bar_surf, (20, 80 + self.store_prep_bar_height + 20))
@@ -674,20 +677,50 @@ class Preparing_Orders_Tab(Browser_Tab):
         x_padding, y_padding = 200, 100
         self.map_popup_width = self.popup_bg_width - x_padding  
         self.map_popup_height = self.popup_bg_height - y_padding
-        self.map_popup = pg.Surface((self.map_popup_width, self.map_popup_height))
-        self.map_popup.fill(CUSTOMERTAN)
+        self.map_popup = self.game.map_test_img_1.copy()
+        # -- just a coloured surface version --
+        # self.map_popup = pg.Surface((self.map_popup_width, self.map_popup_height))
+        # self.map_popup.fill(CUSTOMERTAN)
         # -- draw title text to the popup surf -- 
+
         title_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"Select A Store To Start Preparing This Order", True, BLACK) 
+        title_bg_surf = pg.Surface((title_text_surf.get_width(), title_text_surf.get_height()))
+        title_bg_surf.fill(WHITE)
+        self.map_popup.blit(title_bg_surf, (10, 10)) 
         self.map_popup.blit(title_text_surf, (10, 10)) 
-        # -- final blit -- 
-        self.scrollable_screen_surf.blit(self.map_popup, ((x_padding / 2) - 25, (y_padding / 2) - 25)) # minus 25 for screen edge/border btw # - old centralised position just incase decide to update the gui for this idea - # self.scrollable_screen_surf.blit(self.map_popup, ((self.image.get_width() - self.map_popup_width - 50) / 2, (self.image.get_height() - self.map_popup_height - 25)))         
+        
         # # -- new test for close button --
-        # self.close_btn_size = 30
-        # self.close_btn_padding = 20
-        # self.close_btn_surf = pg.Surface((30, 30))
-        # self.close_btn_surf.fill(RED)
-        # self.close_btn_true_rect = self.customer_selector_popup_window_surf.blit(self.close_btn_surf, (self.customer_selector_popup_window_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
-        # self.close_btn_true_rect = self.game.get_true_rect(self.close_btn_true_rect)
+        self.close_btn_size = 30
+        self.close_btn_padding = 20
+        self.close_btn_surf = pg.Surface((self.close_btn_size, self.close_btn_size))
+        self.close_btn_surf.fill(RED)
+        self.close_btn_true_rect = self.map_popup.blit(self.close_btn_surf, (self.map_popup_width - self.close_btn_size - self.close_btn_padding, self.close_btn_padding)) 
+        # -- close button true rect for mouse collision --
+        self.close_btn_true_rect = self.game.get_true_rect(self.close_btn_true_rect)
+        self.close_btn_true_rect.move_ip(x_padding / 2, (y_padding / 2) - self.close_btn_size)
+        # -- if click close btn --
+        if self.close_btn_true_rect.collidepoint(pg.mouse.get_pos()):
+            # -- close this popup -- 
+            if self.game.mouse_click_up: 
+                self.map_popup_activated = False
+
+        # [new!]
+        # - super duper temp implementation for now, just click one store btn to validate -
+        self.store_btn_size = 30 
+        self.store_btn_surf = pg.Surface((self.store_btn_size, self.store_btn_size))
+        self.store_btn_surf.fill(BLUEGREEN)
+        self.store_btn_true_rect = self.map_popup.blit(self.store_btn_surf, (120, 220)) 
+        self.store_btn_true_rect = self.game.get_true_rect(self.store_btn_true_rect)
+        self.store_btn_true_rect.move_ip(x_padding / 2, (y_padding / 2) - self.store_btn_size)
+         # -- if click this temp store btn --
+        if self.store_btn_true_rect.collidepoint(pg.mouse.get_pos()):
+            # -- close this popup and activate... (ig will be substate stuff tbf) -- 
+            if self.game.mouse_click_up: 
+                self.map_popup_activated = False
+                # -- obvs will pass the selected customer, this is just temp as i wanna test out the functionality, simply set the pos 0 cust in the preparing dict to active on click (instead of actually selecting one)
+                next_preparing_customer = list(self.game.all_preparing_customers.values())[0]
+                next_preparing_customer.preparing_substate = "at_store_1"
+
         # self.close_btn_true_rect.move_ip(int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)
         # if self.close_btn_true_rect.collidepoint(pg.mouse.get_pos()): 
         #     # -- on hover change colour for visual clarity, ux is good mkay -- 
@@ -699,6 +732,8 @@ class Preparing_Orders_Tab(Browser_Tab):
         #         # -- new test addition --
         #         self.customer_select_popup_selected_customer = False # and reset this var
         
+        # -- final blit -- 
+        self.scrollable_screen_surf.blit(self.map_popup, ((x_padding / 2) - 25, (y_padding / 2) - 25)) # minus 25 for screen edge/border btw # - old centralised position just incase decide to update the gui for this idea - # self.scrollable_screen_surf.blit(self.map_popup, ((self.image.get_width() - self.map_popup_width - 50) / 2, (self.image.get_height() - self.map_popup_height - 25)))         
 
         # # -- then blit the actual popup --
         # self.customer_selector_popup_window_true_rect = self.image.blit(self.customer_selector_popup_window_surf, (int((self.rect.width - self.customer_selector_popup_window_width) / 2), int((self.rect.height - self.customer_selector_popup_window_height) / 2) - 25)) # minus 25 for (half of) the toptab bar which isnt done yet, but is hardcoded so replace the 50 here lol 

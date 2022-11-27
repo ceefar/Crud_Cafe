@@ -204,8 +204,16 @@ day 12
 - now blits a yellow 'card' for each customer in the new preparing tabs - preparing customers top bar
 - added dynamic positioning to the preparing customer cards
 - added simple name text blit to the prep customer cards
+- top left sidebar now flows from ordering state to preparing state correctly (tho only tested for 1 customer for now tbf), required adding new ordering state + preparing state too and linking it up all
+- added temp click to map popup to select a store (well just closes for now but adding that in next) [friday-21:15]
+- temp functionality to send preparing order to store on button press (just removes from the queue for now but doing that next) 
 
-
+day 13
+[v3.15]
+- new rotate around center
+- new rotation image handler
+- timer container now rotating based on wait time chargebar percentage
+- dynamic colour change on chargebar rgb based on percentage (green to orange to red)
 
 # note
 - really need to get a new version out quickly and a vid update btw

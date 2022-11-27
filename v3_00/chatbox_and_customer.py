@@ -1,6 +1,6 @@
 # -- imports --
 import pygame as pg
-from random import choice
+from random import choice, randint
 from settings import *
 vec = pg.math.Vector2
 
@@ -42,7 +42,11 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         # state_timer_cancel_times = {"ordering":{"busy":2, "average":5 ,"lazy":10}, "preparing":{}, "delivering":{}} 
         # -- set the ordering times now just as its easier, tho once get all this stuff added in will put these in handler functions --
         self.customer_order_cancel_time = state_timer_cancel_times["ordering"][self.customer_trait_schedule]
-        
+
+        # [ new! ]
+        # -- additional substate for preparing --
+        self.preparing_substate = False
+
         # [ new! ]
         # -- new super duper test implementation of customers actual order, the one that they will read out (with ocassional mistakes that the player will have to get correct at the end) --
         if self.my_id % 2 == 0:
@@ -56,17 +60,16 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         self.customer_payment_timer = 0 # times in ticks
         self.customer_payment_wait_time = 200 # ticks
 
+        # [ new! ]
+        # - test for rotation -
+        self.rot_ticker = 1
+
     def __repr__(self):
         return f"{self.my_name} [ ID.{self.my_id} ]"
 
 
     # [ new! ]
     # -- Payment Handling --
-
-    # send the payment window and activate timer stuff
-    # when check timer greater than payment timer
-    # set has paid to true
-    # then when has paid add them to a new very very top bar (before stores) which will just be customers who need to have their order start preparing 
 
     # - will be some additional functionality added to this shortly, this is just the basics -
     def handle_customer_payment(self):
@@ -80,43 +83,6 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
             self.ordering_sub_state_timer = False
             # -- update the players state --
             self.update_activate_customer_substate()
-
-   
-    	    # [ here! ]
-            # rnrn
- 
-            # - adding them to prepare top left ting when their active substate is set (sumnt like active_substate == "ordering")
-            #   - and obvs removing them from order
-            #   - use self.game.all_preparing_customers
-            #   - legit will take like 5 mins just smash it out quickly
-
-            # - then do a simple preparing route?
-            #   - see below [prep-flow-note]
-            
-            # - then do map popup close button
-            #   - have already ported the old code tbf but clean it up a tad anyways huh
-
-            # - then from here will be the whole click them, see the map and their street name (maybe location tbf), and select and move them to that stores bar
-            #   - not doing that part rn tho, come back to it after below
-            
-            # - start functionality to hook up a customer random location and have it print on to the map surface for each customer seperately
-            #   - from here its sending their order to the correct store n stuff but basically just moving them into the right stores prepare route thing and then doing that
-           
-           
-            # [also-quick-note] # [ <-important! ]
-            # - yanno the windows should just go once they've paid yanno
-            #   - ig add like a final button press that says bye and then it auto closes after 2 sec or sumnt
-            
-            # [also-also-quick-note]
-            # - ideally would like the map popup to be blit over the window btw
-            #   - should be easy enough to do tbf but is hardly urgent
-
-            # [prep-flow-note]
-            # - as for preparing route / flow, just have them move along it at a certain amount of time (maybe speeds differ by order side but not by a lot tho actually no thats too much extra complication)
-            #   - just have them move along at a set speed just showing like the dominos app, and maybe color changing the card as its moving or sumnt
-            #   - then when they get to the end have them click and get removed from this and added to another tab (just map ig or just orders or sumnt - both probs)
-            #       - but again no where near there tbf, at that point tho just lay down that basic functionality and then we really have a flow tbf 
-            #           - as delivery could be hella hella simple, just click and they go and its done even, bosh
 
 
     def activate_payment_timer(self): 
@@ -143,6 +109,12 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
             self.activate_ordering_state_timer()
         elif self.my_active_sub_state == "ordering":
             self.my_active_sub_state = "preparing"
+            # [new!]
+            # -- remove from the all_ordering_customers dict here --
+            del self.game.all_ordering_customers[self.my_id] 
+            # [new!]
+            # -- update the preparing substate --
+            self.preparing_substate = "queued"
         elif self.my_active_sub_state == "preparing":
             self.my_active_sub_state = "delivering"
         elif self.my_active_sub_state == "delivering":
@@ -209,9 +181,33 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         self.draw_text_to_customer_timer_img(f"{self.my_name}", font_size=14, pos=(18,2))
         # -- [new!] - for drawing the percentage chargebar of time remaining until this customer cancels --
         self.draw_percent_bar_for_state_timer()
+        
+        # [ new! ]
+        # -- image rotation handler test --
+        self.timer_rot_handler()
+        # -- rotate the image around it center based on how far along the charge/percent bar the customer is -- 
+        rotated_img = self.rotate_at_center(self.my_pinboard_timer_img, self.rot, self.my_pinboard_timer_img.get_rect().x, self.my_pinboard_timer_img.get_rect().y)
         # -- the actual blit for this customers timer image container on to the pinboard scene surface - note only drawing 3 max for now me thinks (not implemented tho btw) --
-        self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
+        self.game.pinboard_image_surf.blit(rotated_img, customer_timer_container_rect)
+        # self.game.pinboard_image_surf.blit(self.my_pinboard_timer_img, customer_timer_container_rect)
        
+    def timer_rot_handler(self):
+        # - new test, loop our rot ticker 1 to 4
+        if self.rot_ticker >= 6:
+            self.rot_ticker = 1
+        # - 
+        if self.rot_ticker == 1:
+            if self.bar_percent < 15:
+                self.rot = 1
+            elif self.bar_percent < 55:
+                self.rot = randint(-2, 2)
+            elif self.bar_percent < 75:
+                self.rot = randint(-5, 5)
+            else:
+                self.rot = randint(-8, 8)
+        # - do this at the end not the start, since we want it to start on 1, not 2 -
+        self.rot_ticker += 1
+
     def draw_text_to_customer_timer_img(self, text, font_size=16, pos:tuple[int|float, int|float]|vec = (0, 0)):
         """ draw any text to a given position on this customers pinboard timer container/surface/image """
         # -- create the text surface --
@@ -232,22 +228,45 @@ class Customer(pg.sprite.Sprite): # note: consider making this an Object not a S
         self.my_pinboard_timer_img.blit(title, pos) # nudging abit for screen width vs minimise btn pos & width to get visually appealing center pos for the title text
                 
     def draw_percent_bar_for_state_timer(self):
+        # -- new addition to update charge spacing for new icon, hard coding it in this way incase want to update or revert or restyle --
+        icon_spacing = 60 # try icon size of 50 with 5 padding or 40 with 10
         # -- dimensions --
-        timer_bar_max_width = 210
+        timer_bar_max_width = 210 - icon_spacing
         timer_bar_height = 35
         # -- create the timer vars to get the accurate percent of time passed vs time until cancelling --
         state_check_timer = pg.time.get_ticks()
         current_time = state_check_timer - self.ordering_sub_state_timer
         # -- setup percentage chargebar rect --
-        bar_percent = current_time * (100 / (self.customer_order_cancel_time * 1000)) 
-        self.timer_bar_rect = pg.Rect(20, 22, bar_percent * (timer_bar_max_width / 100), timer_bar_height)
-        # -- draw the chargebar --
-        pg.draw.rect(self.my_pinboard_timer_img, RED, self.timer_bar_rect)
+        self.bar_percent = current_time * (100 / (self.customer_order_cancel_time * 1000)) 
+        self.timer_bar_rect = pg.Rect(20 + icon_spacing, 22, self.bar_percent * (timer_bar_max_width / 100), timer_bar_height)
+
+        # [ new! ] 
+        # -- dynamic chargebar colouring --
+        # -  make this its own function 100
+        self.r, self.g, self.b = 1, 255, 1
+        # -- decrement green and increment red based on the current percentage --  
+        self.r = self.r * (self.bar_percent * 2.55)
+        self.g = self.g - self.r
+        # -- draw the chargebar to this customers timer img --
+        pg.draw.rect(self.my_pinboard_timer_img, (self.r, self.g, self.b), self.timer_bar_rect)
+
+
+    # use @staticmethod decorator oooo
+    def rotate_at_center(self, image:pg.Surface, angle, x, y):
+        rotated_image = pg.transform.rotate(image, angle)
+        return rotated_image
+
+
+    # [ new! ]
+    # - doing rotation test 
+    # - now adding in emote next to charge/percent bar for customer timer
+    # - also haved moved the bar to the right a tad to accomodate for the icon  
+
+
 
 
 # -- End Customer Class --
 
- 
 # -- Chatbox Class --
 class Chatbox(pg.sprite.Sprite):
     layers_counter = 1
