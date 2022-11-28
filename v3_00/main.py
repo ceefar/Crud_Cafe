@@ -9,6 +9,9 @@
 
 # Usage
 # - - - - - - - 
+# Start Game
+# - Key: Up
+
 # Add New Customer
 # - Key: 1
 
@@ -55,11 +58,12 @@ class Game:
         game_folder = path.dirname(__file__)
         imgs_folder = path.join(game_folder, 'imgs')
         fonts_folder = path.join(game_folder, 'fonts')
+        audio_folder = path.join(game_folder, 'audio')
         # -- load images -- 
         # - background scene -
         self.scene_img = pg.image.load(path.join(imgs_folder, SCENE_IMG)).convert_alpha() # self.an_img = pg.transform.scale(self.an_img, (140, 140)) # (56, 56))
         # -- scene elements --  
-        self.scene_pinboard_image = pg.image.load(path.join(imgs_folder, SCENE_INFO_PINBOARD_IMG)).convert_alpha()  
+        self.scene_pinboard_image = pg.image.load(path.join(imgs_folder, SCENE_INFO_PINBOARD_IMG)).copy().convert_alpha()  
         self.scene_pinboard_paper_image = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_PAPER_IMG)).copy().convert_alpha() 
         self.emoji_1_img = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_ICON_1_IMG)).copy().convert_alpha() 
         self.emoji_2_img = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_ICON_2_IMG)).copy().convert_alpha() 
@@ -99,16 +103,28 @@ class Game:
         # -- load more fonts -- 
         self.FONT_LATO_16 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 16) 
         self.FONT_LATO_20 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 20) 
+        self.FONT_LATO_26 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 26) 
+        self.FONT_LATO_32 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 32) 
         # -- define main gui surface dimensions --
         self.pc_screen_surf_width, self.pc_screen_surf_height = 1000, 620
         self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100 # testing +15 for tab bar adjustment
         self.tab_bar_height = 50 # the top bar on the pc_screen_surf the emulate browser tabs
         self.pc_screen_surf_true_y = self.pc_screen_surf_y + self.tab_bar_height # else y val doesnt take the tab_bar_height into consideration
         
-        # [new!] - preloading core scene gui vars for start screen
+        # -- [new!] - preloading core scene gui vars for start screen --
         self.waiting_start = True
+        self.waiting_boot = True
         self.pinboard_image_surf = self.scene_pinboard_image.copy()
         self.login_1_img = pg.image.load(path.join(imgs_folder, START_LOGIN_IMG_1)).convert_alpha()  
+        self.login_2_img = pg.image.load(path.join(imgs_folder, START_LOGIN_IMG_2)).convert_alpha()  
+        self.boot_ticker = 500
+        
+        # -- [new!] - sound loading and volume tweaking --
+        self.effects_sounds = {}
+        for type in EFFECTS_SOUNDS:
+            s = pg.mixer.Sound(path.join(audio_folder, EFFECTS_SOUNDS[type]))
+            s.set_volume(0.3)
+            self.effects_sounds[type] = s
 
 
     def new_level(self):
@@ -141,7 +157,8 @@ class Game:
         self.all_ordering_customers = {} # should move this above too
         self.all_preparing_customers = {} # should move this above also
         self.pinboard_pos = (0, 20)   
-        self.customer_sidebar_queue = {}   
+        self.customer_sidebar_queue = {}  
+        self.pinboard_image_surf = self.scene_pinboard_image.copy() 
        
 
     # [ new! ]
@@ -153,10 +170,11 @@ class Game:
             self.dt = self.clock.tick(FPS) / 1000.0
             want_start = self.render_start_screen()
             if want_start:
+                self.effects_sounds['boot_sound'].play()
                 self.waiting_start = False
-                
 
     def draw_start(self):
+        """ """
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
         # -- draw the background and screen surf -- 
         self.scene_img.blit(self.pinboard_image_surf, (0,20))
@@ -168,10 +186,31 @@ class Game:
         screen_outline_rect.height += 15
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
         # --
-        
+        pg.display.flip()
 
+    def run_boot(self):
+        while self.waiting_boot:
+            want_start = self.draw_boot()
+            if want_start:
+                self.waiting_boot = False
+
+    def draw_boot(self):
+        """ """
+        self.scene_img.blit(self.pinboard_image_surf, (0,20))
+        self.screen.blit(self.scene_img, (0, 0)) 
+        self.wipe_computer_screen_surface()
+        self.pc_screen_surf.blit(self.login_2_img, (25, 25)) # 50 is the top tabs area, need to hard code this once added it in --
+        # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
+        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
+        screen_outline_rect.height += 15
+        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
         # --
         pg.display.flip()
+        want_continue = self.pause_for_continue()
+        # want_continue = self.wait_for_continue()
+        if want_continue:
+            return True
+
 
     # -- end new test for start screen stuff, which will move shortly --
 
@@ -208,6 +247,7 @@ class Game:
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0, 0)) 
+        
         # -- [new!] - draw to the pinboard image, just basic setup stuff dw too much about the vars n states yet --
         self.write_info_counters_to_pinboard(font_size=46, post_it="ordering")
         self.write_info_counters_to_pinboard(font_size=46, post_it="cancelled")
@@ -227,6 +267,7 @@ class Game:
                 if not a_customer.has_customer_paid:
                     a_customer.wipe_customer_timer_img()
                     a_customer.draw_customer_timer_info_to_pinboard()
+
         # -- [new!] - draw the new info pinboard concept image --
         self.scene_img.blit(self.pinboard_image_surf, self.pinboard_pos)
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
@@ -259,10 +300,6 @@ class Game:
                     # -- finally, run this for all child instances, if they are they active tab you draw their surface to the scene screen image --                     
                     sprite.draw_tab_to_pc()       
 
-        # # [ new! ] 
-        # # -- draw tab bar img --
-        # self.draw_tab_bar()
-
         # [ new! ] 
         # -- new first implementation of preparing orders tab & its functionality --
         self.preparing_orders_tab.draw()          
@@ -276,6 +313,7 @@ class Game:
 
     def update(self):
         """ keep update and draw seperate for best practice, runs before draw() but after events() """
+        self.pinboard_image_surf = self.scene_pinboard_image.copy() 
         # -- notable vars to reset every frame --
         self.opened_chatbox_offset_counter = 0
         self.shelved_chatbox_offset_counter = 0
@@ -466,6 +504,11 @@ class Game:
             if self.preparing_orders_tab.tab_scroll_offset > 0:
                 self.preparing_orders_tab.tab_scroll_offset = 0 # coube achieved with min() too tbf
 
+    def pause_for_continue(self):
+        self.boot_ticker -= 1
+        if self.boot_ticker < 0:
+            return "start"
+
     # -- [ new! ] - for game start / game over --
     def wait_for_continue(self):
         pg.event.wait()
@@ -486,6 +529,7 @@ class Game:
 # -- instantiate a new game object and run the game --
 g = Game()
 g.run_start()
+g.run_boot()   
 while True:
     g.new_level()
     g.run()

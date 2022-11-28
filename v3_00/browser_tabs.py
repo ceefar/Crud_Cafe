@@ -65,6 +65,10 @@ class Browser_Tab(pg.sprite.Sprite):
                 text_surf = self.game.FONT_LATO_16.render(f"{text}", True, colour) 
             elif font_size == 20:
                 text_surf = self.game.FONT_LATO_20.render(f"{text}", True, colour)
+            elif font_size == 26:
+                text_surf = self.game.FONT_LATO_26.render(f"{text}", True, colour)
+            elif font_size == 32:
+                text_surf = self.game.FONT_LATO_32.render(f"{text}", True, colour)
         # -- --
         resulting_rect = surf.blit(text_surf, pos) 
         # -- return the resulting rect (pos & size) if you ask... nicely -- 
@@ -167,11 +171,9 @@ class New_Orders_Tab(Browser_Tab):
         # - note - once this functionality is more finalised dont run it all the timem i.e. set once, then reset on CRUD item only
         # -- store the running total --
         basket_running_total = 0.0
-
         # [ new-test! ] 
         # updating this to zip the sidebar_order_x_details now too 
         order_details_dict = self.get_active_order_details_dict()
-
         # [ new! ] 
         # [ running-total-here ] - want to do save the quantity to self here too and use that instead when passing it! << DO THIS! 
         # -- loop the active items and grab their prices from the menu items dict --
@@ -199,7 +201,6 @@ class New_Orders_Tab(Browser_Tab):
         # -- btn and btn padding dimensions  --
         self.order_number_indicator_btn_size = 40
         self.order_number_indicator_btn_padding = 50
-        
         # -- handle the order number indicator buttons and handle the hover state and colour changes --
         # -- logic here - spit the sections into 3 quadrants, for each of the 3 buttons (30 is just a small adjustment as the width overruns due to the screen edge, i believe) -- 
         # -- then minuse the button size from those quadrants so you have the padding on either side added together remaining, then simple div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --       
@@ -216,7 +217,6 @@ class New_Orders_Tab(Browser_Tab):
             order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
             if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):
                 pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)
-
         # -- handle the add to customer order button -- 
         add_to_customer_btn_width = 300
         add_to_customer_btn_center_pos = int(((self.orders_sidebar_surf.get_width() - 25) - add_to_customer_btn_width) / 2) # now confirmed - the extra 25 **is** the screen edge lol
@@ -231,9 +231,7 @@ class New_Orders_Tab(Browser_Tab):
             # -- on hover - update state to show popup --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
-            
             # still fair few things to do here obvs - i.e. the text for the button
-
         # -- blit the basket total cost sticky bottom surfaces --  
         self.draw_basket_total_cost_bar() # - note - have moved self.update_basket_total() to after the active_order switch in update()
         # -- then blit the new sticky bottom surface -- 
@@ -246,7 +244,6 @@ class New_Orders_Tab(Browser_Tab):
             self.is_orders_sidebar_surf_hovered = True
         else:
             self.is_orders_sidebar_surf_hovered = False
-
         # -- wipes the surface, drawing the analogous bg colour if the orders sidebar surface is hovered --
         if self.is_orders_sidebar_surf_hovered:
             self.orders_sidebar_surf.fill(VLIGHTGREY) # bg colour = TAN
@@ -334,7 +331,6 @@ class New_Orders_Tab(Browser_Tab):
                 self.customer_selector_confirm_btn_surf.blit(confirm_text_surf, (20, 20)) 
             # --
             self.customer_selector_popup_window_surf.blit(self.customer_selector_confirm_btn_surf, (self.customer_selector_popup_window_width - 200 - self.close_btn_padding, self.customer_selector_popup_window_height - 50 - self.close_btn_padding))
-            
             # -------- under construction - mind your head --------
     	    # [ todo-stuff! ]
             if self.customer_select_popup_selected_customer:
@@ -398,7 +394,7 @@ class New_Orders_Tab(Browser_Tab):
             # -- setup the bg fading alpha rect on crud a new item to the active order --
             crud_highlight_width = 250
             crud_highlight_height = 30
-            crud_highlight_bg_rect = pg.Rect(20 - 5, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
+            crud_highlight_bg_rect = pg.Rect(20 - 5, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
             crud_hightlight_bg_surf = pg.Surface((crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
             crud_hightlight_bg_surf.fill(ORANGE)
             # --
@@ -416,17 +412,15 @@ class New_Orders_Tab(Browser_Tab):
                     # -- the final blit --
                     self.orders_sidebar_surf.blit(crud_hightlight_bg_surf, crud_highlight_bg_rect)
             # -- draw this item and its quantity for the active order to the orders sidebar surf --
-            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 80 + (index * 40) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, font_size=16, font="lato")
-
+            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, colour=ORANGE, font_size=16, font="lato")
         # [ todo-? ]
         # -- make this a draw title function now, and fix the below double blit --
         # - note actually also just fix the rect to be a standard rect like the bottom bar instead of just just the small rect behind the text
         # - note, do this title draw after drawing the scrolling text since it has a bg rect now as we want it to be on the bottom 
-        order_basket_title_true_rect = self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, want_return=True, font="lato") 
+        order_basket_title_true_rect = self.draw_text_to_surf(f"order {self.active_order_number} basket", (20, 20), self.orders_sidebar_surf, want_return=True, font_size=32, font="lato") 
         pg.draw.rect(self.orders_sidebar_surf, self.orders_sidebar_surf_colour, order_basket_title_true_rect)
         # -- yes legit have to fix this to not do this blit twice - do it twice to get the size, can actually just alter that function to not blit and just return, bosh -- 
-        self.draw_text_to_surf(f"Order {self.active_order_number} Basket", (20, 30), self.orders_sidebar_surf, font_size=20, want_return=True, font="lato") 
-
+        self.draw_text_to_surf(f"order {self.active_order_number} basket", (20, 20), self.orders_sidebar_surf, colour=ORANGE, font_size=32, font="lato") 
         # -- check for mouse actions like click and hover --
         self.check_hover_menu_item()        
         # -- new test addition for updating the active/current basket total - note is running the calculation the frame after the initial blit --

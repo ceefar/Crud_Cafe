@@ -94,11 +94,14 @@ PAYMENT_SUCCESS_IMG_1 = "payment_pending_blank_success_img_1.png"
 
 # -- Tab Bar Faux OS Elements - Login -- 
 START_LOGIN_IMG_1 = "login_screen_1.png"
+START_LOGIN_IMG_2 = "login_screen_2.png"
 
 # -- Tab Bar Faux OS Elements -- 
 TAB_BAR_PREPARING_IMG = "tab_bar_prep_img.png"
 TAB_BAR_ORDERING_IMG = "tab_bar_take_img.png"
 
-
 # -- Map Test Images -- 
 MAP_TEST_IMG_1 = "test_map_1.png" 
+
+# -- Audio --
+EFFECTS_SOUNDS = {'boot_sound': 'windows-xp-startup-sound.mp3'}

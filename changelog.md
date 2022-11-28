@@ -227,6 +227,16 @@ day 13
 - updated functionality for adding before game start state and start game "login" screen
 - added in the basic start screen with login img and core scene imgs 
 
+
+day 14
+[v3.16]
+- boot screen
+- boot audio
+- fixed blit sidebar bug
+- ui improvements
+
+
+
 # note
 - really need to get a new version out quickly and a vid update btw
 
