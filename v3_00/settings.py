@@ -20,6 +20,7 @@ PRINT = (255,100,180)           # pink af
 PURPLE = (240,0,255)  
 GREY = (127,127,127)
 NICEGREY = (69,69,69)
+GREYGREY = (56,56,56)
 MAGENTA = (255,0,230)
 BROWN = (100,40,0)
 FORESTGREEN = (0,50,0)
@@ -36,7 +37,7 @@ BROWNPALE =  (215,195,163)
 BLUEMIDNIGHT = (0,51,102)
 GOOGLEMAPSBLUE = (187,197,233)
 DARKRED = (139,0,0)
-PALEGREEN = (177, 237, 171)
+PALEGREEN = (177,237,171)
 
 # -- New Test Vars For Colour Shades -- 
 # ideally write a function to do this dynamically
@@ -77,6 +78,7 @@ SCENE_PINBOARD_ICON_2_IMG = "emoji_2.png"
 SCENE_PINBOARD_ICON_3_IMG = "emoji_3.png"
 SCENE_PINBOARD_ICON_4_IMG = "emoji_4.png"
 SCENE_PINBOARD_ICON_5_IMG = "emoji_5.png"
+SEND_TO_CUST_BTN_IMG = "send_to_cust_btn.png"
 
 # -- Faux OS Element Images --
 WINDOW_IMG = "window_blank_img.png" 

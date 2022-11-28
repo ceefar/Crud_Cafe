@@ -156,17 +156,26 @@ class New_Orders_Tab(Browser_Tab):
     def draw_basket_total_cost_bar(self):
         """ draws the order total sticky surf on the orders sidebar, positioned on top of the sticky bottom surf """
         # -- dimensions and surf --
-        self.sidebar_sticky_bottom_basket_cost_height = 40
+        self.sidebar_sticky_bottom_basket_cost_height = 65
         self.sidebar_sticky_bottom_basket_cost_width = self.orders_sidebar_surf.get_width()
         self.sidebar_sticky_bottom_basket_cost_surf = pg.Surface((self.sidebar_sticky_bottom_basket_cost_width, self.sidebar_sticky_bottom_basket_cost_height))
-        self.sidebar_sticky_bottom_basket_cost_surf.fill(SKYBLUE)
-        # -- text surf -- 
-        basket_total_text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_18.render(f"${self.current_basket_total:.2f}", True, BLACK) 
-        # -- draw the text surf to the sticky bottom basket surf -- 
-        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_text_surf, (20,10))
-        # -- finally blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar -- 
-        self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height)) 
-        
+        self.sidebar_sticky_bottom_basket_cost_surf.fill(self.orders_sidebar_surf_colour) 
+        # -- subtotal subtitle surf --
+        basket_total_subtitle_surf = self.game.FONT_LATO_16.render(f"subtotal", True, GREYGREY) 
+        # -- subtotal text surf -- 
+        basket_total_text_surf = self.game.FONT_LATO_20.render(f"${self.current_basket_total:.2f}", True, ORANGE) 
+        # -- draw the text and subtitle surfaces to the sticky bottom basket surf -- 
+        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_subtitle_surf, (20,10))
+        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_text_surf, (20,30))
+        # -- then blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar, and save the resulting rect -- 
+        self.sidebar_sticky_bottom_surf_outline_rect = self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height))  
+        x_padding = 10
+        self.sidebar_sticky_bottom_surf_outline_rect.width -= 45 # 25 for edge, extra 20 (10 per side) is for padding, and to centralise the border rect
+        self.sidebar_sticky_bottom_surf_outline_rect.x += x_padding
+        # -- [new!] - then blit an outline rect (since im updating the ui so this bar is now the same colour as the bg tho its still sticky - so it could do with some improved visual clarity -- 
+        pg.draw.rect(self.orders_sidebar_surf, ORANGE, self.sidebar_sticky_bottom_surf_outline_rect, 3, 10)
+
+
     def update_basket_total(self):
         # - note - once this functionality is more finalised dont run it all the timem i.e. set once, then reset on CRUD item only
         # -- store the running total --
@@ -192,36 +201,54 @@ class New_Orders_Tab(Browser_Tab):
         elif self.active_order_number == 3:
             return self.sidebar_order_3_details
 
-    def draw_orders_sidebar(self):
-        # [ todo! ] - really need to chunk this up 
-        # -- for drawing active order buttons - but just as indicators for now, no on click functionality yet --
+
+    # [ todo! ] - move these below their 'parent' pls and tidy up that parent (draw_orders_sidebar) more too
+    def setup_orders_sidebar(self):
+        """ for drawing active order buttons - but just as indicators for now, no on click functionality yet """
+        # -- set sidebar sticky bottom surf dimensions and create surface -- 
         self.sidebar_sticky_bottom_surf_height = 140
         self.sidebar_sticky_bottom_surf = pg.Surface((self.orders_sidebar_surf.get_width(), self.sidebar_sticky_bottom_surf_height))
-        self.sidebar_sticky_bottom_surf.fill(YELLOW)
-        # -- btn and btn padding dimensions  --
+        self.sidebar_sticky_bottom_surf.fill(WHITE) 
+        # -- set btn and btn padding dimensions  --
         self.order_number_indicator_btn_size = 40
         self.order_number_indicator_btn_padding = 50
-        # -- handle the order number indicator buttons and handle the hover state and colour changes --
-        # -- logic here - spit the sections into 3 quadrants, for each of the 3 buttons (30 is just a small adjustment as the width overruns due to the screen edge, i believe) -- 
-        # -- then minuse the button size from those quadrants so you have the padding on either side added together remaining, then simple div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --       
+
+    def draw_active_order_indicators(self):
+        """ handle the order number indicator buttons and handle the hover state and colour changes """
+        # -- split the sections into 3 quadrants, for each of the 3 buttons (25 is just edge adjustment), then minus the button size from those quadrants so you have the padding on either side added together remaining, then div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --    
         btn_increment_pos = (((self.orders_sidebar_surf.get_width() / 3) - 25) - self.order_number_indicator_btn_size) / 2
-        # -- logic continued -- then increment over the amount of buttons to move along by a quadrant and draw the button rect centralised within it -- 
-        # -- new test continued - loop and draw order indicator buttons --
+        # -- then increment over the amount of buttons to move along by a quadrant and draw the button rect centralised within it -- 
         for i in range(1,4):
             self.order_number_indicator_btn = pg.Rect(btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 10, self.order_number_indicator_btn_size, self.order_number_indicator_btn_size)
             # -- if this indicator buttons index is the same as the order number then draw a green button else draw a red one --
             indicator_colour = GREEN if self.active_order_number == i else RED
-            # -- draw the rect, get the true rect for hover, and add the basics of the hover functionality tho not adding on click stuff right now --
+            # -- draw the rect, save the resulting true rect for hover, and add the basics of the hover functionality tho not added on click yet will also do that here --
             order_number_indicator_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, indicator_colour, self.order_number_indicator_btn)
             order_number_indicator_btn_true_rect = self.game.get_true_rect(order_number_indicator_btn_true_rect)
             order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
             if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):
-                pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)
+                pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)        
+
+    def draw_orders_sidebar(self):
+        """ """
+        # -- setup dimensions and surface for sticky bottom surf and active order indicator buttons --
+        self.setup_orders_sidebar()
+        self.draw_active_order_indicators()
         # -- handle the add to customer order button -- 
         add_to_customer_btn_width = 300
         add_to_customer_btn_center_pos = int(((self.orders_sidebar_surf.get_width() - 25) - add_to_customer_btn_width) / 2) # now confirmed - the extra 25 **is** the screen edge lol
+        
+        # [new!]
+        send_to_customer_btn = self.game.send_to_cust_btn_img
+
+        # kewl so this will work just obvs have to reconfigure it to work with the new button and not the old rect
+        # - yes its better to just refactor it than mess around doing other bs tbh
         add_to_customer_btn = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
         add_to_customer_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, BLUE, add_to_customer_btn)
+
+        # [new!]
+        self.sidebar_sticky_bottom_surf.blit(send_to_customer_btn, (add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25))
+
         # -- add hover and on click functionality -- 
         add_to_customer_btn_true_rect = self.game.get_true_rect(add_to_customer_btn_true_rect)
         add_to_customer_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
@@ -231,7 +258,6 @@ class New_Orders_Tab(Browser_Tab):
             # -- on hover - update state to show popup --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
-            # still fair few things to do here obvs - i.e. the text for the button
         # -- blit the basket total cost sticky bottom surfaces --  
         self.draw_basket_total_cost_bar() # - note - have moved self.update_basket_total() to after the active_order switch in update()
         # -- then blit the new sticky bottom surface -- 
@@ -246,9 +272,10 @@ class New_Orders_Tab(Browser_Tab):
             self.is_orders_sidebar_surf_hovered = False
         # -- wipes the surface, drawing the analogous bg colour if the orders sidebar surface is hovered --
         if self.is_orders_sidebar_surf_hovered:
-            self.orders_sidebar_surf.fill(VLIGHTGREY) # bg colour = TAN
+            self.orders_sidebar_surf_colour = VLIGHTGREY 
         else:
-            self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour) # bg colour = TAN
+            self.orders_sidebar_surf_colour = WHITE
+        self.orders_sidebar_surf.fill(self.orders_sidebar_surf_colour)
             
     def draw_active_customers_selector_popup(self):
         # -- first blit a background surf for the popup --

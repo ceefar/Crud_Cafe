@@ -10,7 +10,7 @@
 # Usage
 # - - - - - - - 
 # Start Game
-# - Key: Up
+# - Key: Any
 
 # Add New Customer
 # - Key: 1
@@ -70,7 +70,7 @@ class Game:
         self.emoji_3_img = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_ICON_3_IMG)).copy().convert_alpha() 
         self.emoji_4_img = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_ICON_4_IMG)).copy().convert_alpha() 
         self.emoji_5_img = pg.image.load(path.join(imgs_folder, SCENE_PINBOARD_ICON_5_IMG)).copy().convert_alpha() 
-        # - windows -      
+        # -- windows --      
         self.window_img = pg.image.load(path.join(imgs_folder, WINDOW_IMG)).convert_alpha()  
         self.window_border_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_1_IMG)).convert_alpha()  
         self.window_border_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_BORDER_HL_1_IMG)).convert_alpha()  
@@ -79,12 +79,14 @@ class Game:
         self.window_hl_2_img = pg.image.load(path.join(imgs_folder, WINDOW_HL_2_IMG)).convert_alpha()  
         self.window_shelved_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_1_IMG)).convert_alpha()  
         self.window_shelved_hl_1_img = pg.image.load(path.join(imgs_folder, WINDOW_SHELVED_HL_1_IMG)).convert_alpha()  
-        # - tab bar elements -
+        # -- tab bar elements --
         self.tab_bar_prep_img = pg.image.load(path.join(imgs_folder, TAB_BAR_PREPARING_IMG)).convert_alpha()  
         self.tab_bar_order_img = pg.image.load(path.join(imgs_folder, TAB_BAR_ORDERING_IMG)).convert_alpha()  
-        # - chat elements -
+        # -- chat elements --
         self.payment_pending_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_PENDING_IMG_1)).convert_alpha()  
         self.payment_success_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_SUCCESS_IMG_1)).convert_alpha()  
+        # -- sidebar elements --
+        self.send_to_cust_btn_img = pg.image.load(path.join(imgs_folder, SEND_TO_CUST_BTN_IMG)).convert_alpha()  
         # -- map popup --
         self.map_test_img_1 = pg.image.load(path.join(imgs_folder, MAP_TEST_IMG_1)).convert_alpha()  
         # -- load fonts -- 
@@ -100,7 +102,7 @@ class Game:
         self.FONT_BOHEMIAN_TYPEWRITER_26 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 26)
         self.FONT_BOHEMIAN_TYPEWRITER_32 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 32)
         self.FONT_BOHEMIAN_TYPEWRITER_46 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 46)
-        # -- load more fonts -- 
+        # -- load lato fonts -- 
         self.FONT_LATO_16 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 16) 
         self.FONT_LATO_20 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 20) 
         self.FONT_LATO_26 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 26) 
@@ -110,22 +112,19 @@ class Game:
         self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100 # testing +15 for tab bar adjustment
         self.tab_bar_height = 50 # the top bar on the pc_screen_surf the emulate browser tabs
         self.pc_screen_surf_true_y = self.pc_screen_surf_y + self.tab_bar_height # else y val doesnt take the tab_bar_height into consideration
-        
         # -- [new!] - preloading core scene gui vars for start screen --
         self.waiting_start = True
         self.waiting_boot = True
         self.pinboard_image_surf = self.scene_pinboard_image.copy()
         self.login_1_img = pg.image.load(path.join(imgs_folder, START_LOGIN_IMG_1)).convert_alpha()  
         self.login_2_img = pg.image.load(path.join(imgs_folder, START_LOGIN_IMG_2)).convert_alpha()  
-        self.boot_ticker = 500
-        
+        self.boot_ticker = 100 # 500 but shorted during development
         # -- [new!] - sound loading and volume tweaking --
         self.effects_sounds = {}
         for type in EFFECTS_SOUNDS:
-            s = pg.mixer.Sound(path.join(audio_folder, EFFECTS_SOUNDS[type]))
-            s.set_volume(0.3)
-            self.effects_sounds[type] = s
-
+            sound = pg.mixer.Sound(path.join(audio_folder, EFFECTS_SOUNDS[type]))
+            sound.set_volume(0.3)
+            self.effects_sounds[type] = sound
 
     def new_level(self):
         """ initialize all variables and do all the setup for a new game """
@@ -159,61 +158,6 @@ class Game:
         self.pinboard_pos = (0, 20)   
         self.customer_sidebar_queue = {}  
         self.pinboard_image_surf = self.scene_pinboard_image.copy() 
-       
-
-    # [ new! ]
-    # -- test - for run start --
-    # - guna move this stuff and group it together -
-    
-    def run_start(self):
-        while self.waiting_start:
-            self.dt = self.clock.tick(FPS) / 1000.0
-            want_start = self.render_start_screen()
-            if want_start:
-                self.effects_sounds['boot_sound'].play()
-                self.waiting_start = False
-
-    def draw_start(self):
-        """ """
-        pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
-        # -- draw the background and screen surf -- 
-        self.scene_img.blit(self.pinboard_image_surf, (0,20))
-        self.screen.blit(self.scene_img, (0, 0)) 
-        self.wipe_computer_screen_surface()
-        self.pc_screen_surf.blit(self.login_1_img, (0, 0)) # 50 is the top tabs area, need to hard code this once added it in 
-        # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
-        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
-        screen_outline_rect.height += 15
-        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
-        # --
-        pg.display.flip()
-
-    def run_boot(self):
-        while self.waiting_boot:
-            want_start = self.draw_boot()
-            if want_start:
-                self.waiting_boot = False
-
-    def draw_boot(self):
-        """ """
-        self.scene_img.blit(self.pinboard_image_surf, (0,20))
-        self.screen.blit(self.scene_img, (0, 0)) 
-        self.wipe_computer_screen_surface()
-        self.pc_screen_surf.blit(self.login_2_img, (25, 25)) # 50 is the top tabs area, need to hard code this once added it in --
-        # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
-        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
-        screen_outline_rect.height += 15
-        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
-        # --
-        pg.display.flip()
-        want_continue = self.pause_for_continue()
-        # want_continue = self.wait_for_continue()
-        if want_continue:
-            return True
-
-
-    # -- end new test for start screen stuff, which will move shortly --
-
 
     def run(self):
         # runs the game loop... thank you for coming to my TEDtalk
@@ -235,7 +179,6 @@ class Game:
         if want_start:
             return True
 
-
     def game_over_man_game_over(self):
         """ render the game over screen """
         ...
@@ -247,7 +190,6 @@ class Game:
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
         # -- draw the background -- 
         self.screen.blit(self.scene_img, (0, 0)) 
-        
         # -- [new!] - draw to the pinboard image, just basic setup stuff dw too much about the vars n states yet --
         self.write_info_counters_to_pinboard(font_size=46, post_it="ordering")
         self.write_info_counters_to_pinboard(font_size=46, post_it="cancelled")
@@ -267,16 +209,12 @@ class Game:
                 if not a_customer.has_customer_paid:
                     a_customer.wipe_customer_timer_img()
                     a_customer.draw_customer_timer_info_to_pinboard()
-
         # -- [new!] - draw the new info pinboard concept image --
         self.scene_img.blit(self.pinboard_image_surf, self.pinboard_pos)
         # -- wipe the computer screen surface at the start of each frame, we then draw to this surface and then blit it to the screen (without the fill) -- 
         self.wipe_computer_screen_surface()
-        
-        # [ new! ] 
-        # -- draw tab bar img --
+        # -- [new!] - draw tab bar img --
         self.draw_tab_bar()
-
         # -- loop tabs --
         for sprite in self.browser_tabs:
             if isinstance(sprite, Browser_Tab): # really for type hinting
@@ -299,16 +237,13 @@ class Game:
                             sprite.draw_active_customers_selector_popup()
                     # -- finally, run this for all child instances, if they are they active tab you draw their surface to the scene screen image --                     
                     sprite.draw_tab_to_pc()       
-
-        # [ new! ] 
         # -- new first implementation of preparing orders tab & its functionality --
         self.preparing_orders_tab.draw()          
-
         # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
         screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
         screen_outline_rect.height += 15
         pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf               
-        # -- finally, flip the display --1
+        # -- finally, flip the display --
         pg.display.flip()
 
     def update(self):
@@ -472,6 +407,55 @@ class Game:
         else:
             moved_rect.move_ip(self.pc_screen_surf_x, self.pc_screen_surf_true_y)
         return moved_rect
+
+       
+    # -- Start Screen + Boot Screen Functionality --
+    
+    def run_start(self):
+        while self.waiting_start:
+            self.dt = self.clock.tick(FPS) / 1000.0
+            want_start = self.render_start_screen()
+            if want_start:
+                self.effects_sounds['boot_sound'].play()
+                self.waiting_start = False
+
+    def draw_start(self):
+        """ """
+        pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
+        # -- draw the background and screen surf -- 
+        self.scene_img.blit(self.pinboard_image_surf, (0,20))
+        self.screen.blit(self.scene_img, (0, 0)) 
+        self.wipe_computer_screen_surface()
+        self.pc_screen_surf.blit(self.login_1_img, (0, 0)) # 50 is the top tabs area, need to hard code this once added it in 
+        # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
+        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
+        screen_outline_rect.height += 15
+        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
+        # --
+        pg.display.flip()
+
+    def run_boot(self):
+        while self.waiting_boot:
+            want_start = self.draw_boot()
+            if want_start:
+                self.waiting_boot = False
+
+    def draw_boot(self):
+        """ """
+        self.scene_img.blit(self.pinboard_image_surf, (0,20))
+        self.screen.blit(self.scene_img, (0, 0)) 
+        self.wipe_computer_screen_surface()
+        self.pc_screen_surf.blit(self.login_2_img, (25, 25)) # 50 is the top tabs area, need to hard code this once added it in --
+        # -- redraw the screen once we've blit to it, with a rect as a temp faux monitor outline/edge --
+        screen_outline_rect = self.screen.blit(self.pc_screen_surf, (self.pc_screen_surf_x, self.pc_screen_surf_y))
+        screen_outline_rect.height += 15
+        pg.draw.rect(self.screen, DARKGREY, screen_outline_rect, 25) # draws the faux monitor edge around the screen surf     
+        # --
+        pg.display.flip()
+        want_continue = self.pause_for_continue()
+        # want_continue = self.wait_for_continue()
+        if want_continue:
+            return True
 
 
     # ---- For Events & Misc ----

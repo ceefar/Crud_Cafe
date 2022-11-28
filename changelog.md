@@ -230,10 +230,14 @@ day 13
 
 day 14
 [v3.16]
+- basically just tidying up the ui and cleaning up the core code and functionality today as its 2 weeks, and decided to get on a mern project after this
+- has more that achieved its goal - to improve my oop + intermediate programming skills, will likely return to finish up some stuff at some point tho
 - boot screen
 - boot audio
 - fixed blit sidebar bug
 - ui improvements
+- overhaul to sidebar ui
+- abstracting out (and generally cleaning up) draw_orders_sidebar functionality 
 
 
 
