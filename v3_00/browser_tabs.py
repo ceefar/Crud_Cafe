@@ -244,7 +244,9 @@ class New_Orders_Tab(Browser_Tab):
         # kewl so this will work just obvs have to reconfigure it to work with the new button and not the old rect
         # - yes its better to just refactor it than mess around doing other bs tbh
         add_to_customer_btn = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
-        add_to_customer_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, BLUE, add_to_customer_btn)
+        # [ crit! ] <= as in actually remove this below ting, dont want a white blah, just use the new blit return rect for the hover stuff duh and make a new hover img
+        # - add shadow and improve colouring too
+        add_to_customer_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, WHITE, add_to_customer_btn)
 
         # [new!]
         self.sidebar_sticky_bottom_surf.blit(send_to_customer_btn, (add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25))
