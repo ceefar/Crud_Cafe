@@ -221,6 +221,8 @@ day 13
 - made them sticker style
 - making them dynamic
 - some ui element design work
+- finally added tab images to tab bar
+- added in toggling state image for tab bar
 - added new login screen
 - updated functionality for adding before game start state and start game "login" screen
 - added in the basic start screen with login img and core scene imgs 

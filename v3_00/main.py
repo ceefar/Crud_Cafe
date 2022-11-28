@@ -154,6 +154,7 @@ class Game:
             want_start = self.render_start_screen()
             if want_start:
                 self.waiting_start = False
+                
 
     def draw_start(self):
         pg.display.set_caption(f"Crud Cafe v3.11 - {self.clock.get_fps():.2f}")
@@ -473,7 +474,11 @@ class Game:
             self.clock.tick(FPS)
             for event in pg.event.get():
                 if event.type == pg.KEYUP:
+                    # -- press any key to start for now, will do this properly for button press on user and quit button too (maybe with small anim or atleast changed state image (i.e. hover effect)) --
                     return "start"
+                if event.type == pg.QUIT:
+                    wait_input = False
+                    self.quit()
 
 # ---- End Game Class ----
 
