@@ -260,13 +260,15 @@ then purely starting 2 new projects for the next 2 weeks
 - and a computer vision python project, to continue expanding my python knowledge with more intermediate / advanced concepts  
 
 i do plan to finish this up some what (in terms of clean up and some minor ui improvements) over the weekends and a couple of hours throughout the week
-- and finish up the repo and the profile readme for it
 
 - added underline under order basket and some small ui updates
 - subtitle text and dictionary addition for functionality 
 - basically wrapped up the orders sidebar ui with icons, tags, etc, except for a few tidbits here and there (e.g. add price, improve sticky title bg, etc)
 - guna leave here for now for 2x new projects and come back and wrap up throughout the week and at the weekend
+
 - and will try to get a basic writeup for the readme out tomorrow sometime
+- and finish up the repo and the profile readme for it
+    - really need to add screenshots and eventually gifs (and probably a vid) for sure
 
 
 
