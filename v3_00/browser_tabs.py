@@ -1,6 +1,6 @@
 # -- imports --
 import pygame as pg
-from random import choice
+from random import choice, randint
 from settings import *
 vec = pg.math.Vector2
 
@@ -61,6 +61,8 @@ class Browser_Tab(pg.sprite.Sprite):
                 text_surf = self.game.FONT_BOHEMIAN_TYPEWRITER_20.render(f"{text}", True, colour) 
         # -- lato --
         elif font == "lato":
+            if font_size == 12:
+                text_surf = self.game.FONT_LATO_12.render(f"{text}", True, colour) 
             if font_size == 16:
                 text_surf = self.game.FONT_LATO_16.render(f"{text}", True, colour) 
             elif font_size == 20:
@@ -116,17 +118,27 @@ class New_Orders_Tab(Browser_Tab):
         self.active_order_number = 1
         # -- first test implementation of menu items --
         # -- should put this into settings btw --
-        self.menu_items_dict = {1:{"name":"Grilled Charmander", "price":7.99, "my_id":1, "course":"main", "has_toggles":True, "toggles":[("medium",0), ("spicy",0)]},
-                                2:{"name":"Squirtle Sashimi", "price":9.49, "my_id":2, "course":"main", "has_toggles":False},
-                                3:{"name":"Exeggcute Fried Rice", "price":9.49, "my_id":3, "course":"noodles_rice", "has_toggles":True, "toggles":[("large",2.50), ("regular",0)]},
-                                4:{"name":"Nuka Cola", "price":3.15, "my_id":4, "course":"drinks", "has_toggles":True, "toggles":[("large", 1.75),("regular", 0),("quantum", 3), ("classic", 0)]},
-                                5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter", "has_toggles":False}}
-        # -- will refactor the dicts in future to encompass this, just adding in it like this for now - also mays well bang it in settings tbf --
+        self.menu_items_dict = {1:{"name":"Grilled Charmander", "price":7.99, "my_id":1, "course":"main", "image":self.game.meal_icon_1, "has_toggles":True, "toggles":[("medium",0), ("spicy",0)]},
+                                2:{"name":"Squirtle Sashimi", "price":9.49, "my_id":2, "course":"main", "image":self.game.meal_icon_2, "has_toggles":False},
+                                3:{"name":"Exeggcute Fried Rice", "price":9.49, "my_id":3, "course":"noodles_rice", "image":self.game.meal_icon_3, "has_toggles":True, "toggles":[("large",2.50), ("regular",0)]},
+                                4:{"name":"Nuka Cola", "price":3.15, "my_id":4, "course":"drinks", "image":self.game.meal_icon_4, "has_toggles":True, "toggles":[("large", 1.75),("regular", 0),("quantum", 3), ("classic", 0)]},
+                                5:{"name":"Mario's Mushroom Soup", "price":4.29, "my_id":5, "course":"starter", "image":self.game.meal_icon_5, "has_toggles":False}}
+        # -- ik, should be one dict, will refactor the dicts in future to encompass this, course, etc, just adding in it like this for now - also mays well bang it in settings tbf --
         self.menu_items_price_dict = {"Grilled Charmander":self.menu_items_dict[1]["price"],
                                         "Squirtle Sashimi":self.menu_items_dict[2]["price"],
                                         "Exeggcute Fried Rice":self.menu_items_dict[3]["price"],
                                         "Nuka Cola":self.menu_items_dict[4]["price"],
                                         "Mario's Mushroom Soup":self.menu_items_dict[5]["price"]}
+        self.menu_items_course_dict = {"Grilled Charmander":self.menu_items_dict[1]["course"],
+                                        "Squirtle Sashimi":self.menu_items_dict[2]["course"],
+                                        "Exeggcute Fried Rice":self.menu_items_dict[3]["course"],
+                                        "Nuka Cola":self.menu_items_dict[4]["course"],
+                                        "Mario's Mushroom Soup":self.menu_items_dict[5]["course"]}
+        self.menu_items_img_dict = {"Grilled Charmander":self.menu_items_dict[1]["image"],
+                                        "Squirtle Sashimi":self.menu_items_dict[2]["image"],
+                                        "Exeggcute Fried Rice":self.menu_items_dict[3]["image"],
+                                        "Nuka Cola":self.menu_items_dict[4]["image"],
+                                        "Mario's Mushroom Soup":self.menu_items_dict[5]["image"]}                                    
         # -- menu items dimensions --
         self.menu_items_hovered_width = 500
         self.menu_items_normal_width = 300
@@ -152,29 +164,43 @@ class New_Orders_Tab(Browser_Tab):
         # temp test for trigger crud fade rect idea
         self.trigger_active_order_crud_fade = False
         self.fading_alpha = 0
+        # -- [new!] - default width for drawing the dynamic highlight menu item to active order on crud action --
+        self.crud_highlight_width = 250
 
     def draw_basket_total_cost_bar(self):
         """ draws the order total sticky surf on the orders sidebar, positioned on top of the sticky bottom surf """
-        # -- dimensions and surf --
-        self.sidebar_sticky_bottom_basket_cost_height = 65
+        # -- dimensions setup --
+        self.sidebar_sticky_bottom_basket_cost_height = 80
         self.sidebar_sticky_bottom_basket_cost_width = self.orders_sidebar_surf.get_width()
+        # -- 
+        y_pos = self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height
+        # -- create our new surf --
         self.sidebar_sticky_bottom_basket_cost_surf = pg.Surface((self.sidebar_sticky_bottom_basket_cost_width, self.sidebar_sticky_bottom_basket_cost_height))
         self.sidebar_sticky_bottom_basket_cost_surf.fill(self.orders_sidebar_surf_colour) 
-        # -- subtotal subtitle surf --
+        # -- draw orange bg --
+        bg_rect = pg.Rect(0, 0, self.sidebar_sticky_bottom_basket_cost_width, self.sidebar_sticky_bottom_basket_cost_height)
+        pg.draw.rect(self.sidebar_sticky_bottom_basket_cost_surf, ORANGE, bg_rect)
+        # -- create subtotal subtitle surf --
         basket_total_subtitle_surf = self.game.FONT_LATO_16.render(f"subtotal", True, GREYGREY) 
-        # -- subtotal text surf -- 
-        basket_total_text_surf = self.game.FONT_LATO_20.render(f"${self.current_basket_total:.2f}", True, ORANGE) 
+        # -- create subtotal text surf -- 
+        basket_total_text_surf = self.game.FONT_LATO_20.render(f"${self.current_basket_total:.2f}", True, WHITE) 
         # -- draw the text and subtitle surfaces to the sticky bottom basket surf -- 
-        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_subtitle_surf, (20,10))
-        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_text_surf, (20,30))
+        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_subtitle_surf, (20,19))
+        self.sidebar_sticky_bottom_basket_cost_surf.blit(basket_total_text_surf, (20,37))
         # -- then blit the sidebar sticky bottom surf to the sidebar surf above the other bottom order x basket selector / send to customer sticky bar, and save the resulting rect -- 
-        self.sidebar_sticky_bottom_surf_outline_rect = self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, self.rect.height - self.sidebar_sticky_bottom_surf_height - self.sidebar_sticky_bottom_basket_cost_height))  
+        self.sidebar_sticky_bottom_surf_outline_rect = self.orders_sidebar_surf.blit(self.sidebar_sticky_bottom_basket_cost_surf, (0, y_pos))
+        # -- [new!] --
+        bg_rect = self.sidebar_sticky_bottom_surf_outline_rect.copy()
+        bg_rect.height += 10
+        bg_rect.y -= 10
         x_padding = 10
         self.sidebar_sticky_bottom_surf_outline_rect.width -= 45 # 25 for edge, extra 20 (10 per side) is for padding, and to centralise the border rect
+        self.sidebar_sticky_bottom_surf_outline_rect.height -= 20 
         self.sidebar_sticky_bottom_surf_outline_rect.x += x_padding
-        # -- [new!] - then blit an outline rect (since im updating the ui so this bar is now the same colour as the bg tho its still sticky - so it could do with some improved visual clarity -- 
-        pg.draw.rect(self.orders_sidebar_surf, ORANGE, self.sidebar_sticky_bottom_surf_outline_rect, 3, 10)
+        self.sidebar_sticky_bottom_surf_outline_rect.y += 10
 
+        # -- [new!] - then blit an outline rect (since im updating the ui so this bar is now the same colour as the bg tho its still sticky - so it could do with some improved visual clarity -- 
+        pg.draw.rect(self.orders_sidebar_surf, WHITE, self.sidebar_sticky_bottom_surf_outline_rect, 3, 10)
 
     def update_basket_total(self):
         # - note - once this functionality is more finalised dont run it all the timem i.e. set once, then reset on CRUD item only
@@ -188,7 +214,7 @@ class New_Orders_Tab(Browser_Tab):
         # -- loop the active items and grab their prices from the menu items dict --
         for an_order_item in self.active_order_list: 
             order_item_price = self.menu_items_price_dict[an_order_item]
-            item_quantity = order_details_dict[an_order_item]["quantity"]
+            item_quantity = int(order_details_dict[an_order_item]["quantity"])
             basket_running_total += (order_item_price * item_quantity)
         # -- set the current basket total to the result -- 
         self.current_basket_total = basket_running_total
@@ -208,27 +234,42 @@ class New_Orders_Tab(Browser_Tab):
         # -- set sidebar sticky bottom surf dimensions and create surface -- 
         self.sidebar_sticky_bottom_surf_height = 140
         self.sidebar_sticky_bottom_surf = pg.Surface((self.orders_sidebar_surf.get_width(), self.sidebar_sticky_bottom_surf_height))
-        self.sidebar_sticky_bottom_surf.fill(WHITE) 
+        self.sidebar_sticky_bottom_surf.fill(ORANGE) # CLEANORANGE
         # -- set btn and btn padding dimensions  --
         self.order_number_indicator_btn_size = 40
         self.order_number_indicator_btn_padding = 50
 
     def draw_active_order_indicators(self):
-        """ handle the order number indicator buttons and handle the hover state and colour changes """
+        """ handle the order number indicator buttons and handle the hover state and colour changes, and the on click functionality too """
         # -- split the sections into 3 quadrants, for each of the 3 buttons (25 is just edge adjustment), then minus the button size from those quadrants so you have the padding on either side added together remaining, then div 2 to get the width of both sides seperately and place the button at the end pos of the first padding rect in the quadrant --    
         btn_increment_pos = (((self.orders_sidebar_surf.get_width() / 3) - 25) - self.order_number_indicator_btn_size) / 2
         # -- then increment over the amount of buttons to move along by a quadrant and draw the button rect centralised within it -- 
         for i in range(1,4):
-            self.order_number_indicator_btn = pg.Rect(btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 10, self.order_number_indicator_btn_size, self.order_number_indicator_btn_size)
-            # -- if this indicator buttons index is the same as the order number then draw a green button else draw a red one --
-            indicator_colour = GREEN if self.active_order_number == i else RED
-            # -- draw the rect, save the resulting true rect for hover, and add the basics of the hover functionality tho not added on click yet will also do that here --
-            order_number_indicator_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, indicator_colour, self.order_number_indicator_btn)
+            # -- setup everything to blit in a loop using just the index pos from the above for loop to do both the image at its current state, plus its dynamic position --
+            order_btn_img_1 = self.game.order_btn_1_active_img.copy()
+            order_btn_img_2 = self.game.order_btn_2_active_img.copy()
+            order_btn_img_3 = self.game.order_btn_3_active_img.copy()
+            order_btn_img_1_dull = self.game.order_btn_1_dull_img.copy()
+            order_btn_img_2_dull = self.game.order_btn_2_dull_img.copy()
+            order_btn_img_3_dull = self.game.order_btn_3_dull_img.copy()
+            active_btns_list = [order_btn_img_1, order_btn_img_2, order_btn_img_3] 
+            dull_btns_list = [order_btn_img_1_dull, order_btn_img_2_dull, order_btn_img_3_dull] 
+            # -- use the index pos of each active and dull image (above) and blit them at incrementing positions based on that index (1,2,3) --
+            if self.active_order_number == i:
+                order_number_indicator_btn_true_rect = self.sidebar_sticky_bottom_surf.blit(active_btns_list[i-1], (btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 7))
+            else:
+                order_number_indicator_btn_true_rect = self.sidebar_sticky_bottom_surf.blit(dull_btns_list[i-1], (btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 7))
+            # -- use the resulting rect we saved and set it to the true pos for mouse collision --
             order_number_indicator_btn_true_rect = self.game.get_true_rect(order_number_indicator_btn_true_rect)
-            order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
+            order_number_indicator_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180 - 5, self.rect.height - self.sidebar_sticky_bottom_surf_height)
+            # -- check for mouse collision on this specific order number indicator --
             if order_number_indicator_btn_true_rect.collidepoint(pg.mouse.get_pos()):
-                pg.draw.rect(self.sidebar_sticky_bottom_surf, ORANGE, self.order_number_indicator_btn)        
-
+                # [ todo! ] - ideally blit a different image here please, and just dont allow hover (and therefore also click) for the current active order number using the index --
+                order_number_indicator_btn_true_rect = self.sidebar_sticky_bottom_surf.blit(active_btns_list[i-1], (btn_increment_pos + ((i-1) * (self.orders_sidebar_surf.get_width() / 3)), 7))
+                # -- if clicked a order number indicator, set the selection to be the active order --
+                if self.game.mouse_click_up:
+                    self.active_order_number = i
+                
     def draw_orders_sidebar(self):
         """ """
         # -- setup dimensions and surface for sticky bottom surf and active order indicator buttons --
@@ -237,26 +278,17 @@ class New_Orders_Tab(Browser_Tab):
         # -- handle the add to customer order button -- 
         add_to_customer_btn_width = 300
         add_to_customer_btn_center_pos = int(((self.orders_sidebar_surf.get_width() - 25) - add_to_customer_btn_width) / 2) # now confirmed - the extra 25 **is** the screen edge lol
-        
         # [new!]
         send_to_customer_btn = self.game.send_to_cust_btn_img
-
-        # kewl so this will work just obvs have to reconfigure it to work with the new button and not the old rect
-        # - yes its better to just refactor it than mess around doing other bs tbh
-        add_to_customer_btn = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
-        # [ crit! ] <= as in actually remove this below ting, dont want a white blah, just use the new blit return rect for the hover stuff duh and make a new hover img
-        # - add shadow and improve colouring too
-        add_to_customer_btn_true_rect = pg.draw.rect(self.sidebar_sticky_bottom_surf, WHITE, add_to_customer_btn)
-
+        add_to_customer_btn_true_rect = pg.Rect(add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25, add_to_customer_btn_width, self.order_number_indicator_btn_size)
         # [new!]
         self.sidebar_sticky_bottom_surf.blit(send_to_customer_btn, (add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25))
-
         # -- add hover and on click functionality -- 
         add_to_customer_btn_true_rect = self.game.get_true_rect(add_to_customer_btn_true_rect)
         add_to_customer_btn_true_rect.move_ip(self.orders_sidebar_surf.get_width() + 180, self.rect.height - self.sidebar_sticky_bottom_surf_height)
-        # -- on hover - change rect colour --
+        # -- on hover (mouse collide with button true rect) - blit hovered image to clarify change to button state --
         if add_to_customer_btn_true_rect.collidepoint(pg.mouse.get_pos()):
-            pg.draw.rect(self.sidebar_sticky_bottom_surf, SKYBLUE, add_to_customer_btn)
+            self.sidebar_sticky_bottom_surf.blit(self.game.send_to_cust_btn_hover_img.copy(), (add_to_customer_btn_center_pos, self.order_number_indicator_btn_size + 25))
             # -- on hover - update state to show popup --
             if self.game.mouse_click_up: 
                 self.want_customer_select_popup = True
@@ -420,12 +452,18 @@ class New_Orders_Tab(Browser_Tab):
             # -- get the quantity from the new active order details dict --
             order_details_dict = self.get_active_order_details_dict()
             item_quantity = order_details_dict[an_item]["quantity"]
+            # -- now also grabbing other info too, reeeally glad i preset this up as a dict now lol --
+            item_course = self.menu_items_course_dict[an_item]   
+            # -- also image too --         
+            item_img = self.menu_items_img_dict[an_item]            
             # -- setup the bg fading alpha rect on crud a new item to the active order --
-            crud_highlight_width = 250
             crud_highlight_height = 30
-            crud_highlight_bg_rect = pg.Rect(20 - 5, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset - 7, crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
-            crud_hightlight_bg_surf = pg.Surface((crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
+            crud_highlight_bg_rect = pg.Rect(60 - 5, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset - 7, self.crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
+            crud_hightlight_bg_surf = pg.Surface((self.crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
             crud_hightlight_bg_surf.fill(ORANGE)
+            # -- [new!] - yum text img test --
+            self.yum_text = self.game.yum_test_img.copy()
+            self.yum_text = pg.transform.rotate(self.yum_text, 15)
             # --
             if self.trigger_active_order_crud_fade == an_item:
                 # -- decrement if the crud fade trigger activates and is this item, then blit the relevant fading bg surface for this item --
@@ -437,17 +475,69 @@ class New_Orders_Tab(Browser_Tab):
                     self.trigger_active_order_crud_fade = False
                 # -- if this thing isn't 0 then blit it --
                 if self.fading_alpha:
+                    # -- [new!] - yum alpha --
                     crud_hightlight_bg_surf.set_alpha(self.fading_alpha) 
-                    # -- the final blit --
+                    yum_alpha = (self.fading_alpha * 3) 
+                    self.yum_text.set_alpha(yum_alpha)
+                    # -- the fading bg blit --
+                    self.crud_highlight_bg_true_rect = crud_highlight_bg_rect.copy()
+                    self.crud_highlight_bg_true_rect.x += 10
                     self.orders_sidebar_surf.blit(crud_hightlight_bg_surf, crud_highlight_bg_rect)
-            # -- draw this item and its quantity for the active order to the orders sidebar surf --
-            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (20, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, colour=ORANGE, font_size=16, font="lato")
-        # [ todo-? ]
+                    # -- blit yum test --
+                    crud_highlight_bg_rect.x += crud_hightlight_bg_surf.get_width() - 20
+                    crud_highlight_bg_rect.y -= 30
+                    # -- yum resizing --
+                    dynamic_width = self.yum_text.get_width()
+                    dynamic_height = self.yum_text.get_height()
+                    offset = (self.fading_alpha - 80) * -1 # flip our decrement var to increment instead 
+                    true_offset = float(f"1.{offset + 10}") # use our new increment var to increase the yum text size by a fixed amount (x1.10 to x1.80)
+                    dynamic_width *= true_offset
+                    dynamic_height *= true_offset
+                    self.yum_text = pg.transform.scale(self.yum_text, (dynamic_width, dynamic_height))
+                    if true_offset < 1.6: # drags a bit so cut the animation early
+                        self.orders_sidebar_surf.blit(self.yum_text, crud_highlight_bg_rect)
+
+            # [ new! ]
+            # -- drawing info and icons for each menu item --
+            order_sidebar_items_start_pos_y = 100
+            order_sidebar_items_y_offset = 65
+            order_sidebar_items_start_pos_x = 72
+
+            # -- draw course tag --
+            # def draw_course_tag(self):
+            formatted_course = item_course.replace("_", " & ")
+            item_course_tag_text = self.game.FONT_LATO_REGULAR_12.render(f"{formatted_course}", True, BLACK) 
+            item_course_tag_container_width = item_course_tag_text.get_width()
+            item_course_tag_container_height = item_course_tag_text.get_height()
+            item_course_tag_rect = pg.Rect(order_sidebar_items_start_pos_x, order_sidebar_items_start_pos_y + (index * order_sidebar_items_y_offset) + self.orders_sidebar_scroll_y_offset - 20, item_course_tag_container_width + 8, item_course_tag_container_height + 3) # 8 and 3 just nudge padding to centralise
+            resulting_rect = pg.draw.rect(self.orders_sidebar_surf, YELLOW, item_course_tag_rect, 0, 3)
+            resulting_rect.x, resulting_rect.y = resulting_rect.x + 4, resulting_rect.y + 2 
+            self.orders_sidebar_surf.blit(item_course_tag_text, resulting_rect)
+
+            # -- draw meal icon --
+            # def draw_meal_icon(self):
+            self.orders_sidebar_surf.blit(item_img, (15, order_sidebar_items_start_pos_y + (index * order_sidebar_items_y_offset) + self.orders_sidebar_scroll_y_offset - 25)) # extra minus 5 to centralise img
+            
+
+            # -- finally, end each item in the active order in the for loop by drawing its name and quantity to the orders sidebar surf --
+            self.draw_text_to_surf(f"{item_quantity}x {an_item}", (order_sidebar_items_start_pos_x, order_sidebar_items_start_pos_y + (index * order_sidebar_items_y_offset) + self.orders_sidebar_scroll_y_offset), self.orders_sidebar_surf, colour=ORANGE, font_size=16, font="lato")
+       
+
+        # [ todo-? ] 
         # -- make this a draw title function now, and fix the below double blit --
         # - note actually also just fix the rect to be a standard rect like the bottom bar instead of just just the small rect behind the text
         # - note, do this title draw after drawing the scrolling text since it has a bg rect now as we want it to be on the bottom 
         order_basket_title_true_rect = self.draw_text_to_surf(f"order {self.active_order_number} basket", (20, 20), self.orders_sidebar_surf, want_return=True, font_size=32, font="lato") 
         pg.draw.rect(self.orders_sidebar_surf, self.orders_sidebar_surf_colour, order_basket_title_true_rect)
+
+        # [ new! ]
+        # -- adding little underline rect to the 'order X basket' title --
+        # - again the kind of thing that would be a good function
+        # - draw underline, and just use the actual text rect and size to dynamically dictate the pos and size of the underline bar, and then just pass a colour or sumnt like that (and ig adjustments to size or pos, e.g. bigger, smaller, closer, further)
+        # - may actually refactor this whole thing for a week in 2 weeks time tbf, just to see how clean i can get it
+        title_underline_rect = pg.Rect(order_basket_title_true_rect.x, order_basket_title_true_rect.y + order_basket_title_true_rect.height, order_basket_title_true_rect.width, 3)
+        pg.draw.rect(self.orders_sidebar_surf, ORANGE, title_underline_rect) # CLEANGREY
+
         # -- yes legit have to fix this to not do this blit twice - do it twice to get the size, can actually just alter that function to not blit and just return, bosh -- 
         self.draw_text_to_surf(f"order {self.active_order_number} basket", (20, 20), self.orders_sidebar_surf, colour=ORANGE, font_size=32, font="lato") 
         # -- check for mouse actions like click and hover --
@@ -529,8 +619,12 @@ class New_Orders_Tab(Browser_Tab):
                     # -- for triggering bg on crud a menu item to the active orders menu, with fade effect (much wow!) --
                     # so its defo guna have "name" by now since we're doing it after the above dict update stuff
                     self.trigger_active_order_crud_fade = an_item_dict["name"]                    
-                    # --
+                    # -- reset the fading alpha --
                     self.fading_alpha = 80         
+                    # -- [new!] - make a text surf object from the clicked menu item string, grab its width, and set the crud width so the fading alpha crud surface is dynamic --
+                    menu_item_string = an_item_dict["name"]
+                    text_surf = self.game.FONT_LATO_16.render(f"8x {menu_item_string} ", True, BLACK)                     
+                    self.crud_highlight_width = text_surf.get_width() + 10
             # -- do the blit and store the resulting rect to check hover via mouse collide -- 
             item_hover_rect = self.image.blit(menu_item_surf, test_item_pos)
             self.menu_item_hover_rects[an_item_dict["my_id"]] = item_hover_rect

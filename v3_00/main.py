@@ -87,6 +87,19 @@ class Game:
         self.payment_success_1_img = pg.image.load(path.join(imgs_folder, PAYMENT_SUCCESS_IMG_1)).convert_alpha()  
         # -- sidebar elements --
         self.send_to_cust_btn_img = pg.image.load(path.join(imgs_folder, SEND_TO_CUST_BTN_IMG)).convert_alpha()  
+        self.send_to_cust_btn_hover_img = pg.image.load(path.join(imgs_folder, SEND_TO_CUST_BTN_HOVER_IMG)).convert_alpha()  
+        self.order_btn_1_active_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_1_ACTIVE_IMG)).convert_alpha()  
+        self.order_btn_2_active_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_2_ACTIVE_IMG)).convert_alpha()  
+        self.order_btn_3_active_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_3_ACTIVE_IMG)).convert_alpha()  
+        self.order_btn_1_dull_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_1_DULL_IMG)).convert_alpha()  
+        self.order_btn_2_dull_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_2_DULL_IMG)).convert_alpha()  
+        self.order_btn_3_dull_img = pg.image.load(path.join(imgs_folder, ORDER_BTN_3_DULL_IMG)).convert_alpha() 
+        self.yum_test_img = pg.image.load(path.join(imgs_folder, YUM_TEST_IMG)).convert_alpha() 
+        self.meal_icon_1 = pg.image.load(path.join(imgs_folder, MEAL_ICON_1)).convert_alpha() 
+        self.meal_icon_2 = pg.image.load(path.join(imgs_folder, MEAL_ICON_2)).convert_alpha() 
+        self.meal_icon_3 = pg.image.load(path.join(imgs_folder, MEAL_ICON_3)).convert_alpha() 
+        self.meal_icon_4 = pg.image.load(path.join(imgs_folder, MEAL_ICON_4)).convert_alpha() 
+        self.meal_icon_5 = pg.image.load(path.join(imgs_folder, MEAL_ICON_5)).convert_alpha() 
         # -- map popup --
         self.map_test_img_1 = pg.image.load(path.join(imgs_folder, MAP_TEST_IMG_1)).convert_alpha()  
         # -- load fonts -- 
@@ -103,10 +116,13 @@ class Game:
         self.FONT_BOHEMIAN_TYPEWRITER_32 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 32)
         self.FONT_BOHEMIAN_TYPEWRITER_46 = pg.font.Font((path.join(fonts_folder, "Bohemian Typewriter.ttf")), 46)
         # -- load lato fonts -- 
-        self.FONT_LATO_16 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 16) 
-        self.FONT_LATO_20 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 20) 
-        self.FONT_LATO_26 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 26) 
-        self.FONT_LATO_32 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 32) 
+        self.FONT_LATO_12 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 12)
+        self.FONT_LATO_16 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 16)
+        self.FONT_LATO_20 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 20)
+        self.FONT_LATO_26 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 26)
+        self.FONT_LATO_32 = pg.font.Font((path.join(fonts_folder, "Lato-Black.ttf")), 32)
+        # -- more lato fonts --
+        self.FONT_LATO_REGULAR_12 = pg.font.Font((path.join(fonts_folder, "Lato-Regular.ttf")), 12)
         # -- define main gui surface dimensions --
         self.pc_screen_surf_width, self.pc_screen_surf_height = 1000, 620
         self.pc_screen_surf_x, self.pc_screen_surf_y = (WIDTH / 2) - (self.pc_screen_surf_width / 2), 100 # testing +15 for tab bar adjustment
@@ -403,9 +419,9 @@ class Game:
         # should probably make this a .game function when adding new classes as they will likely use it too
         moved_rect = a_rect.copy()
         if move_in_negative:
-            moved_rect.move_ip(-self.pc_screen_surf_x, -self.pc_screen_surf_true_y)
+            moved_rect.move_ip(-self.pc_screen_surf_x - 7, -self.pc_screen_surf_true_y - 15)
         else:
-            moved_rect.move_ip(self.pc_screen_surf_x, self.pc_screen_surf_true_y)
+            moved_rect.move_ip(self.pc_screen_surf_x + 7, self.pc_screen_surf_true_y + 15)
         return moved_rect
 
        

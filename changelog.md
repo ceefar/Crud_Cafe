@@ -144,11 +144,7 @@ quick notes
 - its *really* starting to come along now wow
 
 
-
-
-
-
-day 10
+# day 10
 [v3.12]
 - fixed the highlight on hover to include the new 'sticky' border [10am]
 - cleaned up chatbox class
@@ -182,8 +178,7 @@ day 10
 - ensured chatbox blit is working as expected and is still printing after the customer cancels, plus for multiple instances with their own seperate wanted orders and blitting to their own windows seperately, hover still working, etc - just standard things to make sure everything is still as expected, which it is! :D
 
 
-
-day 11
+# day 11
 - was travelling to sheffield but did work on this for about half the day
 - didnt make notes tho, will try to go back and fill this in a bit later on today tho
 - basically just started the new preparing orders tab tho
@@ -192,8 +187,7 @@ day 11
 - improved new tab structure a tad by abstracting out some functionality 
 
 
-
-day 12
+# day 12
 [v3.14]
 - configured ticks timer to set customer to paid after a short amount of time and update their payment window img to show this too
 - state resetting
@@ -208,10 +202,12 @@ day 12
 - added temp click to map popup to select a store (well just closes for now but adding that in next) [friday-21:15]
 - temp functionality to send preparing order to store on button press (just removes from the queue for now but doing that next) 
 
+
 [took-saturday-off-for-once]
 - did do like an hour tbf but hardly worth including
 
-day 13
+
+# day 13
 [v3.15]
 - new rotate around center
 - new rotation image handler
@@ -228,7 +224,7 @@ day 13
 - added in the basic start screen with login img and core scene imgs 
 
 
-day 14
+# day 14
 [v3.16]
 - basically just tidying up the ui and cleaning up the core code and functionality today as its 2 weeks, and decided to get on a mern project after this
 - has more that achieved its goal - to improve my oop + intermediate programming skills, will likely return to finish up some stuff at some point tho
@@ -238,12 +234,46 @@ day 14
 - ui improvements
 - overhaul to sidebar ui
 - abstracting out (and generally cleaning up) draw_orders_sidebar functionality 
+- new indicator buttons
+- refactored order number indicator buttons code to be much cleaner and just use index to do the image select and position setting for everything in a loop
+- added on click and hover functionality to the order number indicator buttons
+- new stylised send to customer button
+- added hover state image and functionality to the send to customer btn
+- fixed true rect function, adjustment for increased screen size last version
+- generally finalised some hover / click positions and states
+- new yum text on crud
+- added fading alpha to yum text on crud
+- added dynamic transform resizing (1x - 1.55x) for yum text on crud
+- overhauled some of this functionality in the process to make it dynamic and cleaner
+
+
+# day 15 :'(
+[v3.17]
+so a sad end to the project for now, defo learned A LOT in regards to OOP & python 
+but currently i feel like continuing to add features and polish isnt the best use of my time anymore, even though i would love to continue doing it
+in all seriousness likely would be more beneficial (in terms of learning) to refactor this instead of cleaning it up and adding more functionality
+and i might do that at some point in the future
+
+but just doing a last few ui things and a small clean up
+then purely starting 2 new projects for the next 2 weeks
+- mern web app, for to learn js and react
+- and a computer vision python project, to continue expanding my python knowledge with more intermediate / advanced concepts  
+
+i do plan to finish this up some what (in terms of clean up and some minor ui improvements) over the weekends and a couple of hours throughout the week
+- and finish up the repo and the profile readme for it
+
+- added underline under order basket and some small ui updates
+- subtitle text and dictionary addition for functionality 
+- basically wrapped up the orders sidebar ui with icons, tags, etc, except for a few tidbits here and there (e.g. add price, improve sticky title bg, etc)
+- guna leave here for now for 2x new projects and come back and wrap up throughout the week and at the weekend
+- and will try to get a basic writeup for the readme out tomorrow sometime
+
+
 
 
 
 # note
 - really need to get a new version out quickly and a vid update btw
-
 
 # random to do
 - need to add overview to main header (obvs need in readme too, could also bang in its own file too, along with this changelog, etc)
