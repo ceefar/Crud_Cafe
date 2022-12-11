@@ -458,7 +458,7 @@ class New_Orders_Tab(Browser_Tab):
             item_img = self.menu_items_img_dict[an_item]            
             # -- setup the bg fading alpha rect on crud a new item to the active order --
             crud_highlight_height = 30
-            crud_highlight_bg_rect = pg.Rect(60 - 5, 90 + (index * 50) + self.orders_sidebar_scroll_y_offset - 7, self.crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
+            crud_highlight_bg_rect = pg.Rect(70 - 5, 105 + (index * 60) + self.orders_sidebar_scroll_y_offset - 5, self.crud_highlight_width, crud_highlight_height) # have done -5 in x and y as this is just the text pos (ok nudging a bit more in the y tho)
             crud_hightlight_bg_surf = pg.Surface((self.crud_highlight_width, crud_highlight_height)).convert_alpha() # doing a now too surf as want the transparency
             crud_hightlight_bg_surf.fill(ORANGE)
             # -- [new!] - yum text img test --
